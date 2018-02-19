@@ -11,6 +11,8 @@
 		B19F469B1FE6EAAF00606DD4 /* Swim_macOS.h in Headers */ = {isa = PBXBuildFile; fileRef = B19F46991FE6EAAF00606DD4 /* Swim_macOS.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		B19F46C71FE6EDD200606DD4 /* Range.swift in Sources */ = {isa = PBXBuildFile; fileRef = B169A75B1FE1AFB500F18992 /* Range.swift */; };
 		B19F46C81FE6EDD300606DD4 /* Range.swift in Sources */ = {isa = PBXBuildFile; fileRef = B169A75B1FE1AFB500F18992 /* Range.swift */; };
+		B1A1B6842002FA1000D477EF /* LinkedList.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1A1B6832002FA1000D477EF /* LinkedList.swift */; };
+		B1A1B6852002FA1100D477EF /* LinkedList.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1A1B6832002FA1000D477EF /* LinkedList.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -21,6 +23,7 @@
 		B19F46971FE6EAAF00606DD4 /* Swim.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Swim.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		B19F46991FE6EAAF00606DD4 /* Swim_macOS.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Swim_macOS.h; sourceTree = "<group>"; };
 		B19F469A1FE6EAAF00606DD4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B1A1B6832002FA1000D477EF /* LinkedList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinkedList.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -82,6 +85,7 @@
 			isa = PBXGroup;
 			children = (
 				B169A75B1FE1AFB500F18992 /* Range.swift */,
+				B1A1B6832002FA1000D477EF /* LinkedList.swift */,
 			);
 			path = Sources;
 			sourceTree = SOURCE_ROOT;
@@ -202,6 +206,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B1A1B6842002FA1000D477EF /* LinkedList.swift in Sources */,
 				B19F46C81FE6EDD300606DD4 /* Range.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -210,6 +215,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B1A1B6852002FA1100D477EF /* LinkedList.swift in Sources */,
 				B19F46C71FE6EDD200606DD4 /* Range.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

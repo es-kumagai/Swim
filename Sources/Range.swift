@@ -14,7 +14,7 @@ public struct PartialRange<Bound> where Bound : Comparable {
 
 extension PartialRange : RangeExpression {
     
-    public func relative<C>(to collection: C) -> Range<Bound> where C : _Indexable, Bound == C.Index {
+    public func relative<C>(to collection: C) -> Range<Bound> where C : Collection, Bound == C.Index {
         
         switch (lowerBound, upperBound) {
             

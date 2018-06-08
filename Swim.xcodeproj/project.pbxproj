@@ -53,7 +53,7 @@
 		OBJ_14 /* XCTestManifests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XCTestManifests.swift; sourceTree = "<group>"; };
 		OBJ_6 /* Package.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
 		OBJ_9 /* LinkedList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinkedList.swift; sourceTree = "<group>"; };
-		"Swim::Swim::Product" /* Swim.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Swim.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		"Swim::Swim::Product" /* Swim.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Swim.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		"Swim::SwimTests::Product" /* SwimTests.xctest */ = {isa = PBXFileReference; lastKnownFileType = file; path = SwimTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 

@@ -20,6 +20,11 @@ public struct ProcessExitStatus {
     }
 }
 
+extension ProcessExitStatus {
+
+    static let passed = ProcessExitStatus(code: 0)
+}
+
 extension ProcessExitStatus : ExpressibleByIntegerLiteral {
 
     public init(integerLiteral value: Int) {

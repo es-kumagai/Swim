@@ -23,6 +23,10 @@ public struct ProcessExitStatus {
 extension ProcessExitStatus {
 
     public static let passed = ProcessExitStatus(code: 0)
+    public static func aborted(in code: Int) -> ProcessExitStatus {
+        
+        return ProcessExitStatus(code: code)
+    }
 }
 
 extension ProcessExitStatus : ExpressibleByIntegerLiteral {

@@ -46,13 +46,13 @@ class StateTests: XCTestCase {
         XCTAssertFalse(ProcessExitStatus.passed.aborted)
     }
     
-    func testComparisonState() {
+    func testComparison() {
         
-        let state1 = ComparisonState(representedBy: 0)
-        let state2 = ComparisonState(representedBy: 1)
-        let state3 = ComparisonState(representedBy: -1)
-        let state4 = ComparisonState(representedBy: 1353)
-        let state5 = ComparisonState(representedBy: -231)
+        let state1 = Comparison(representedBy: 0)
+        let state2 = Comparison(representedBy: 1)
+        let state3 = Comparison(representedBy: -1)
+        let state4 = Comparison(representedBy: 1353)
+        let state5 = Comparison(representedBy: -231)
         
         XCTAssertTrue(state1.isSame)
         XCTAssertFalse(state1.isAscending)
@@ -103,8 +103,17 @@ class StateTests: XCTestCase {
         XCTAssertTrue((-100).meansOrderedDescendingOrSame)
     }
 
+    func testContinuousState() {
+        
+        XCTAssertTrue(ProcessExitStatus(representedBy: Continuous.continue).passed)
+        XCTAssertFalse(ProcessExitStatus(representedBy: Continuous.continue).aborted)
+        XCTAssertFalse(ProcessExitStatus(representedBy: Continuous.abort).passed)
+        XCTAssertTrue(ProcessExitStatus(representedBy: Continuous.abort).aborted)
+    }
+    
     static var allTests = [
         ("testProcessExitStatus", testProcessExitStatus),
-        ("testComparisonState", testComparisonState),
+        ("testComparison", testComparison),
+        ("testContinuousState", testContinuousState),
     ]
 }

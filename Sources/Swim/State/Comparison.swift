@@ -1,5 +1,5 @@
 //
-//  ComparisonState.swift
+//  Comparison.swift
 //  Swim
 //
 //  Created by Tomohiro Kumagai on 2020/01/13.
@@ -13,7 +13,7 @@ The type can convert from SignedIntegerType.
     value < 0:    .Ascending
     value > 0:    .Descending
 **/
-public enum ComparisonState {
+public enum Comparison {
     
     /// It means same order.
     case same

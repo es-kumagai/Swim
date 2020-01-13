@@ -22,7 +22,7 @@ public struct ProcessExitStatus {
 
 extension ProcessExitStatus {
 
-    static let passed = ProcessExitStatus(code: 0)
+    public static let passed = ProcessExitStatus(code: 0)
 }
 
 extension ProcessExitStatus : ExpressibleByIntegerLiteral {

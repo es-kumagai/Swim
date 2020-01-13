@@ -40,6 +40,10 @@ class StateTests: XCTestCase {
         XCTAssertTrue(1.meansProcessAborted)
         
         XCTAssertEqual(abort2.code, 25)
+        
+        XCTAssertEqual(ProcessExitStatus.passed.code, 0)
+        XCTAssertTrue(ProcessExitStatus.passed.passed)
+        XCTAssertFalse(ProcessExitStatus.passed.aborted)
     }
 
     static var allTests = [

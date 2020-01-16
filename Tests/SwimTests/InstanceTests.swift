@@ -20,7 +20,7 @@ class InstanceTests: XCTestCase {
 
     func testApply() {
         
-        let array1 = instanceApplyingExpression(to: Array<Int>()) { item in
+        let array1 = instanceApplyingExpression(with: Array<Int>()) { item in
             
             item.append(1)
             item.append(2)
@@ -29,9 +29,8 @@ class InstanceTests: XCTestCase {
         }
         
         XCTAssertEqual(array1.count, 2)
-        
-        
-        let obj1 = instanceApplyingExpression(to: NSMutableArray()) {
+
+        let obj1 = applyingExpression(to: NSMutableArray()) {
     
             $0.add(1)
             $0.add(2)

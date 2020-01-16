@@ -57,13 +57,14 @@ extension QueueProtocol {
     }
 }
 
+/// [Swim] An ordered, sequencial-access collection.
 public struct Queue<Element> : QueueProtocol, ExpressibleByArrayLiteral {
     
     fileprivate var elements: Array<Element>
 
     public init() {
 
-        self.elements = Array<Element>()
+        elements = Array<Element>()
     }
     
     public init(arrayLiteral elements: Element...) {

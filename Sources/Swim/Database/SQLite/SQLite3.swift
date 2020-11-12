@@ -16,7 +16,7 @@ public final class SQLite3 {
     /// [Swim] The internal pointer to the database which is managed by this instance.
     internal private(set) var pDB: OpaquePointer
     
-    /// Create a new SQLite instance with given store.
+    /// [Swim] Create a new SQLite instance with given store.
     /// - Parameters:
     ///   - store: The store to generate this database.
     ///   - options: The options to specified the open mode.
@@ -41,8 +41,15 @@ public final class SQLite3 {
 		
         try! ResultCode(sqlite3_close_v2(pDB)).throwIfError()
 	}
-	
-	func makeStatement(with sql: String, prepare: ((Statement) throws -> Void)? = nil) throws -> Statement {
+    
+    /// [Swim] Make a new statement with `sql` sentence; This method used to execute `SELECT` statement.
+    ///
+    /// - Parameters:
+    ///   - sql: The SQL sentence of this statement.
+    ///   - prepare: Evaluate to prepare this statement before executing `step` method.
+    /// - Throws: SQLite3.ResultCode
+    /// - Returns: Generated statement.
+	public func makeStatement(with sql: String, prepare: ((Statement) throws -> Void)? = nil) throws -> Statement {
 		
 		let statement = try Statement(db: self, sql: sql)
 		
@@ -51,7 +58,7 @@ public final class SQLite3 {
 		return statement
 	}
     
-    /// Make a new statement with `sql` and execute `step` method.
+    /// [Swim] Make a new statement with `sql` sentence and execute `step` method; This method used to execute `INSERT`, `UPDATE` or `DELETE` statement.
     ///
     /// - Parameters:
     ///   - sql: The SQL sentence of this statement.

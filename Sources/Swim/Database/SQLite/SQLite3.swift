@@ -66,7 +66,7 @@ public final class SQLite3 {
     /// - Throws: SQLite3.ResultCode
     /// - Returns: New executed statement if `step` method returns true, otherwise nil.
 	@discardableResult
-	func execute(sql: String, prepare: ((Statement) throws -> Void)? = nil) throws -> Statement? {
+	public func execute(sql: String, prepare: ((Statement) throws -> Void)? = nil) throws -> Statement? {
 		
 		let statement = try makeStatement(with: sql)
 		
@@ -85,6 +85,12 @@ public final class SQLite3 {
 
 extension SQLite3 {
     
+    /// [Swim] Create a new SQLite instance with given `path`.
+    ///
+    /// - Parameters:
+    ///   - path: The path to a SQLite database file.
+    ///   - options: The options to specified the open mode.
+    /// - Throws: SQLite3.ResultCode when a database could not open.
     public convenience init(path: String, options: OpenOption) throws {
         
         try self.init(store: Store.path(path), options: options)

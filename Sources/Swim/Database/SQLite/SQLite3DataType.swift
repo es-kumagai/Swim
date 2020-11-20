@@ -9,12 +9,13 @@ import SQLite3
 
 extension SQLite3 {
     
+    /// [Swim] Data type of SQLite3; BLOB is NOT supported yet.
     public enum DataType : RawRepresentable {
     
         case integer
         case real
         case text
-        case blob
+//        case blob
         case null
     
         public init?(rawValue: Int32) {
@@ -30,8 +31,8 @@ extension SQLite3 {
             case SQLITE_TEXT:
                 self = .text
                 
-            case SQLITE_BLOB:
-                self = .blob
+//            case SQLITE_BLOB:
+//                self = .blob
                 
             case SQLITE_NULL:
                 self = .null
@@ -54,8 +55,8 @@ extension SQLite3 {
             case .text:
                 return SQLITE_TEXT
                 
-            case .blob:
-                return SQLITE_BLOB
+//            case .blob:
+//                return SQLITE_BLOB
                 
             case .null:
                 return SQLITE_NULL
@@ -82,8 +83,8 @@ extension SQLite3.DataType : LosslessStringConvertible {
         case "TEXT":
             self = .text
             
-        case "BLOB":
-            self = .blob
+//        case "BLOB":
+//            self = .blob
             
         default:
             return nil
@@ -106,8 +107,8 @@ extension SQLite3.DataType : LosslessStringConvertible {
         case .text:
             return "TEXT"
             
-        case .blob:
-            return "BLOB"
+//        case .blob:
+//            return "BLOB"
         }
     }
 }

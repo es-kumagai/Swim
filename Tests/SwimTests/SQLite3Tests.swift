@@ -9,6 +9,20 @@ import XCTest
 @testable import Swim
 import SQLite3
 
+private struct MyData : SQLiteArrayElement {
+    
+    var id: Int
+    var name: String
+    var flags: Double?
+    
+    init() {
+        
+        id = 0
+        name = ""
+        flags = 0
+    }
+}
+
 class SQLite3Tests: XCTestCase {
 
     override func setUpWithError() throws {
@@ -161,5 +175,45 @@ class SQLite3Tests: XCTestCase {
         XCTAssertEqual(SQLite3.OpenOption.fullMutex.rawValue, SQLITE_OPEN_FULLMUTEX)
         XCTAssertEqual(SQLite3.OpenOption.sharedCache.rawValue, SQLITE_OPEN_SHAREDCACHE)
         XCTAssertEqual(SQLite3.OpenOption.privateCache.rawValue, SQLITE_OPEN_PRIVATECACHE)
+    }
+    
+    func testText() throws {
+    
+        XCTAssertEqual(SQLite3.quoted("TEXT"), "'TEXT'")
+        XCTAssertEqual(SQLite3.fieldName("FIELD"), "\"FIELD\"")
+        XCTAssertEqual(SQLite3.quoted("TE'XT"), "'TE''XT'")
+        XCTAssertEqual(SQLite3.fieldName("FI\"ELD"), "\"FI\"\"ELD\"")
+    }
+    
+    func testArray() throws {
+                
+        let array = try SQLiteArray<MyData>()
+        
+        XCTAssertEqual(array.count, 0)
+    }
+    
+    func testArrayMetadata() throws {
+        
+        let array = try SQLiteArray<MyData>()
+        let metadata = array.metadata
+
+        XCTAssertEqual(array.sqlForCreateTable(), #"CREATE TABLE "MyData" ("id" INTEGER NOT NULL, "name" TEXT NOT NULL, "flags" REAL)"#)
+
+        XCTAssertEqual(array.tableName, "\"MyData\"")
+        XCTAssertEqual(metadata.map(\.name), ["id", "name", "flags"])
+        XCTAssertEqual(metadata.map(\.datatype), [.integer, .text, .real])
+        XCTAssertEqual(metadata.map(\.nullable), [false, false, true])
+
+        XCTAssertEqual(metadata[0].sql, "\"id\" INTEGER NOT NULL")
+        XCTAssertEqual(metadata[1].sql, "\"name\" TEXT NOT NULL")
+        XCTAssertEqual(metadata[2].sql, "\"flags\" REAL")
+    }
+    
+    func testDataType() throws {
+        
+        XCTAssertEqual(SQLite3.DataType.integer.description, "INTEGER")
+        XCTAssertEqual(SQLite3.DataType.real.description, "REAL")
+        XCTAssertEqual(SQLite3.DataType.text.description, "TEXT")
+        XCTAssertEqual(SQLite3.DataType.null.description, "NULL")
     }
 }

@@ -62,3 +62,24 @@ extension SQLite3.Column {
             )
     }
 }
+
+extension SQLite3.Column : CustomStringConvertible {
+    
+    public var description: String {
+        
+        switch self.type {
+        
+        case .integer:
+            return integerValue.description
+            
+        case .real:
+            return realValue.description
+            
+        case .text:
+            return SQLite3.quoted(textValue)
+            
+        case .null:
+            return SQLite3.DataType.null.description
+        }
+    }
+}

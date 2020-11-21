@@ -92,6 +92,19 @@ public final class SQLite3 {
         
         return statement.columns.first!.integerValue
     }
+    
+    /// [Swim] Attach database
+    /// - Parameters:
+    ///   - databasePath: The path of a database to attach.
+    ///   - name: The name of the database that is specified by `databasePath`.
+    /// - Throws: SQLite3.ResultCode
+    public func attach(databasePath: String, to name: String) throws {
+        
+        let path = SQLite3.quoted(databasePath)
+        let name = SQLite3.fieldName(name)
+        
+        try execute(sql: "ATTACH DATABASE \(path) AS \(name)")
+    }
 }
 
 extension SQLite3 {

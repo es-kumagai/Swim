@@ -9,6 +9,16 @@ import XCTest
 @testable import Swim
 import SQLite3
 
+/**
+ FIXME: WORKAROUND
+ Now SwiftPM seems to copy resources for unit test to bundle.
+ In addition, even if execute `swift test`, the resources cannot be found in `Bundle.module`.
+ To find the resources, specify the resource's path directly. (not in bundle.)
+ */
+//        let path = Bundle(for: Self.self).path(forResource: "EZ-NET", ofType: "sqlite3")!
+//        let path = Bundle.module.path(forResource: "EZ-NET", ofType: "sqlite3")!
+let databasePath = URL(fileURLWithPath: #file).deletingLastPathComponent().appendingPathComponent("Resources/EZ-NET.sqlite3").absoluteString
+
 private struct MyData : SQLiteArrayElement {
     
     var id: Int
@@ -33,20 +43,34 @@ class SQLite3Tests: XCTestCase {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
     }
 
+    func testAttachDatabase() throws {
+        
+        let sqlite = try SQLite3(path: databasePath, options: .readonly)
+        
+        guard let main = try sqlite.execute(sql: "SELECT count(*) FROM main.Updates") else {
+            
+            XCTFail("Expect some data exists.")
+            return
+        }
+
+        XCTAssertEqual(main.columns.first!.integerValue, 1852)
+
+        XCTAssertThrowsError(try sqlite.execute(sql: "SELECT count(*) FROM sub.Updates"))
+        XCTAssertNoThrow(try sqlite.attach(databasePath: databasePath, to: "sub"))
+        XCTAssertNoThrow(try sqlite.execute(sql: "SELECT count(*) FROM sub.Updates"))
+
+        guard let sub = try sqlite.execute(sql: "SELECT count(*) FROM sub.Updates") else {
+            
+            XCTFail("Expect some data exists.")
+            return
+        }
+
+        XCTAssertEqual(sub.columns.first!.integerValue, 1852)
+    }
+    
     func testRead() throws {
-        
-        /**
-         FIXME: WORKAROUND
-         Now SwiftPM seems to copy resources for unit test to bundle.
-         In addition, even if execute `swift test`, the resources cannot be found in `Bundle.module`.
-         To find the resources, specify the resource's path directly. (not in bundle.)
-         */
-//        let path = Bundle(for: Self.self).path(forResource: "EZ-NET", ofType: "sqlite3")!
-//        let path = Bundle.module.path(forResource: "EZ-NET", ofType: "sqlite3")!
-        let path = URL(fileURLWithPath: #file).deletingLastPathComponent().appendingPathComponent("Resources/EZ-NET.sqlite3").absoluteString
-        print(path)
-        
-        let sqlite = try SQLite3(path: path, options: .readonly)
+                
+        let sqlite = try SQLite3(path: databasePath, options: .readonly)
         
         XCTAssertThrowsError(try sqlite.execute(sql: "SELECT FROM Updates"))
         XCTAssertThrowsError(try sqlite.execute(sql: "SELECT * FROM Dummy"))
@@ -98,13 +122,13 @@ class SQLite3Tests: XCTestCase {
         
         let sqlite = try SQLite3(store: .onMemory, options: .readwrite)
         
-        XCTAssertEqual(sqlite.previousChanges, 0)
+        XCTAssertEqual(sqlite.recentChanges, 0)
         
         try sqlite.execute(sql: "CREATE TABLE sample(id INTEGER NOT NULL PRIMARY KEY, name TEXT, flag REAL DEFAULT 1.5, dummy NULL)")
-        XCTAssertEqual(sqlite.previousChanges, 0)
+        XCTAssertEqual(sqlite.recentChanges, 0)
 
         let info = try sqlite.execute(sql: "PRAGMA table_info('sample')")!
-        XCTAssertEqual(sqlite.previousChanges, 0)
+        XCTAssertEqual(sqlite.recentChanges, 0)
 
         XCTAssertEqual(info.columnCount, 6)
         
@@ -145,19 +169,20 @@ class SQLite3Tests: XCTestCase {
         XCTAssertFalse(try info.step())
         
         let st1 = try sqlite.execute(sql: "SELECT * FROM sample")
-        XCTAssertEqual(sqlite.previousChanges, 0)
+        XCTAssertEqual(sqlite.recentChanges, 0)
 
         XCTAssertNil(st1)
         
         try sqlite.execute(sql: "INSERT INTO sample (id, name, flag) VALUES (10, 'EZ-NET', 1.5), (22, 'ORIENT', NULL)")
-        XCTAssertEqual(sqlite.previousChanges, 2)
+        XCTAssertEqual(sqlite.recentChanges, 2)
 
         guard let st2 = try sqlite.execute(sql: "SELECT * FROM sample") else {
             
             XCTFail("Expect some data exists.")
             return
         }
-        XCTAssertEqual(sqlite.previousChanges, 2)
+
+        XCTAssertEqual(sqlite.recentChanges, 2)
 
         XCTAssertEqual(st2.columns.id.integerValue, 10)
         XCTAssertEqual(st2.columns.name.textValue, "EZ-NET")
@@ -172,7 +197,6 @@ class SQLite3Tests: XCTestCase {
         XCTAssertFalse(try st2.step())
 
         let st3 = try sqlite.makeStatement(with: "SELECT * FROM sample ORDER BY id DESC")
-        XCTAssertEqual(sqlite.previousChanges, 2)
 
         let values = st3.map {
             

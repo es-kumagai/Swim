@@ -53,7 +53,7 @@ class SQLite3Tests: XCTestCase {
             return
         }
 
-        XCTAssertEqual(main.columns.first!.integerValue, 1852)
+        XCTAssertEqual(main.row.first!.integerValue, 1852)
 
         XCTAssertThrowsError(try sqlite.execute(sql: "SELECT count(*) FROM sub.Updates"))
         XCTAssertNoThrow(try sqlite.attach(databasePath: databasePath, to: "sub"))
@@ -65,7 +65,7 @@ class SQLite3Tests: XCTestCase {
             return
         }
 
-        XCTAssertEqual(sub.columns.first!.integerValue, 1852)
+        XCTAssertEqual(sub.row.first!.integerValue, 1852)
     }
     
     func testRead() throws {
@@ -86,34 +86,34 @@ class SQLite3Tests: XCTestCase {
 
         XCTAssertTrue(try statement.step())
 
-        XCTAssertEqual(statement.columns[0].type, .integer)
-        XCTAssertEqual(statement.columns[1].type, .text)
-        XCTAssertEqual(statement.columns[2].type, .text)
-        XCTAssertEqual(statement.columns[3].type, .text)
-        XCTAssertEqual(statement.columns[4].type, .text)
-        XCTAssertEqual(statement.columns[5].type, .text)
+        XCTAssertEqual(statement.row[0].type, .integer)
+        XCTAssertEqual(statement.row[1].type, .text)
+        XCTAssertEqual(statement.row[2].type, .text)
+        XCTAssertEqual(statement.row[3].type, .text)
+        XCTAssertEqual(statement.row[4].type, .text)
+        XCTAssertEqual(statement.row[5].type, .text)
 
-        XCTAssertEqual(statement.columns[0].integerValue, 1178)
-        XCTAssertEqual(statement.columns[2].textValue, "UISlider の値を操作する。")
-        XCTAssertEqual(statement.columns[4].textValue, "/article/8A/3GTRi2tH/SYJ1jMo5TVWw/")
-        XCTAssertEqual(statement.columns.UpdateID.integerValue, 1178)
-        XCTAssertEqual(statement.columns.Caption.textValue, "UISlider の値を操作する。")
-        XCTAssertEqual(statement.columns.URI.textValue, "/article/8A/3GTRi2tH/SYJ1jMo5TVWw/")
+        XCTAssertEqual(statement.row[0].integerValue, 1178)
+        XCTAssertEqual(statement.row[2].textValue, "UISlider の値を操作する。")
+        XCTAssertEqual(statement.row[4].textValue, "/article/8A/3GTRi2tH/SYJ1jMo5TVWw/")
+        XCTAssertEqual(statement.row.columns.UpdateID.integerValue, 1178)
+        XCTAssertEqual(statement.row.columns.Caption.textValue, "UISlider の値を操作する。")
+        XCTAssertEqual(statement.row.columns.URI.textValue, "/article/8A/3GTRi2tH/SYJ1jMo5TVWw/")
 
         XCTAssertTrue(try statement.step())
         
-        XCTAssertEqual(statement.columns[0].integerValue, 1179)
-        XCTAssertEqual(statement.columns[2].textValue, "UISwitch の値を操作する。")
-        XCTAssertEqual(statement.columns[4].textValue, "/article/51/_SXHqIpL/zaKazZyqkneE/")
-        XCTAssertEqual(statement.columns["UpdateID"].integerValue, 1179)
-        XCTAssertEqual(statement.columns["Caption"].textValue, "UISwitch の値を操作する。")
-        XCTAssertEqual(statement.columns["URI"].textValue, "/article/51/_SXHqIpL/zaKazZyqkneE/")
+        XCTAssertEqual(statement.row[0].integerValue, 1179)
+        XCTAssertEqual(statement.row[2].textValue, "UISwitch の値を操作する。")
+        XCTAssertEqual(statement.row[4].textValue, "/article/51/_SXHqIpL/zaKazZyqkneE/")
+        XCTAssertEqual(statement.row["UpdateID"].integerValue, 1179)
+        XCTAssertEqual(statement.row["Caption"].textValue, "UISwitch の値を操作する。")
+        XCTAssertEqual(statement.row["URI"].textValue, "/article/51/_SXHqIpL/zaKazZyqkneE/")
 
         XCTAssertTrue(try statement.step())
 
-        XCTAssertEqual(statement.columns[0].integerValue, 1180)
-        XCTAssertEqual(statement.columns[2].textValue, "UIScrollView をスクロールさせる。")
-        XCTAssertEqual(statement.columns[4].textValue, "/article/51/KyIcnlBE/PadIz8Rd3cRa/")
+        XCTAssertEqual(statement.row[0].integerValue, 1180)
+        XCTAssertEqual(statement.row[2].textValue, "UIScrollView をスクロールさせる。")
+        XCTAssertEqual(statement.row[4].textValue, "/article/51/KyIcnlBE/PadIz8Rd3cRa/")
 
         XCTAssertFalse(try statement.step())
     }
@@ -132,39 +132,39 @@ class SQLite3Tests: XCTestCase {
 
         XCTAssertEqual(info.columnCount, 6)
         
-        XCTAssertEqual(info.columns.cid.integerValue, 0)
-        XCTAssertEqual(info.columns.name.textValue, "id")
-        XCTAssertEqual(info.columns.type.textValue, "INTEGER")
-        XCTAssertEqual(info.columns.notnull.integerValue, 1)
-        XCTAssertTrue(info.columns.dflt_value.isNull)
-        XCTAssertEqual(info.columns.pk.integerValue, 1)
+        XCTAssertEqual(info.row.columns.cid.integerValue, 0)
+        XCTAssertEqual(info.row.columns.name.textValue, "id")
+        XCTAssertEqual(info.row.columns.type.textValue, "INTEGER")
+        XCTAssertEqual(info.row.columns.notnull.integerValue, 1)
+        XCTAssertTrue(info.row.columns.dflt_value.isNull)
+        XCTAssertEqual(info.row.columns.pk.integerValue, 1)
 
         XCTAssertTrue(try info.step())
         
-        XCTAssertEqual(info.columns.cid.integerValue, 1)
-        XCTAssertEqual(info.columns.name.textValue, "name")
-        XCTAssertEqual(info.columns.type.textValue, "TEXT")
-        XCTAssertEqual(info.columns.notnull.integerValue, 0)
-        XCTAssertTrue(info.columns.dflt_value.isNull)
-        XCTAssertEqual(info.columns.pk.integerValue, 0)
+        XCTAssertEqual(info.row.columns.cid.integerValue, 1)
+        XCTAssertEqual(info.row.columns.name.textValue, "name")
+        XCTAssertEqual(info.row.columns.type.textValue, "TEXT")
+        XCTAssertEqual(info.row.columns.notnull.integerValue, 0)
+        XCTAssertTrue(info.row.columns.dflt_value.isNull)
+        XCTAssertEqual(info.row.columns.pk.integerValue, 0)
 
         XCTAssertTrue(try info.step())
         
-        XCTAssertEqual(info.columns.cid.integerValue, 2)
-        XCTAssertEqual(info.columns.name.textValue, "flag")
-        XCTAssertEqual(info.columns.type.textValue, "REAL")
-        XCTAssertEqual(info.columns.notnull.integerValue, 0)
-        XCTAssertEqual(info.columns.dflt_value.textValue, "1.5")
-        XCTAssertEqual(info.columns.pk.integerValue, 0)
+        XCTAssertEqual(info.row.columns.cid.integerValue, 2)
+        XCTAssertEqual(info.row.columns.name.textValue, "flag")
+        XCTAssertEqual(info.row.columns.type.textValue, "REAL")
+        XCTAssertEqual(info.row.columns.notnull.integerValue, 0)
+        XCTAssertEqual(info.row.columns.dflt_value.textValue, "1.5")
+        XCTAssertEqual(info.row.columns.pk.integerValue, 0)
 
         XCTAssertTrue(try info.step())
 
-        XCTAssertEqual(info.columns.cid.integerValue, 3)
-        XCTAssertEqual(info.columns.name.textValue, "dummy")
-        XCTAssertEqual(info.columns.type.textValue, "")
-        XCTAssertEqual(info.columns.notnull.integerValue, 0)
-        XCTAssertTrue(info.columns.dflt_value.isNull)
-        XCTAssertEqual(info.columns.pk.integerValue, 0)
+        XCTAssertEqual(info.row.columns.cid.integerValue, 3)
+        XCTAssertEqual(info.row.columns.name.textValue, "dummy")
+        XCTAssertEqual(info.row.columns.type.textValue, "")
+        XCTAssertEqual(info.row.columns.notnull.integerValue, 0)
+        XCTAssertTrue(info.row.columns.dflt_value.isNull)
+        XCTAssertEqual(info.row.columns.pk.integerValue, 0)
 
         XCTAssertFalse(try info.step())
         
@@ -184,15 +184,15 @@ class SQLite3Tests: XCTestCase {
 
         XCTAssertEqual(sqlite.recentChanges, 2)
 
-        XCTAssertEqual(st2.columns.id.integerValue, 10)
-        XCTAssertEqual(st2.columns.name.textValue, "EZ-NET")
-        XCTAssertEqual(st2.columns.flag.realValue, 1.5)
+        XCTAssertEqual(st2.row.columns.id.integerValue, 10)
+        XCTAssertEqual(st2.row.columns.name.textValue, "EZ-NET")
+        XCTAssertEqual(st2.row.columns.flag.realValue, 1.5)
 
         XCTAssertTrue(try st2.step())
 
-        XCTAssertEqual(st2.columns.id.integerValue, 22)
-        XCTAssertEqual(st2.columns.name.textValue, "ORIENT")
-        XCTAssertEqual(st2.columns.flag.realValue, 0)
+        XCTAssertEqual(st2.row.columns.id.integerValue, 22)
+        XCTAssertEqual(st2.row.columns.name.textValue, "ORIENT")
+        XCTAssertEqual(st2.row.columns.flag.realValue, 0)
 
         XCTAssertFalse(try st2.step())
 
@@ -200,7 +200,7 @@ class SQLite3Tests: XCTestCase {
 
         let values = st3.map {
             
-            $0.columns.name.textValue
+            $0.row.columns.name.textValue
         }
 
         XCTAssertEqual(values, ["ORIENT", "EZ-NET"])

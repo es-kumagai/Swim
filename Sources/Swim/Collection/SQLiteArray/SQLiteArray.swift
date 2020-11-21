@@ -53,7 +53,7 @@ extension SQLiteArray {
                 fatalError("Failed to get count.")
             }
             
-            return statement.columns.first!.integerValue
+            return statement.row.first!.integerValue
         }
         catch {
         
@@ -135,11 +135,11 @@ internal extension SQLiteArray {
         return "CREATE TABLE \(tableName) (\(columns.joined(separator: ", ")))"
     }
     
-    func instantiate(columns: SQLite3.Columns) {
+    func instantiate(row: SQLite3.Row) {
         
-        guard columns.count == metadata.count else {
+        guard row.count == metadata.count else {
         
-            fatalError("Expect the number of columns (\(columns.count)) is equals to the number of metadata (\(metadata.count)).")
+            fatalError("Expect the number of columns (\(row.count)) is equals to the number of metadata (\(metadata.count)).")
         }
         
         let dataLength = MemoryLayout<Element>.size
@@ -150,7 +150,7 @@ internal extension SQLiteArray {
             dataBytes.deallocate()
         }
         
-        for (column, metadata) in zip(columns, metadata) {
+        for (column, metadata) in zip(row, metadata) {
 
 //            guard column.type == metadata.datatype else {
 //                

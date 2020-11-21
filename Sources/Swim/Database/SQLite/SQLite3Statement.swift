@@ -16,7 +16,7 @@ extension SQLite3 {
         internal private(set) var columnNames: Array<String>
         
         public private(set) var sql: String
-        public private(set) var columns: Columns!
+        public private(set) var row: Row!
 
         init(db: SQLite3, sql: String) throws {
             
@@ -29,7 +29,7 @@ extension SQLite3 {
             self.handle = handle!
             self.columnNames = Self.columnNames(of: handle!)
             
-            self.columns = Columns(db: db, statement: self)
+            self.row = Row(db: db, statement: self)
         }
         
         deinit {

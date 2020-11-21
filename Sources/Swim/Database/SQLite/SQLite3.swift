@@ -66,7 +66,7 @@ public final class SQLite3 {
             return 0
         }
         
-        return statement.columns.first!.integerValue
+        return statement.row.first!.integerValue
     }
     
     /// [Swim] Attach database

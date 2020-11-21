@@ -18,7 +18,7 @@ extension SQLite3 {
             self.db = db
             self.statement = statement
         }
-        
+
         public subscript<Index : BinaryInteger>(index: Index) -> Column {
             
             return SQLite3.Column(statement: statement, index: index)
@@ -38,28 +38,5 @@ extension SQLite3 {
 
             return self[name]
         }
-    }
-}
-
-extension SQLite3.Columns : Collection {
-
-    public func index(after i: Int) -> Int {
-        
-        return i + 1
-    }
-        
-    public var startIndex: Int {
-        
-        return 0
-    }
-    
-    public var endIndex: Int {
-        
-        return statement.columnCount
-    }
-    
-    public subscript (index: Int) -> SQLite3.Column {
-        
-        return SQLite3.Column(statement: statement, index: index)
     }
 }

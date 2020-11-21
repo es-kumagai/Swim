@@ -75,7 +75,7 @@ class SQLite3Tests: XCTestCase {
         XCTAssertThrowsError(try sqlite.execute(sql: "SELECT FROM Updates"))
         XCTAssertThrowsError(try sqlite.execute(sql: "SELECT * FROM Dummy"))
 
-        let statement = try sqlite.makeStatement(with: "SELECT * FROM Updates WHERE UpdateID BETWEEN @idMin AND @idMax ORDER BY UpdateID") { statement in
+        let statement = try sqlite.prepareStatement(with: "SELECT * FROM Updates WHERE UpdateID BETWEEN @idMin AND @idMax ORDER BY UpdateID") { statement in
             
             try statement.parameter("@idMin").bind(1178)
             try statement.parameter("@idMax").bind(1180)
@@ -196,7 +196,7 @@ class SQLite3Tests: XCTestCase {
 
         XCTAssertFalse(try st2.step())
 
-        let st3 = try sqlite.makeStatement(with: "SELECT * FROM sample ORDER BY id DESC")
+        let st3 = try sqlite.prepareStatement(with: "SELECT * FROM sample ORDER BY id DESC")
 
         let values = st3.map {
             

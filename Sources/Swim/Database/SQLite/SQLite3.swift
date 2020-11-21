@@ -49,7 +49,7 @@ public final class SQLite3 {
     ///   - prepare: Evaluate to prepare this statement before executing `step` method.
     /// - Throws: SQLite3.ResultCode
     /// - Returns: Generated statement.
-	public func makeStatement(with sql: String, prepare: ((Statement) throws -> Void)? = nil) throws -> Statement {
+	public func prepareStatement(with sql: String, prepare: ((Statement) throws -> Void)? = nil) throws -> Statement {
 		
 		let statement = try Statement(db: self, sql: sql)
 		
@@ -57,31 +57,7 @@ public final class SQLite3 {
 		
 		return statement
 	}
-    
-    /// [Swim] Make a new statement with `sql` sentence and execute `step` method; This method used to execute `INSERT`, `UPDATE` or `DELETE` statement.
-    ///
-    /// - Parameters:
-    ///   - sql: The SQL sentence of this statement.
-    ///   - prepare: Evaluate to prepare this statement before executing `step` method.
-    /// - Throws: SQLite3.ResultCode
-    /// - Returns: New executed statement if `step` method returns true, otherwise nil.
-	@discardableResult
-	public func execute(sql: String, prepare: ((Statement) throws -> Void)? = nil) throws -> Statement? {
-		
-		let statement = try makeStatement(with: sql)
-		
-		try prepare?(statement)
-		
-        switch try statement.step() {
         
-        case true:
-            return statement
-            
-        case false:
-            return nil
-        }
-	}
-    
     /// [Swim] Number of recent changes by executing `INSERT`, `UPDATE` or `DELETE` statement.
     public var recentChanges: Int {
         
@@ -118,6 +94,30 @@ extension SQLite3 {
     public convenience init(path: String, options: OpenOption) throws {
         
         try self.init(store: Store.path(path), options: options)
+    }
+
+    /// [Swim] Make a new statement with `sql` sentence and execute `step` method; This method used to execute `INSERT`, `UPDATE` or `DELETE` statement.
+    ///
+    /// - Parameters:
+    ///   - sql: The SQL sentence of this statement.
+    ///   - prepare: Evaluate to prepare this statement before executing `step` method.
+    /// - Throws: SQLite3.ResultCode
+    /// - Returns: New executed statement if `step` method returns true, otherwise nil.
+    @discardableResult
+    public func execute(sql: String, prepare: ((Statement) throws -> Void)? = nil) throws -> Statement? {
+        
+        let statement = try prepareStatement(with: sql)
+        
+        try prepare?(statement)
+        
+        switch try statement.step() {
+        
+        case true:
+            return statement
+            
+        case false:
+            return nil
+        }
     }
 }
 

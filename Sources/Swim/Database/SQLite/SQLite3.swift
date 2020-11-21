@@ -81,6 +81,17 @@ public final class SQLite3 {
             return nil
         }
 	}
+    
+    /// [Swim] Number of recent changes by executing `INSERT`, `UPDATE` or `DELETE` statement.
+    public var recentChanges: Int {
+        
+        guard let statement = try? execute(sql: "SELECT changes()") else {
+            
+            return 0
+        }
+        
+        return statement.columns.first!.integerValue
+    }
 }
 
 extension SQLite3 {

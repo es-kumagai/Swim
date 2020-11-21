@@ -34,8 +34,12 @@ class SQLite3Tests: XCTestCase {
     }
 
     func testRead() throws {
-
-        let path = Bundle(for: Self.self).path(forResource: "EZ-NET", ofType: "sqlite3")!
+        
+//        let path = Bundle(for: Self.self).path(forResource: "EZ-NET", ofType: "sqlite3")!
+//        let path = Bundle.module.path(forResource: "EZ-NET", ofType: "sqlite3")!
+        let path = URL(fileURLWithPath: #file).deletingLastPathComponent().appendingPathComponent("Resources/EZ-NET.sqlite3").absoluteString
+        print(path)
+        
         let sqlite = try SQLite3(path: path, options: .readonly)
         
         XCTAssertThrowsError(try sqlite.execute(sql: "SELECT FROM Updates"))

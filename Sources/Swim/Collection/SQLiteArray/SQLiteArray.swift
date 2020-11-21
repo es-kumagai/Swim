@@ -44,7 +44,7 @@ extension SQLiteArray {
     
     public var count: Int {
         
-        let sql = "SELECT COUNT(*) AS count FROM \(tableName)"
+        let sql = "SELECT COUNT(*) FROM \(tableName)"
         
         do {
 
@@ -53,7 +53,7 @@ extension SQLiteArray {
                 fatalError("Failed to get count.")
             }
             
-            return statement.columns.count
+            return statement.columns.first!.integerValue
         }
         catch {
         
@@ -152,9 +152,9 @@ internal extension SQLiteArray {
         
         for (column, metadata) in zip(columns, metadata) {
 
-            guard column.type == metadata.datatype else {
-                
-            }
+//            guard column.type == metadata.datatype else {
+//                
+//            }
             
         }
     }

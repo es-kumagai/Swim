@@ -12,6 +12,8 @@ extension SQLiteArray {
         var name: String
         var datatype: SQLite3.DataType
         var nullable: Bool
+        var offset: Int
+        var size: Int
     }
 }
 

@@ -53,7 +53,7 @@ extension SQLiteArray {
                 fatalError("Failed to get count.")
             }
             
-            return statement.columns.count.integerValue
+            return statement.columns.count
         }
         catch {
         
@@ -72,44 +72,59 @@ internal extension SQLiteArray {
     static func makeColumnsMetadata() throws -> Array<ColumnMetadata> {
         
         let mirror = Mirror(reflecting: Element())
+        let alignment = Double(MemoryLayout<Self>.alignment)
+        
+        var offset = 0
         
         return try mirror.children.map { item in
             
             let name = item.label!
             let datatype: SQLite3.DataType
             let nullable: Bool
-            
+            let size: Int
+                        
             switch type(of: item.value) {
             
             case Int.self:
                 datatype = .integer
                 nullable = false
+                size = MemoryLayout<Int>.size
                 
             case Optional<Int>.self:
                 datatype = .integer
                 nullable = true
+                size = MemoryLayout<Int?>.size
                 
             case String.self:
                 datatype = .text
                 nullable = false
+                size = MemoryLayout<String>.size
                 
             case Optional<String>.self:
                 datatype = .text
                 nullable = true
+                size = MemoryLayout<String?>.size
                 
             case Double.self:
                 datatype = .real
                 nullable = false
+                size = MemoryLayout<Double>.size
                 
             case Optional<Double>.self:
                 datatype = .real
                 nullable = true
+                size = MemoryLayout<Double?>.size
 
             case let type:
                 throw ConversionError.uncompatibleSwiftType(type)
             }
             
-            return ColumnMetadata(name: name, datatype: datatype, nullable: nullable)
+            defer {
+                
+                offset = Int((Double(offset + size) / alignment).rounded(.up) * alignment)
+            }
+
+            return ColumnMetadata(name: name, datatype: datatype, nullable: nullable, offset: offset, size: size)
         }
     }
     
@@ -118,5 +133,29 @@ internal extension SQLiteArray {
         let columns = metadata.map(\.sql)
         
         return "CREATE TABLE \(tableName) (\(columns.joined(separator: ", ")))"
+    }
+    
+    func instantiate(columns: SQLite3.Columns) {
+        
+        guard columns.count == metadata.count else {
+        
+            fatalError("Expect the number of columns (\(columns.count)) is equals to the number of metadata (\(metadata.count)).")
+        }
+        
+        let dataLength = MemoryLayout<Element>.size
+        let dataBytes = UnsafeMutableBufferPointer<Int8>.allocate(capacity: dataLength)
+        
+        defer {
+        
+            dataBytes.deallocate()
+        }
+        
+        for (column, metadata) in zip(columns, metadata) {
+
+            guard column.type == metadata.datatype else {
+                
+            }
+            
+        }
     }
 }

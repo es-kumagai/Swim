@@ -12,8 +12,8 @@ import SQLite3
 private struct MyData : SQLiteArrayElement {
     
     var id: Int
-    var name: String
     var flags: Double?
+    var name: String
     
     init() {
         
@@ -197,16 +197,18 @@ class SQLite3Tests: XCTestCase {
         let array = try SQLiteArray<MyData>()
         let metadata = array.metadata
 
-        XCTAssertEqual(array.sqlForCreateTable(), #"CREATE TABLE "MyData" ("id" INTEGER NOT NULL, "name" TEXT NOT NULL, "flags" REAL)"#)
+        XCTAssertEqual(array.sqlForCreateTable(), #"CREATE TABLE "MyData" ("id" INTEGER NOT NULL, "flags" REAL, "name" TEXT NOT NULL)"#)
 
         XCTAssertEqual(array.tableName, "\"MyData\"")
-        XCTAssertEqual(metadata.map(\.name), ["id", "name", "flags"])
-        XCTAssertEqual(metadata.map(\.datatype), [.integer, .text, .real])
-        XCTAssertEqual(metadata.map(\.nullable), [false, false, true])
+        XCTAssertEqual(metadata.map(\.name), ["id", "flags", "name"])
+        XCTAssertEqual(metadata.map(\.datatype), [.integer, .real, .text])
+        XCTAssertEqual(metadata.map(\.nullable), [false, true, false])
+        XCTAssertEqual(metadata.map(\.offset), [MemoryLayout<MyData>.offset(of: \MyData.id), MemoryLayout<MyData>.offset(of: \MyData.flags), MemoryLayout<MyData>.offset(of: \MyData.name)])
+        XCTAssertEqual(metadata.map(\.size), [MemoryLayout<Int>.size, MemoryLayout<Double?>.size, MemoryLayout<String>.size])
 
         XCTAssertEqual(metadata[0].sql, "\"id\" INTEGER NOT NULL")
-        XCTAssertEqual(metadata[1].sql, "\"name\" TEXT NOT NULL")
-        XCTAssertEqual(metadata[2].sql, "\"flags\" REAL")
+        XCTAssertEqual(metadata[1].sql, "\"flags\" REAL")
+        XCTAssertEqual(metadata[2].sql, "\"name\" TEXT NOT NULL")
     }
     
     func testDataType() throws {

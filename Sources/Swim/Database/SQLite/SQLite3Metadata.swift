@@ -1,13 +1,13 @@
 //
-//  SQLiteArrayColumnMetadata.swift
+//  SQLite3TranslatorMetadata.swift
 //  Swim
 //
-//  Created by Tomohiro Kumagai on 2020/11/12.
+//  Created by Tomohiro Kumagai on 2020/11/23.
 //
 
-extension SQLiteArray {
+extension SQLite3.Translator {
     
-    internal struct ColumnMetadata {
+    internal struct Metadata {
         
         var name: String
         var datatype: SQLite3.DataType
@@ -17,7 +17,7 @@ extension SQLiteArray {
     }
 }
 
-extension SQLiteArray.ColumnMetadata {
+extension SQLite3.Translator.Metadata {
     
     var sql: String {
         

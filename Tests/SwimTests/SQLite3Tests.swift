@@ -19,18 +19,11 @@ import SQLite3
 //        let path = Bundle.module.path(forResource: "EZ-NET", ofType: "sqlite3")!
 let databasePath = URL(fileURLWithPath: #file).deletingLastPathComponent().appendingPathComponent("Resources/EZ-NET.sqlite3").absoluteString
 
-private struct MyData : SQLiteArrayElement {
+private struct MyData : SQLite3Translateable {
     
     var id: Int
     var flags: Double?
     var name: String
-    
-    init() {
-        
-        id = 0
-        name = ""
-        flags = 0
-    }
 }
 
 class SQLite3Tests: XCTestCase {
@@ -232,16 +225,22 @@ class SQLite3Tests: XCTestCase {
         let array = try SQLiteArray<MyData>()
         
         XCTAssertEqual(array.count, 0)
+        
+        array.insert(MyData(id: 5, flags: 1.5, name: "AAA"))
+        XCTAssertEqual(array.count, 1)
+
+        array.insert(MyData(id: 12, flags: nil, name: "BBB"))
+        XCTAssertEqual(array.count, 2)
     }
     
-    func testArrayMetadata() throws {
+    func testTranslate() throws {
         
-        let array = try SQLiteArray<MyData>()
-        let metadata = array.metadata
+        let translator = try SQLite3.Translator<MyData>()
+        let metadata = translator.metadata
 
-        XCTAssertEqual(array.sqlForCreateTable(), #"CREATE TABLE "MyData" ("id" INTEGER NOT NULL, "flags" REAL, "name" TEXT NOT NULL)"#)
+        XCTAssertEqual(translator.makeCreateTableSQL(), #"CREATE TABLE "MyData" ("id" INTEGER NOT NULL, "flags" REAL, "name" TEXT NOT NULL)"#)
 
-        XCTAssertEqual(array.tableName, "\"MyData\"")
+        XCTAssertEqual(translator.tableName, "\"MyData\"")
         XCTAssertEqual(metadata.map(\.name), ["id", "flags", "name"])
         XCTAssertEqual(metadata.map(\.datatype), [.integer, .real, .text])
         XCTAssertEqual(metadata.map(\.nullable), [false, true, false])
@@ -251,6 +250,18 @@ class SQLite3Tests: XCTestCase {
         XCTAssertEqual(metadata[0].sql, "\"id\" INTEGER NOT NULL")
         XCTAssertEqual(metadata[1].sql, "\"flags\" REAL")
         XCTAssertEqual(metadata[2].sql, "\"name\" TEXT NOT NULL")
+        
+        let data1 = MyData(id: 5, flags: 1.23, name: "D1")
+        let data2 = MyData(id: 12, flags: nil, name: "D2")
+        
+        XCTAssertEqual(translator.makeInsertSQL(for: data1), #"INSERT INTO "MyData" ("id", "flags", "name") VALUES (5, 1.23, 'D1')"#)
+        XCTAssertEqual(translator.makeInsertSQL(for: data2), #"INSERT INTO "MyData" ("id", "flags", "name") VALUES (12, NULL, 'D2')"#)
+    }
+    
+    func testArrayMetadata() throws {
+        
+        let array = try SQLiteArray<MyData>()
+
     }
     
     func testDataType() throws {

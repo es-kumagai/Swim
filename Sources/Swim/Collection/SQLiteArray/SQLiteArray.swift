@@ -5,28 +5,17 @@
 //  Created by Tomohiro Kumagai on 2020/11/12.
 //
 
-public protocol SQLiteArrayElement {
-    
-    /// Create instance with empty data.
-    init()
-}
-
-private func ~= (pattern: Any.Type, value: Any.Type) -> Bool {
-    
-    return pattern == value
-}
-
-public struct SQLiteArray<Element> where Element : SQLiteArrayElement {
+public struct SQLiteArray<Element> where Element : SQLite3Translateable {
     
     private var sqlite: SQLite3
-    private(set) var metadata: Array<ColumnMetadata>
+    private var translator: SQLite3.Translator<Element>
     
     public init() throws {
         
         sqlite = try! SQLite3(store: .onMemory, options: .readwrite)
-        metadata = try! Self.makeColumnsMetadata()
+        translator = try! SQLite3.Translator<Element>()
         
-        let sql = sqlForCreateTable()
+        let sql = translator.makeCreateTableSQL()
         
         try sqlite.execute(sql: sql)
     }
@@ -34,9 +23,16 @@ public struct SQLiteArray<Element> where Element : SQLiteArrayElement {
 
 extension SQLiteArray {
     
-    public enum ConversionError : Error {
+    public func insert(_ element: Element) {
         
-        case uncompatibleSwiftType(Any.Type)
+        do {
+
+            try sqlite.execute(sql: translator.makeInsertSQL(for: element))
+        }
+        catch {
+            
+            fatalError("Failed to insert. \(error)")
+        }
     }
 }
 
@@ -44,7 +40,7 @@ extension SQLiteArray {
     
     public var count: Int {
         
-        let sql = "SELECT COUNT(*) FROM \(tableName)"
+        let sql = "SELECT COUNT(*) FROM \(translator.tableName)"
         
         do {
 
@@ -58,104 +54,6 @@ extension SQLiteArray {
         catch {
         
             fatalError("\(error)")
-        }
-    }
-}
-
-internal extension SQLiteArray {
-    
-    var tableName: String {
-        
-        return SQLite3.fieldName("\(Element.self)")
-    }
-    
-    static func makeColumnsMetadata() throws -> Array<ColumnMetadata> {
-        
-        let mirror = Mirror(reflecting: Element())
-        let alignment = Double(MemoryLayout<Self>.alignment)
-        
-        var offset = 0
-        
-        return try mirror.children.map { item in
-            
-            let name = item.label!
-            let datatype: SQLite3.DataType
-            let nullable: Bool
-            let size: Int
-                        
-            switch type(of: item.value) {
-            
-            case Int.self:
-                datatype = .integer
-                nullable = false
-                size = MemoryLayout<Int>.size
-                
-            case Optional<Int>.self:
-                datatype = .integer
-                nullable = true
-                size = MemoryLayout<Int?>.size
-                
-            case String.self:
-                datatype = .text
-                nullable = false
-                size = MemoryLayout<String>.size
-                
-            case Optional<String>.self:
-                datatype = .text
-                nullable = true
-                size = MemoryLayout<String?>.size
-                
-            case Double.self:
-                datatype = .real
-                nullable = false
-                size = MemoryLayout<Double>.size
-                
-            case Optional<Double>.self:
-                datatype = .real
-                nullable = true
-                size = MemoryLayout<Double?>.size
-
-            case let type:
-                throw ConversionError.uncompatibleSwiftType(type)
-            }
-            
-            defer {
-                
-                offset = Int((Double(offset + size) / alignment).rounded(.up) * alignment)
-            }
-
-            return ColumnMetadata(name: name, datatype: datatype, nullable: nullable, offset: offset, size: size)
-        }
-    }
-    
-    func sqlForCreateTable() -> String {
-        
-        let columns = metadata.map(\.sql)
-        
-        return "CREATE TABLE \(tableName) (\(columns.joined(separator: ", ")))"
-    }
-    
-    func instantiate(row: SQLite3.Row) {
-        
-        guard row.count == metadata.count else {
-        
-            fatalError("Expect the number of columns (\(row.count)) is equals to the number of metadata (\(metadata.count)).")
-        }
-        
-        let dataLength = MemoryLayout<Element>.size
-        let dataBytes = UnsafeMutableBufferPointer<Int8>.allocate(capacity: dataLength)
-        
-        defer {
-        
-            dataBytes.deallocate()
-        }
-        
-        for (column, metadata) in zip(row, metadata) {
-
-//            guard column.type == metadata.datatype else {
-//                
-//            }
-            
         }
     }
 }

@@ -20,11 +20,6 @@ extension SQLite3 {
     }
 }
 
-private func ~= (pattern: Any.Type, value: Any.Type) -> Bool {
-    
-    return pattern == value
-}
-
 extension SQLite3.Translator {
  
     public func makeCreateTableSQL() -> String {
@@ -41,22 +36,24 @@ extension SQLite3.Translator {
         let fields = metadata.map(\.name).map(SQLite3.fieldName)
         let values = zip(mirror.children, metadata).map { (item, meta) -> String in
             
-            switch (meta.datatype, type(of: item.value)) {
+            guard let itemMeta = Metadata(name: item.label!, value: item.value, offset: meta.offset), meta == itemMeta else {
+                
+                fatalError("Unexpected data type. (metadata: \(meta.datatype), type of value: \(type(of: item.value))")
+            }
+            
+            switch itemMeta.datatype {
 
-            case (.integer, Int.self), (.integer, Optional<Int>.self):
+            case .integer:
                 return (item.value as? Int)?.description ?? "NULL"
                 
-            case (.real, Double.self), (.real, Optional<Double>.self):
+            case .real:
                 return (item.value as? Double)?.description ?? "NULL"
                 
-            case (.text, String.self), (.text, Optional<String>.self):
+            case .text:
                  return (item.value as? String).map(SQLite3.quoted) ?? "NULL"
                 
-            case (.null, _):
+            case .null:
                 return "NULL"
-                
-            default:
-                fatalError("Unexpected data type. (metadata: \(meta.datatype), type of value: \(type(of: item.value))")
             }
         }
         
@@ -118,53 +115,17 @@ internal extension SQLite3.Translator {
         
         return try mirror.children.map { item in
             
-            let name = item.label!
-            let datatype: SQLite3.DataType
-            let nullable: Bool
-            let size: Int
-                        
-            switch type(of: item.value) {
-            
-            case Int.self:
-                datatype = .integer
-                nullable = false
-                size = MemoryLayout<Int>.size
+            guard let metadata = Metadata(name: item.label!, value: item.value, offset: offset) else {
                 
-            case Optional<Int>.self:
-                datatype = .integer
-                nullable = true
-                size = MemoryLayout<Int?>.size
-                
-            case String.self:
-                datatype = .text
-                nullable = false
-                size = MemoryLayout<String>.size
-                
-            case Optional<String>.self:
-                datatype = .text
-                nullable = true
-                size = MemoryLayout<String?>.size
-                
-            case Double.self:
-                datatype = .real
-                nullable = false
-                size = MemoryLayout<Double>.size
-                
-            case Optional<Double>.self:
-                datatype = .real
-                nullable = true
-                size = MemoryLayout<Double?>.size
-
-            case let type:
-                throw SQLite3.TranslationError.uncompatibleSwiftType(type)
+                throw SQLite3.TranslationError.uncompatibleSwiftType(type(of: item.value))
             }
-            
+
             defer {
                 
-                offset = Int((Double(offset + size) / alignment).rounded(.up) * alignment)
+                offset = Int((Double(offset + metadata.size) / alignment).rounded(.up) * alignment)
             }
-
-            return Metadata(name: name, datatype: datatype, nullable: nullable, offset: offset, size: size)
+            
+            return metadata
         }
     }
 }

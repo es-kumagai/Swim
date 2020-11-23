@@ -51,23 +51,28 @@ extension SQLite3.Column {
         return actualType == nil
     }
     
-    public var bytesValue: Int32 {
+    public var bytesValue: Int32? {
+
+        return isNull ? nil : sqlite3_column_bytes(statement.handle, index)
+    }
+    
+    public var realValue: Double? {
         
-        return sqlite3_column_bytes(statement.handle, index)
+        return isNull ? nil : sqlite3_column_double(statement.handle, index)
     }
     
-    public var realValue: Double {
+    public var integerValue: Int? {
+    
+        return isNull ? nil : Int(sqlite3_column_int64(statement.handle, index))
+    }
+    
+    public var textValue: String? {
+    
+        guard !isNull else {
+            
+            return nil
+        }
         
-        return sqlite3_column_double(statement.handle, index)
-    }
-    
-    public var integerValue: Int {
-    
-        return Int(sqlite3_column_int64(statement.handle, index))
-    }
-    
-    public var textValue: String {
-    
         return String(cString:
     
             unsafeBitCast(sqlite3_column_text(statement.handle, index), to: UnsafePointer<Int8>.self)
@@ -82,13 +87,13 @@ extension SQLite3.Column : CustomStringConvertible {
         switch self.actualType {
         
         case .integer:
-            return integerValue.description
+            return integerValue!.description
             
         case .real:
-            return realValue.description
+            return realValue!.description
             
         case .text:
-            return SQLite3.quoted(textValue)
+            return SQLite3.quoted(textValue!)
             
         case .none:
             return "NULL"

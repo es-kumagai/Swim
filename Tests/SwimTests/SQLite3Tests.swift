@@ -19,7 +19,7 @@ import SQLite3
 //        let path = Bundle.module.path(forResource: "EZ-NET", ofType: "sqlite3")!
 let databasePath = URL(fileURLWithPath: #file).deletingLastPathComponent().appendingPathComponent("Resources/EZ-NET.sqlite3").absoluteString
 
-private struct MyData : SQLite3Translateable {
+private struct MyData : Equatable, SQLite3Translateable {
     
     var id: Int
     var flags: Double?
@@ -185,7 +185,7 @@ class SQLite3Tests: XCTestCase {
 
         XCTAssertEqual(st2.row.columns.id.integerValue, 22)
         XCTAssertEqual(st2.row.columns.name.textValue, "ORIENT")
-        XCTAssertEqual(st2.row.columns.flag.realValue, 0)
+        XCTAssertNil(st2.row.columns.flag.realValue)
 
         XCTAssertFalse(try st2.step())
 
@@ -238,7 +238,8 @@ class SQLite3Tests: XCTestCase {
         let translator = try SQLite3.Translator<MyData>()
         let metadata = translator.metadata
 
-        XCTAssertEqual(translator.makeCreateTableSQL(), #"CREATE TABLE "MyData" ("id" INTEGER NOT NULL, "flags" REAL, "name" TEXT NOT NULL)"#)
+        let createSQL = translator.makeCreateTableSQL()
+        XCTAssertEqual(createSQL, #"CREATE TABLE "MyData" ("id" INTEGER NOT NULL, "flags" REAL, "name" TEXT NOT NULL)"#)
 
         XCTAssertEqual(translator.tableName, "\"MyData\"")
         XCTAssertEqual(metadata.map(\.name), ["id", "flags", "name"])
@@ -254,13 +255,30 @@ class SQLite3Tests: XCTestCase {
         let data1 = MyData(id: 5, flags: 1.23, name: "D1")
         let data2 = MyData(id: 12, flags: nil, name: "D2")
         
-        XCTAssertEqual(translator.makeInsertSQL(for: data1), #"INSERT INTO "MyData" ("id", "flags", "name") VALUES (5, 1.23, 'D1')"#)
-        XCTAssertEqual(translator.makeInsertSQL(for: data2), #"INSERT INTO "MyData" ("id", "flags", "name") VALUES (12, NULL, 'D2')"#)
+        let insertSQL1 = translator.makeInsertSQL(for: data1)
+        let insertSQL2 = translator.makeInsertSQL(for: data2)
+
+        XCTAssertEqual(insertSQL1, #"INSERT INTO "MyData" ("id", "flags", "name") VALUES (5, 1.23, 'D1')"#)
+        XCTAssertEqual(insertSQL2, #"INSERT INTO "MyData" ("id", "flags", "name") VALUES (12, NULL, 'D2')"#)
+        
+        
+        let sqlite = try SQLite3(store: .onMemory, options: .readwrite)
+        
+        XCTAssertNoThrow(try sqlite.execute(sql: createSQL))
+        XCTAssertNoThrow(try sqlite.execute(sql: insertSQL1))
+        XCTAssertNoThrow(try sqlite.execute(sql: insertSQL2))
+        
+        let statement = try sqlite.prepareStatement(with: "SELECT * FROM \(translator.tableName)")
+
+        let values = statement.map(translator.instantiate(from:))
+        
+        XCTAssertEqual(values[0], data1)
+        XCTAssertEqual(values[1], data2)
     }
     
     func testColumnType() throws {
         
-        let sqlite = try SQLite3(store: .onMemory, options: .readwrite)
+        let sqlite = try SQLite3.instantiateOnMemory()
         try sqlite.execute(sql: "CREATE TABLE sample(id INTEGER NOT NULL PRIMARY KEY, name TEXT, flag REAL DEFAULT 1.5, dummy NULL)")
         try sqlite.execute(sql: "INSERT INTO sample (id, name, flag) VALUES (22, 'ORIENT', NULL)")
 

@@ -9,8 +9,8 @@ extension SQLite3 {
     
     public struct Translator<Type> where Type : SQLite3Translateable {
         
-        private(set) var tableName: String
-        private(set) var metadata: Array<Metadata>
+        public private(set) var tableName: String
+        public private(set) var metadata: Array<Metadata>
 
         public init(tableName: String? = nil) throws {
 
@@ -57,6 +57,11 @@ extension SQLite3.Translator {
         return "INSERT INTO \(tableName) (\(fields.joined(separator: ", "))) VALUES (\(values.joined(separator: ", ")))"
     }
     
+    public func instantiate(from statement: SQLite3.Statement) -> Type {
+    
+        return instantiate(from: statement.row)
+    }
+    
     public func instantiate(from row: SQLite3.Row) -> Type {
         
         guard row.count == metadata.count else {
@@ -84,19 +89,19 @@ extension SQLite3.Translator {
             switch (metadata.datatype, metadata.nullable) {
             
             case (.integer, false):
-                rawBytes.storeBytes(of: column.integerValue, toByteOffset: metadata.offset, as: Int.self)
+                rawBytes.storeBytes(of: column.integerValue!, toByteOffset: metadata.offset, as: Int.self)
 
             case (.integer, true):
                 rawBytes.storeBytes(of: column.integerValue, toByteOffset: metadata.offset, as: Optional<Int>.self)
 
             case (.real, false):
-                rawBytes.storeBytes(of: column.realValue, toByteOffset: metadata.offset, as: Double.self)
+                rawBytes.storeBytes(of: column.realValue!, toByteOffset: metadata.offset, as: Double.self)
 
             case (.real, true):
                 rawBytes.storeBytes(of: column.realValue, toByteOffset: metadata.offset, as: Optional<Double>.self)
 
             case (.text, false):
-                rawBytes.storeBytes(of: column.textValue, toByteOffset: metadata.offset, as: String.self)
+                rawBytes.storeBytes(of: column.textValue!, toByteOffset: metadata.offset, as: String.self)
                 
             case (.text, true):
                 rawBytes.storeBytes(of: column.textValue, toByteOffset: metadata.offset, as: Optional<String>.self)

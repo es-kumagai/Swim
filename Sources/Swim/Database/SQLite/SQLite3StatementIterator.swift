@@ -11,7 +11,12 @@ extension SQLite3 {
         
         private var statement: Statement?
         
-        internal init(statement: Statement) {
+        internal init(statement: Statement, keepCurrentStep: Bool) throws {
+            
+            if !keepCurrentStep {
+                
+                try statement.reset()
+            }
             
             self.statement = statement
         }

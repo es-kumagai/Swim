@@ -106,6 +106,11 @@ extension SQLite3.Statement : Sequence {
     
     public func makeIterator() -> SQLite3.StatementIterator {
         
-        return SQLite3.StatementIterator(statement: self)
+        return try! SQLite3.StatementIterator(statement: self, keepCurrentStep: false)
+    }
+    
+    public func makeIterator(keepCurrentStep: Bool) -> SQLite3.StatementIterator {
+        
+        return try! SQLite3.StatementIterator(statement: self, keepCurrentStep: keepCurrentStep)
     }
 }

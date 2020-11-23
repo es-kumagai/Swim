@@ -7,13 +7,13 @@
 
 extension SQLite3.Translator {
     
-    internal struct Metadata {
+    public struct Metadata {
         
-        var name: String
-        var datatype: SQLite3.DataType
-        var nullable: Bool
-        var offset: Int
-        var size: Int
+        public var name: String
+        public var datatype: SQLite3.DataType
+        public var nullable: Bool
+        public var offset: Int
+        public var size: Int
     }
 }
 

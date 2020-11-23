@@ -66,7 +66,7 @@ public final class SQLite3 {
             return 0
         }
         
-        return statement.row.first!.integerValue
+        return statement.row.first!.integerValue!
     }
     
     /// [Swim] Attach database
@@ -84,6 +84,11 @@ public final class SQLite3 {
 }
 
 extension SQLite3 {
+    
+    public static func instantiateOnMemory() throws -> SQLite3 {
+    
+        return try SQLite3(store: .onMemory, options: .readwrite)
+    }
     
     /// [Swim] Create a new SQLite instance with given `path`.
     ///

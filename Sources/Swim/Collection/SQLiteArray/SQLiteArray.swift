@@ -49,7 +49,7 @@ extension SQLiteArray {
                 fatalError("Failed to get count.")
             }
             
-            return statement.row.first!.integerValue
+            return statement.row.first!.integerValue!
         }
         catch {
         

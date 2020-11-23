@@ -337,7 +337,7 @@ class SQLite3Tests: XCTestCase {
         
         let sqlite = try SQLite3.instantiateOnMemory()
         try sqlite.execute(sql: "CREATE TABLE sample(id INTEGER NOT NULL PRIMARY KEY, name TEXT, flag REAL DEFAULT 1.5, dummy NULL)")
-        try sqlite.execute(sql: "INSERT INTO sample (id, name, flag) VALUES (22, 'ORIENT', NULL)")
+        try sqlite.execute(sql: "INSERT INTO sample (id, name, flag, dummy) VALUES (22, 'ORIENT', NULL, 'TEXT')")
 
         let statement = try sqlite.execute(sql: "SELECT * FROM sample")!
         
@@ -346,6 +346,8 @@ class SQLite3Tests: XCTestCase {
         XCTAssertEqual(statement.row[0].actualType, .integer)
         XCTAssertEqual(statement.row[2].declaredType, .real)
         XCTAssertNil(statement.row[2].actualType)
+//        XCTAssertEqual(statement.row[3].declaredType, .real) // Undefined type is not supported yet.
+        XCTAssertEqual(statement.row[3].actualType, .text)
     }
     
     func testArrayMetadata() throws {

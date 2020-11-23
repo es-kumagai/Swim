@@ -10,17 +10,16 @@ import SQLite3
 extension SQLite3 {
     
     /// [Swim] Data type of SQLite3; BLOB is NOT supported yet.
-    public enum DataType : RawRepresentable {
+    public enum DataType {
     
         case integer
         case real
         case text
 //        case blob
-        case null
     
-        public init?(rawValue: Int32) {
+        public init?(code: Int32) throws {
             
-            switch rawValue {
+            switch code {
                 
             case SQLITE_INTEGER:
                 self = .integer
@@ -35,14 +34,14 @@ extension SQLite3 {
 //                self = .blob
                 
             case SQLITE_NULL:
-                self = .null
+                return nil
                 
             default:
-                return nil
+                throw SQLite3.TranslationError.unsupportedSQLiteType(code.description)
             }
         }
         
-        public var rawValue: Int32 {
+        public var code: Int32 {
             
             switch self {
                 
@@ -57,22 +56,19 @@ extension SQLite3 {
                 
 //            case .blob:
 //                return SQLITE_BLOB
-                
-            case .null:
-                return SQLITE_NULL
             }
         }
     }    
 }
 
-extension SQLite3.DataType : LosslessStringConvertible {
+extension SQLite3.DataType : CustomStringConvertible {
     
-    public init?(_ description: String) {
+    public init?(_ description: String) throws {
         
         switch description {
         
         case "NULL":
-            self = .null
+            return nil
             
         case "INTEGER":
             self = .integer
@@ -87,7 +83,7 @@ extension SQLite3.DataType : LosslessStringConvertible {
 //            self = .blob
             
         default:
-            return nil
+            throw SQLite3.TranslationError.unsupportedSQLiteType(description)
         }
     }
     
@@ -95,9 +91,6 @@ extension SQLite3.DataType : LosslessStringConvertible {
         
         switch self {
         
-        case .null:
-            return "NULL"
-            
         case .integer:
             return "INTEGER"
             

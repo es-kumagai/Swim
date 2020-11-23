@@ -51,9 +51,6 @@ extension SQLite3.Translator {
                 
             case .text:
                  return (item.value as? String).map(SQLite3.quoted) ?? "NULL"
-                
-            case .null:
-                return "NULL"
             }
         }
         
@@ -79,24 +76,30 @@ extension SQLite3.Translator {
         
         for (column, metadata) in zip(row, metadata) {
 
-            guard column.type == metadata.datatype else {
+            guard column.declaredType == metadata.datatype else {
 
-                fatalError("Type mismatch. Type of column '\(column.name)' is \(column.type), but type of property '\(metadata.name)' is \(metadata.datatype).")
+                fatalError("Type mismatch. Type of column '\(column.name)' is \(column.declaredType), but type of property '\(metadata.name)' is \(metadata.datatype).")
             }
             
-            switch column.type {
+            switch (metadata.datatype, metadata.nullable) {
             
-            case .integer:
+            case (.integer, false):
                 rawBytes.storeBytes(of: column.integerValue, toByteOffset: metadata.offset, as: Int.self)
 
-            case .real:
+            case (.integer, true):
+                rawBytes.storeBytes(of: column.integerValue, toByteOffset: metadata.offset, as: Optional<Int>.self)
+
+            case (.real, false):
                 rawBytes.storeBytes(of: column.realValue, toByteOffset: metadata.offset, as: Double.self)
 
-            case .text:
+            case (.real, true):
+                rawBytes.storeBytes(of: column.realValue, toByteOffset: metadata.offset, as: Optional<Double>.self)
+
+            case (.text, false):
                 rawBytes.storeBytes(of: column.textValue, toByteOffset: metadata.offset, as: String.self)
                 
-            case .null:
-                fatalError("Metatype 'null' is not supported.")
+            case (.text, true):
+                rawBytes.storeBytes(of: column.textValue, toByteOffset: metadata.offset, as: Optional<String>.self)
             }
         }
         

@@ -29,14 +29,26 @@ extension SQLite3.Column {
         return String(cString: sqlite3_column_name(statement.handle, index))
     }
     
-    public var type: SQLite3.DataType {
+    public var declaredType: SQLite3.DataType {
+    
+        let typename = String(cString: sqlite3_column_decltype(statement.handle, index))
         
-        return SQLite3.DataType(rawValue: sqlite3_column_type(statement.handle, index))!
+        guard let type = try! SQLite3.DataType(typename) else {
+            
+            fatalError("Unsupported columns type '\(typename)'.")
+        }
+        
+        return type
+    }
+    
+    public var actualType: SQLite3.DataType? {
+        
+        return try! SQLite3.DataType(code: sqlite3_column_type(statement.handle, index))
     }
     
     public var isNull: Bool {
         
-        return type == .null
+        return actualType == nil
     }
     
     public var bytesValue: Int32 {
@@ -67,7 +79,7 @@ extension SQLite3.Column : CustomStringConvertible {
     
     public var description: String {
         
-        switch self.type {
+        switch self.actualType {
         
         case .integer:
             return integerValue.description
@@ -78,8 +90,8 @@ extension SQLite3.Column : CustomStringConvertible {
         case .text:
             return SQLite3.quoted(textValue)
             
-        case .null:
-            return SQLite3.DataType.null.description
+        case .none:
+            return "NULL"
         }
     }
 }

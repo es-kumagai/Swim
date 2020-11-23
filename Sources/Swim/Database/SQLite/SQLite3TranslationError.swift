@@ -10,6 +10,7 @@ extension SQLite3 {
     public enum TranslationError : Error {
         
         case uncompatibleSwiftType(Any.Type)
+        case unsupportedSQLiteType(String)
     }
     
 }

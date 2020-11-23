@@ -79,12 +79,12 @@ class SQLite3Tests: XCTestCase {
 
         XCTAssertTrue(try statement.step())
 
-        XCTAssertEqual(statement.row[0].type, .integer)
-        XCTAssertEqual(statement.row[1].type, .text)
-        XCTAssertEqual(statement.row[2].type, .text)
-        XCTAssertEqual(statement.row[3].type, .text)
-        XCTAssertEqual(statement.row[4].type, .text)
-        XCTAssertEqual(statement.row[5].type, .text)
+        XCTAssertEqual(statement.row[0].actualType, .integer)
+        XCTAssertEqual(statement.row[1].actualType, .text)
+        XCTAssertEqual(statement.row[2].actualType, .text)
+        XCTAssertEqual(statement.row[3].actualType, .text)
+        XCTAssertEqual(statement.row[4].actualType, .text)
+        XCTAssertEqual(statement.row[5].actualType, .text)
 
         XCTAssertEqual(statement.row[0].integerValue, 1178)
         XCTAssertEqual(statement.row[2].textValue, "UISlider の値を操作する。")
@@ -258,6 +258,21 @@ class SQLite3Tests: XCTestCase {
         XCTAssertEqual(translator.makeInsertSQL(for: data2), #"INSERT INTO "MyData" ("id", "flags", "name") VALUES (12, NULL, 'D2')"#)
     }
     
+    func testColumnType() throws {
+        
+        let sqlite = try SQLite3(store: .onMemory, options: .readwrite)
+        try sqlite.execute(sql: "CREATE TABLE sample(id INTEGER NOT NULL PRIMARY KEY, name TEXT, flag REAL DEFAULT 1.5, dummy NULL)")
+        try sqlite.execute(sql: "INSERT INTO sample (id, name, flag) VALUES (22, 'ORIENT', NULL)")
+
+        let statement = try sqlite.execute(sql: "SELECT * FROM sample")!
+        
+        
+        XCTAssertEqual(statement.row[0].declaredType, .integer)
+        XCTAssertEqual(statement.row[0].actualType, .integer)
+        XCTAssertEqual(statement.row[2].declaredType, .real)
+        XCTAssertNil(statement.row[2].actualType)
+    }
+    
     func testArrayMetadata() throws {
         
         let array = try SQLiteArray<MyData>()
@@ -269,6 +284,5 @@ class SQLite3Tests: XCTestCase {
         XCTAssertEqual(SQLite3.DataType.integer.description, "INTEGER")
         XCTAssertEqual(SQLite3.DataType.real.description, "REAL")
         XCTAssertEqual(SQLite3.DataType.text.description, "TEXT")
-        XCTAssertEqual(SQLite3.DataType.null.description, "NULL")
     }
 }

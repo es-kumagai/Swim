@@ -7,7 +7,7 @@
 
 extension SQLite3 {
     
-    public struct StatementIterator : IteratorProtocol {
+    public struct StatementIterator : IteratorProtocol, Sequence {
         
         private var statement: Statement?
         

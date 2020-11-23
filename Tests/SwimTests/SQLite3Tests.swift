@@ -109,6 +109,63 @@ class SQLite3Tests: XCTestCase {
         XCTAssertEqual(statement.row[4].textValue, "/article/51/KyIcnlBE/PadIz8Rd3cRa/")
 
         XCTAssertFalse(try statement.step())
+        
+        XCTAssertNoThrow(try statement.reset())
+        
+        XCTAssertTrue(try statement.step())
+
+        XCTAssertEqual(statement.row[0].actualType, .integer)
+        XCTAssertEqual(statement.row[1].actualType, .text)
+        XCTAssertEqual(statement.row[2].actualType, .text)
+        XCTAssertEqual(statement.row[3].actualType, .text)
+        XCTAssertEqual(statement.row[4].actualType, .text)
+        XCTAssertEqual(statement.row[5].actualType, .text)
+
+        XCTAssertEqual(statement.row[0].integerValue, 1178)
+        XCTAssertEqual(statement.row[2].textValue, "UISlider の値を操作する。")
+        XCTAssertEqual(statement.row[4].textValue, "/article/8A/3GTRi2tH/SYJ1jMo5TVWw/")
+        XCTAssertEqual(statement.row.columns.UpdateID.integerValue, 1178)
+        XCTAssertEqual(statement.row.columns.Caption.textValue, "UISlider の値を操作する。")
+        XCTAssertEqual(statement.row.columns.URI.textValue, "/article/8A/3GTRi2tH/SYJ1jMo5TVWw/")
+
+        XCTAssertTrue(try statement.step())
+        
+        XCTAssertEqual(statement.row[0].integerValue, 1179)
+        XCTAssertEqual(statement.row[2].textValue, "UISwitch の値を操作する。")
+        XCTAssertEqual(statement.row[4].textValue, "/article/51/_SXHqIpL/zaKazZyqkneE/")
+        XCTAssertEqual(statement.row["UpdateID"].integerValue, 1179)
+        XCTAssertEqual(statement.row["Caption"].textValue, "UISwitch の値を操作する。")
+        XCTAssertEqual(statement.row["URI"].textValue, "/article/51/_SXHqIpL/zaKazZyqkneE/")
+
+        XCTAssertTrue(try statement.step())
+
+        XCTAssertEqual(statement.row[0].integerValue, 1180)
+        XCTAssertEqual(statement.row[2].textValue, "UIScrollView をスクロールさせる。")
+        XCTAssertEqual(statement.row[4].textValue, "/article/51/KyIcnlBE/PadIz8Rd3cRa/")
+    }
+    
+    func testKeepCurrentStepIteration() throws {
+
+        let sqlite = try SQLite3(path: databasePath, options: .readonly)
+        
+        XCTAssertThrowsError(try sqlite.execute(sql: "SELECT FROM Updates"))
+        XCTAssertThrowsError(try sqlite.execute(sql: "SELECT * FROM Dummy"))
+
+        let statement = try sqlite.prepareStatement(with: "SELECT * FROM Updates WHERE UpdateID BETWEEN @idMin AND @idMax ORDER BY UpdateID") { statement in
+            
+            try statement.parameter("@idMin").bind(1178)
+            try statement.parameter("@idMax").bind(1180)
+        }
+        
+        XCTAssertNoThrow(try statement.reset())
+        XCTAssertTrue(try statement.step())
+        
+        XCTAssertEqual(statement.makeIterator(keepCurrentStep: true).map(\.row!.columns.UpdateID.integerValue), [1179, 1180])
+        
+        XCTAssertNoThrow(try statement.reset())
+        XCTAssertTrue(try statement.step())
+        
+        XCTAssertEqual(statement.makeIterator(keepCurrentStep: false).map(\.row!.columns.UpdateID.integerValue), [1178, 1179, 1180])
     }
     
     func testWrite() throws {

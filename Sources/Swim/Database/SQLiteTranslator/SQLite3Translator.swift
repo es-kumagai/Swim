@@ -44,7 +44,7 @@ extension SQLite3.Translator {
             switch itemMeta.datatype {
 
             case .variant:
-                return (item.value as! SQLite3Value).sqliteDescription
+                return (item.value as? SQLite3.Value)?.description ?? "NULL"
                 
             case .integer:
                 return (item.value as? Int)?.description ?? "NULL"
@@ -92,10 +92,10 @@ extension SQLite3.Translator {
             switch (metadata.datatype, metadata.nullable) {
             
             case (.variant, false):
-                rawBytes.storeBytes(of: column.value, toByteOffset: metadata.offset, as: SQLite3Value.self)
+                rawBytes.storeBytes(of: column.value, toByteOffset: metadata.offset, as: SQLite3.Value.self)
 
             case (.variant, true):
-                rawBytes.storeBytes(of: column.value, toByteOffset: metadata.offset, as: Optional<SQLite3Value>.self)
+                rawBytes.storeBytes(of: column.value, toByteOffset: metadata.offset, as: SQLite3.Value.self)
 
             case (.integer, false):
                 rawBytes.storeBytes(of: column.integerValue!, toByteOffset: metadata.offset, as: Int.self)

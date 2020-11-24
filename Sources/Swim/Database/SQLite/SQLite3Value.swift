@@ -5,16 +5,20 @@
 //  Created by Tomohiro Kumagai on 2020/11/24.
 //
 
-public enum SQLite3Value {
-
-    case unspecified(SQLite3ValueCompatible?)
-    case integer(Int?)
-    case real(Double?)
-    case text(String?)
+extension SQLite3 {
+    
+    /// A type that express SQLite3 data type.
+    public enum Value {
+        
+        case unspecified(SQLite3ValueCompatible?)
+        case integer(Int?)
+        case real(Double?)
+        case text(String?)
+    }
 }
 
-extension SQLite3Value {
-
+extension SQLite3.Value {
+    
     public init<Value>(_ value: Value) where Value : SQLite3ValueCompatible {
         
         self = value.sqliteValue
@@ -40,67 +44,93 @@ extension SQLite3Value {
     
     /// [Swim] A actual data type of this instance. This returns the same value as 'actualSQLiteType' property.
     public var actualType: SQLite3.ActualDataType {
-
+        
         return actualSQLiteType
     }
 }
 
-extension SQLite3Value : SQLite3Translateable {
+extension SQLite3.Value : SQLite3Translateable {
 }
 
-extension SQLite3Value : SQLite3ValueCompatible {
+extension SQLite3.Value : Equatable {
 
-    public static var declaredSQLiteType: SQLite3.DefineDataType { .variant }
-    public static var acceptsSQLiteNull: Bool { true }
+    public static func == (lhs: SQLite3.Value, rhs: SQLite3.Value) -> Bool {
 
-    /// [Swim] A defined data type of this instance. This returns the same value as 'declaredType' property.
-    public var actualSQLiteType: SQLite3.ActualDataType {
-    
-        switch self {
+        switch (lhs, rhs) {
         
-        case .integer:
-            return .integer
+        case let (.unspecified(lhs), .unspecified(rhs)):
+            return String(reflecting: lhs) == String(reflecting: rhs)
+
+        case let (.integer(lhs), .integer(rhs)):
+            return lhs == rhs
+
+        case let (.real(lhs), .real(rhs)):
+            return lhs == rhs
+
+        case let (.text(lhs), .text(rhs)):
+            return lhs == rhs
             
-        case .real:
-            return .real
-            
-        case .text:
-            return .text
-            
-        case .unspecified(let value):
-            return value?.actualSQLiteType ?? .null
+        default:
+            return false
         }
     }
+}
+
+extension SQLite3.Value : SQLite3ValueCompatible {
+    
+    /// [Swim] A defined data type of this instance. This returns the same value as 'declaredType' property.
+    public static var declaredSQLiteType: SQLite3.DefineDataType { .variant }
     
     /// [Swim] A actual data type of this instance. This returns the same value as 'actualType' property.
-    public var sqliteDescription: String {
+    public static var acceptsSQLiteNull: Bool { true }
+    
+    public var actualSQLiteType: SQLite3.ActualDataType {
         
-        switch self{
+        switch self {
         
         case .integer(let value):
-            return value.sqliteDescription
+            return value.actualSQLiteType
             
         case .real(let value):
-            return value.sqliteDescription
+            return value.actualSQLiteType
             
         case .text(let value):
-            return value.sqliteDescription
+            return value.actualSQLiteType
             
-        case .unspecified(let value):
-            return value?.sqliteDescription ?? ""
+        case .unspecified(let value?):
+            return value.actualSQLiteType
+            
+        case .unspecified(nil):
+            return .null
         }
     }
     
-    public var sqliteValue: SQLite3Value {
+    public var sqliteValue: SQLite3.Value {
         
         return self
     }
 }
 
-extension SQLite3Value : CustomStringConvertible {
-
+extension SQLite3.Value : CustomStringConvertible {
+    
     public var description: String {
         
-        return sqliteDescription
+        switch self {
+        
+        case .integer(let value):
+            return value?.description ?? "NULL"
+            
+        case .real(let value):
+            return value?.description ?? "NULL"
+            
+        case .text(let value):
+            return (value?.description).map(SQLite3.quoted) ?? "NULL"
+            
+        case .unspecified(let value?):
+            return "\(value)"
+            
+        case .unspecified(nil):
+            return "NULL"
+        }
     }
 }

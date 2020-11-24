@@ -368,4 +368,61 @@ class SQLite3Tests: XCTestCase {
         XCTAssertEqual(SQLite3.ActualDataType.text.description, "TEXT")
         XCTAssertEqual(SQLite3.ActualDataType.null.description, "NULL")
     }
+    
+    func testValue() throws {
+        
+        let v1a = SQLite3.Value(10)
+        let v1b = SQLite3.Value(nil as Int?)
+        let v2a = SQLite3.Value(10.5)
+        let v2b = SQLite3.Value(nil as Double?)
+        let v3a = SQLite3.Value("TEXT")
+        let v3b = SQLite3.Value(nil as String?)
+        let v4a = SQLite3.Value.unspecified(10)
+        let v4b = SQLite3.Value.unspecified(nil)
+        
+        XCTAssertEqual(v1a.description, "10")
+        XCTAssertEqual(v1b.description, "NULL")
+        XCTAssertEqual(v2a.description, "10.5")
+        XCTAssertEqual(v2b.description, "NULL")
+        XCTAssertEqual(v3a.description, "'TEXT'")
+        XCTAssertEqual(v3b.description, "NULL")
+        XCTAssertEqual(v4a.description, "10")
+        XCTAssertEqual(v4b.description, "NULL")
+        
+        XCTAssertFalse(v1a.isNull)
+        XCTAssertTrue(v1b.isNull)
+        XCTAssertFalse(v2a.isNull)
+        XCTAssertTrue(v2b.isNull)
+        XCTAssertFalse(v3a.isNull)
+        XCTAssertTrue(v3b.isNull)
+        XCTAssertFalse(v4a.isNull)
+        XCTAssertTrue(v4b.isNull)
+        
+        XCTAssertEqual(v1a.declaredType, .variant)
+        XCTAssertEqual(v1b.declaredType, .variant)
+        XCTAssertEqual(v2a.declaredType, .variant)
+        XCTAssertEqual(v2b.declaredType, .variant)
+        XCTAssertEqual(v3a.declaredType, .variant)
+        XCTAssertEqual(v3b.declaredType, .variant)
+        XCTAssertEqual(v4a.declaredType, .variant)
+        XCTAssertEqual(v4b.declaredType, .variant)
+        
+        XCTAssertEqual(v1a.actualType, .integer)
+        XCTAssertEqual(v1b.actualType, .null)
+        XCTAssertEqual(v2a.actualType, .real)
+        XCTAssertEqual(v2b.actualType, .null)
+        XCTAssertEqual(v3a.actualType, .text)
+        XCTAssertEqual(v3b.actualType, .null)
+        XCTAssertEqual(v4a.actualType, .integer)
+        XCTAssertEqual(v4b.actualType, .null)
+        
+        XCTAssertEqual(v1a.self, v1a)
+        XCTAssertEqual(v1b.self, v1b)
+        XCTAssertEqual(v2a.self, v2a)
+        XCTAssertEqual(v2b.self, v2b)
+        XCTAssertEqual(v3a.self, v3a)
+        XCTAssertEqual(v3b.self, v3b)
+        XCTAssertEqual(v4a.self, v4a)
+        XCTAssertEqual(v4b.self, v4b)
+    }
 }

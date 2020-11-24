@@ -81,9 +81,6 @@ extension SQLite3.DefineDataType : CustomStringConvertible {
         
         switch description {
         
-        case "NULL":
-            return nil
-            
         case "":
             self = .variant
             

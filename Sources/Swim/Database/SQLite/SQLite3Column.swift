@@ -58,34 +58,34 @@ extension SQLite3.Column {
         return actualType == .null
     }
     
-    public var value: SQLite3Value {
+    public var value: SQLite3.Value {
         
         switch declaredType {
         
         case .integer:
-            return SQLite3Value(integerValue)
+            return SQLite3.Value(integerValue)
             
         case .real:
-            return SQLite3Value(realValue)
+            return SQLite3.Value(realValue)
 
         case .text:
-            return SQLite3Value(textValue)
+            return SQLite3.Value(textValue)
             
         case .variant:
             
             switch actualType {
             
             case .null:
-                return SQLite3Value.unspecified(nil)
+                return SQLite3.Value.unspecified(nil)
                 
             case .integer:
-                return SQLite3Value.unspecified(integerValue)
+                return SQLite3.Value.unspecified(integerValue)
                 
             case .real:
-                return SQLite3Value.unspecified(realValue)
+                return SQLite3.Value.unspecified(realValue)
                 
             case .text:
-                return SQLite3Value.unspecified(textValue)
+                return SQLite3.Value.unspecified(textValue)
             }
         }
     }

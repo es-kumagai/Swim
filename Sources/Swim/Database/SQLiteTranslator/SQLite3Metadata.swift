@@ -47,10 +47,15 @@ extension SQLite3.Translator.Metadata {
                     
         switch type(of: value) {
         
-        case SQLite3Value.self:
+        case SQLite3.Value.self:
+            datatype = .variant
+            nullable = false
+            size = MemoryLayout<SQLite3.Value>.size
+            
+        case Optional<SQLite3.Value>.self:
             datatype = .variant
             nullable = true
-            size = MemoryLayout<SQLite3Value>.size
+            size = MemoryLayout<SQLite3.Value?>.size
             
         case Int.self:
             datatype = .integer

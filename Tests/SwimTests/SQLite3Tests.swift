@@ -373,7 +373,7 @@ class SQLite3Tests: XCTestCase {
         
         let v1a = SQLite3.Value(10)
         let v1b = SQLite3.Value(nil as Int?)
-        let v2a = SQLite3.Value(10.5)
+        let v2a = SQLite3.Value(10 as Double)
         let v2b = SQLite3.Value(nil as Double?)
         let v3a = SQLite3.Value("TEXT")
         let v3b = SQLite3.Value(nil as String?)
@@ -382,7 +382,7 @@ class SQLite3Tests: XCTestCase {
         
         XCTAssertEqual(v1a.description, "10")
         XCTAssertEqual(v1b.description, "NULL")
-        XCTAssertEqual(v2a.description, "10.5")
+        XCTAssertEqual(v2a.description, "10.0")
         XCTAssertEqual(v2b.description, "NULL")
         XCTAssertEqual(v3a.description, "'TEXT'")
         XCTAssertEqual(v3b.description, "NULL")
@@ -424,5 +424,8 @@ class SQLite3Tests: XCTestCase {
         XCTAssertEqual(v3b.self, v3b)
         XCTAssertEqual(v4a.self, v4a)
         XCTAssertEqual(v4b.self, v4b)
+
+        XCTAssertEqual(v1a, v4a)
+        XCTAssertNotEqual(v1a, v2a)
     }
 }

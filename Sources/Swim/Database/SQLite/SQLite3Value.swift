@@ -58,8 +58,17 @@ extension SQLite3.Value : Equatable {
 
         switch (lhs, rhs) {
         
-        case let (.unspecified(lhs), .unspecified(rhs)):
-            return String(reflecting: lhs) == String(reflecting: rhs)
+        case let (.unspecified(nil), rhs):
+            return rhs.isNull
+            
+        case let (lhs, .unspecified(nil)):
+            return lhs.isNull
+            
+        case let (.unspecified(lhs?), rhs):
+            return lhs.sqliteValue.description == rhs.description
+
+        case let (lhs, .unspecified(rhs?)):
+            return lhs.description == rhs.sqliteValue.description
 
         case let (.integer(lhs), .integer(rhs)):
             return lhs == rhs
@@ -132,5 +141,13 @@ extension SQLite3.Value : CustomStringConvertible {
         case .unspecified(nil):
             return "NULL"
         }
+    }
+}
+
+extension SQLite3.Value : CustomDebugStringConvertible {
+    
+    public var debugDescription: String {
+        
+        return "\(description) (\(declaredType))"
     }
 }

@@ -13,7 +13,7 @@ extension SQLite3Translateable {
     
     public static var mirror: Mirror {
         
-        let dummyData = UnsafeMutableBufferPointer<Self>.allocate(capacity: MemoryLayout<Self>.size)
+        let dummyData = UnsafeMutableBufferPointer<Self>.allocate(capacity: 1)
         let dummyInstance = UnsafeRawBufferPointer(dummyData).load(as: Self.self)
         
         dummyData.deallocate()

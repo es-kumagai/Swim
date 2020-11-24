@@ -29,20 +29,34 @@ extension SQLite3.Translator {
         return "CREATE TABLE \(tableName) (\(columns.joined(separator: ", ")))"
     }
 
-    public func makeSelectSQL(with conditions: [SQLite3.Condition]) -> String {
-        
+    public func makeSelectSQL(where conditions: SQLite3.Translator<Type>.Condition? = nil) -> String {
+
         let statement = "SELECT * FROM \(tableName)"
-        
-        if conditions.isEmpty {
-            
-            return statement
+
+        if let conditionSQL = conditions?.sql {
+
+            return statement + " WHERE \(conditionSQL)"
         }
         else {
-            
-            return statement + conditions.joined()
+
+            return statement
         }
     }
-    
+
+    public func makeDeleteSQL(where conditions: SQLite3.Translator<Type>.Condition? = nil) -> String {
+
+        let statement = "DELETE FROM \(tableName)"
+
+        if let conditionSQL = conditions?.sql {
+
+            return statement + " WHERE \(conditionSQL)"
+        }
+        else {
+
+            return statement
+        }
+    }
+
     public func makeInsertSQL(for value: Type) -> String {
         
         let mirror = Mirror(reflecting: value)

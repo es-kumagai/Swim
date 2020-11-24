@@ -5,9 +5,9 @@
 //  Created by Tomohiro Kumagai on 2020/11/24.
 //
 
-extension SQLite3 {
+extension SQLite3.Translator.Condition {
 
-    public enum Condition {
+    public enum Element {
         
         case equal(String, SQLite3.Value)
         case notEqual(String, SQLite3.Value)
@@ -16,10 +16,11 @@ extension SQLite3 {
         case greaterOrEqual(String, SQLite3.Value)
         case greaterThan(String, SQLite3.Value)
         case between(String, SQLite3.Value, SQLite3.Value)
+        case rawSQL(String)
     }
 }
 
-extension SQLite3.Condition : CustomDebugStringConvertible {
+extension SQLite3.Translator.Condition.Element : CustomDebugStringConvertible {
 
     public var debugDescription: String {
         
@@ -27,7 +28,7 @@ extension SQLite3.Condition : CustomDebugStringConvertible {
     }
 }
 
-extension SQLite3.Condition {
+extension SQLite3.Translator.Condition.Element {
     
     public var sql: String {
         
@@ -53,6 +54,9 @@ extension SQLite3.Condition {
             
         case let .between(name, lhs, rhs):
             return "\(SQLite3.fieldName(name)) BETWEEN \(lhs) AND \(rhs)"
+            
+        case let .rawSQL(sql):
+            return sql
         }
     }
 }

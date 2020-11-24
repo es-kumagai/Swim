@@ -29,6 +29,20 @@ extension SQLite3.Translator {
         return "CREATE TABLE \(tableName) (\(columns.joined(separator: ", ")))"
     }
 
+    public func makeSelectSQL(with conditions: [SQLite3.Condition]) -> String {
+        
+        let statement = "SELECT * FROM \(tableName)"
+        
+        if conditions.isEmpty {
+            
+            return statement
+        }
+        else {
+            
+            return statement + conditions.joined()
+        }
+    }
+    
     public func makeInsertSQL(for value: Type) -> String {
         
         let mirror = Mirror(reflecting: value)

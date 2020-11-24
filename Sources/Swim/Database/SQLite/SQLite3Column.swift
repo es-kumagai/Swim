@@ -31,9 +31,12 @@ extension SQLite3.Column {
     
     public var declaredType: SQLite3.DefineDataType {
     
-        let typename = String(cString: sqlite3_column_decltype(statement.handle, index))
+        guard let typename = sqlite3_column_decltype(statement.handle, index) else {
+            
+            return .variant
+        }
         
-        guard let type = try! SQLite3.DefineDataType(typename) else {
+        guard let type = try! SQLite3.DefineDataType(String(cString: typename)) else {
             
             fatalError("Unsupported columns type '\(typename)'.")
         }

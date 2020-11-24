@@ -26,10 +26,15 @@ extension SQLite3.Translator.Metadata {
     
     var sql: String {
         
-        return SQLite3.fieldName(name)
-            + " "
-            + datatype.description
-            + (nullable ? "" : " NOT NULL")
+        let elements = [
+            SQLite3.fieldName(name),
+            datatype.description,
+            (nullable ? "" : "NOT NULL")
+        ]
+        
+        return elements
+            .filter { !$0.isEmpty }
+            .joined(separator: " ")
     }
     
     /// [Swim] Create an instance analyzed from `value`.

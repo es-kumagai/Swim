@@ -24,6 +24,7 @@ private struct MyData : Equatable, SQLite3Translateable {
     var id: Int
     var flags: Double?
     var name: String
+    var option: SQLite3.Value
 }
 
 class SQLite3Tests: XCTestCase {
@@ -283,10 +284,10 @@ class SQLite3Tests: XCTestCase {
         
         XCTAssertEqual(array.count, 0)
         
-        array.insert(MyData(id: 5, flags: 1.5, name: "AAA"))
+        array.insert(MyData(id: 5, flags: 1.5, name: "AAA", option: SQLite3.Value(10)))
         XCTAssertEqual(array.count, 1)
 
-        array.insert(MyData(id: 12, flags: nil, name: "BBB"))
+        array.insert(MyData(id: 12, flags: nil, name: "BBB", option: SQLite3.Value(10.5)))
         XCTAssertEqual(array.count, 2)
     }
     
@@ -296,27 +297,27 @@ class SQLite3Tests: XCTestCase {
         let metadata = translator.metadata
 
         let createSQL = translator.makeCreateTableSQL()
-        XCTAssertEqual(createSQL, #"CREATE TABLE "MyData" ("id" INTEGER NOT NULL, "flags" REAL, "name" TEXT NOT NULL)"#)
+        XCTAssertEqual(createSQL, #"CREATE TABLE "MyData" ("id" INTEGER NOT NULL, "flags" REAL, "name" TEXT NOT NULL, "option" NOT NULL)"#)
 
         XCTAssertEqual(translator.tableName, "\"MyData\"")
-        XCTAssertEqual(metadata.map(\.name), ["id", "flags", "name"])
-        XCTAssertEqual(metadata.map(\.datatype), [.integer, .real, .text])
-        XCTAssertEqual(metadata.map(\.nullable), [false, true, false])
-        XCTAssertEqual(metadata.map(\.offset), [MemoryLayout<MyData>.offset(of: \MyData.id), MemoryLayout<MyData>.offset(of: \MyData.flags), MemoryLayout<MyData>.offset(of: \MyData.name)])
-        XCTAssertEqual(metadata.map(\.size), [MemoryLayout<Int>.size, MemoryLayout<Double?>.size, MemoryLayout<String>.size])
+        XCTAssertEqual(metadata.map(\.name), ["id", "flags", "name", "option"])
+        XCTAssertEqual(metadata.map(\.datatype), [.integer, .real, .text, .variant])
+        XCTAssertEqual(metadata.map(\.nullable), [false, true, false, false])
+        XCTAssertEqual(metadata.map(\.offset), [MemoryLayout<MyData>.offset(of: \MyData.id), MemoryLayout<MyData>.offset(of: \MyData.flags), MemoryLayout<MyData>.offset(of: \MyData.name), MemoryLayout<MyData>.offset(of: \MyData.option)])
+        XCTAssertEqual(metadata.map(\.size), [MemoryLayout<Int>.size, MemoryLayout<Double?>.size, MemoryLayout<String>.size, MemoryLayout<SQLite3.Value>.size])
 
         XCTAssertEqual(metadata[0].sql, "\"id\" INTEGER NOT NULL")
         XCTAssertEqual(metadata[1].sql, "\"flags\" REAL")
         XCTAssertEqual(metadata[2].sql, "\"name\" TEXT NOT NULL")
         
-        let data1 = MyData(id: 5, flags: 1.23, name: "D1")
-        let data2 = MyData(id: 12, flags: nil, name: "D2")
+        let data1 = MyData(id: 5, flags: 1.23, name: "D1", option: .init(10))
+        let data2 = MyData(id: 12, flags: nil, name: "D2", option: .init(10.5))
         
         let insertSQL1 = translator.makeInsertSQL(for: data1)
         let insertSQL2 = translator.makeInsertSQL(for: data2)
 
-        XCTAssertEqual(insertSQL1, #"INSERT INTO "MyData" ("id", "flags", "name") VALUES (5, 1.23, 'D1')"#)
-        XCTAssertEqual(insertSQL2, #"INSERT INTO "MyData" ("id", "flags", "name") VALUES (12, NULL, 'D2')"#)
+        XCTAssertEqual(insertSQL1, #"INSERT INTO "MyData" ("id", "flags", "name", "option") VALUES (5, 1.23, 'D1', 10)"#)
+        XCTAssertEqual(insertSQL2, #"INSERT INTO "MyData" ("id", "flags", "name", "option") VALUES (12, NULL, 'D2', 10.5)"#)
         
         
         let sqlite = try SQLite3(store: .onMemory, options: .readwrite)

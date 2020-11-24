@@ -345,7 +345,7 @@ class SQLite3Tests: XCTestCase {
         XCTAssertEqual(statement.row[0].declaredType, .integer)
         XCTAssertEqual(statement.row[0].actualType, .integer)
         XCTAssertEqual(statement.row[2].declaredType, .real)
-        XCTAssertNil(statement.row[2].actualType)
+        XCTAssertEqual(statement.row[2].actualType, .null)
 //        XCTAssertEqual(statement.row[3].declaredType, .real) // Undefined type is not supported yet.
         XCTAssertEqual(statement.row[3].actualType, .text)
     }
@@ -358,8 +358,14 @@ class SQLite3Tests: XCTestCase {
     
     func testDataType() throws {
         
-        XCTAssertEqual(SQLite3.DataType.integer.description, "INTEGER")
-        XCTAssertEqual(SQLite3.DataType.real.description, "REAL")
-        XCTAssertEqual(SQLite3.DataType.text.description, "TEXT")
+        XCTAssertEqual(SQLite3.DefineDataType.integer.description, "INTEGER")
+        XCTAssertEqual(SQLite3.DefineDataType.real.description, "REAL")
+        XCTAssertEqual(SQLite3.DefineDataType.text.description, "TEXT")
+        XCTAssertEqual(SQLite3.DefineDataType.variant.description, "")
+
+        XCTAssertEqual(SQLite3.ActualDataType.integer.description, "INTEGER")
+        XCTAssertEqual(SQLite3.ActualDataType.real.description, "REAL")
+        XCTAssertEqual(SQLite3.ActualDataType.text.description, "TEXT")
+        XCTAssertEqual(SQLite3.ActualDataType.null.description, "NULL")
     }
 }

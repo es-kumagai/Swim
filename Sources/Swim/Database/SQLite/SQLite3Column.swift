@@ -29,11 +29,11 @@ extension SQLite3.Column {
         return String(cString: sqlite3_column_name(statement.handle, index))
     }
     
-    public var declaredType: SQLite3.DataType {
+    public var declaredType: SQLite3.DefineDataType {
     
         let typename = String(cString: sqlite3_column_decltype(statement.handle, index))
         
-        guard let type = try! SQLite3.DataType(typename) else {
+        guard let type = try! SQLite3.DefineDataType(typename) else {
             
             fatalError("Unsupported columns type '\(typename)'.")
         }
@@ -41,14 +41,53 @@ extension SQLite3.Column {
         return type
     }
     
-    public var actualType: SQLite3.DataType? {
+    public var actualType: SQLite3.ActualDataType {
         
-        return try! SQLite3.DataType(code: sqlite3_column_type(statement.handle, index))
+        let code = sqlite3_column_type(statement.handle, index)
+        
+        guard let type = SQLite3.ActualDataType(code: code) else {
+            
+            fatalError("Unsupported data type. (code = \(code))")
+        }
+        
+        return type
     }
     
     public var isNull: Bool {
         
-        return actualType == nil
+        return actualType == .null
+    }
+    
+    public var value: SQLite3Value {
+        
+        switch declaredType {
+        
+        case .integer:
+            return SQLite3Value(integerValue)
+            
+        case .real:
+            return SQLite3Value(realValue)
+
+        case .text:
+            return SQLite3Value(textValue)
+            
+        case .variant:
+            
+            switch actualType {
+            
+            case .null:
+                return SQLite3Value.unspecified(nil)
+                
+            case .integer:
+                return SQLite3Value.unspecified(integerValue)
+                
+            case .real:
+                return SQLite3Value.unspecified(realValue)
+                
+            case .text:
+                return SQLite3Value.unspecified(textValue)
+            }
+        }
     }
     
     public var bytesValue: Int32? {
@@ -95,7 +134,7 @@ extension SQLite3.Column : CustomStringConvertible {
         case .text:
             return SQLite3.quoted(textValue!)
             
-        case .none:
+        case .null:
             return "NULL"
         }
     }

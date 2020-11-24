@@ -10,7 +10,7 @@ extension SQLite3.Translator {
     public struct Metadata {
         
         public var name: String
-        public var datatype: SQLite3.DataType
+        public var datatype: SQLite3.DefineDataType
         public var nullable: Bool
         public var offset: Int
         public var size: Int
@@ -41,12 +41,17 @@ extension SQLite3.Translator.Metadata {
     ///   - offset: The offset data of this metadata.
     init?(name: String, value: Any, offset: Int) {
         
-        let datatype: SQLite3.DataType
+        let datatype: SQLite3.DefineDataType
         let nullable: Bool
         let size: Int
                     
         switch type(of: value) {
         
+        case SQLite3Value.self:
+            datatype = .variant
+            nullable = true
+            size = MemoryLayout<SQLite3Value>.size
+            
         case Int.self:
             datatype = .integer
             nullable = false

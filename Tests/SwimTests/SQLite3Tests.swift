@@ -429,4 +429,23 @@ class SQLite3Tests: XCTestCase {
         XCTAssertEqual(v1a, v4a)
         XCTAssertNotEqual(v1a, v2a)
     }
+    
+    func testCondition() throws {
+        
+        let condition1 = SQLite3.Condition.equal("key", .integer(10))
+        let condition2 = SQLite3.Condition.notEqual("key", .text("ABC"))
+        let condition3 = SQLite3.Condition.lessThan("key", .integer(10))
+        let condition4 = SQLite3.Condition.lessOrEqual("key", .integer(10))
+        let condition5 = SQLite3.Condition.greaterThan("key", .integer(12))
+        let condition6 = SQLite3.Condition.greaterOrEqual("key", .integer(12))
+        let condition7 = SQLite3.Condition.between("key", .real(5), .real(100))
+
+        XCTAssertEqual(condition1.sql, #""key" = 10"#)
+        XCTAssertEqual(condition2.sql, #""key" != 'ABC'"#)
+        XCTAssertEqual(condition3.sql, #""key" < 10"#)
+        XCTAssertEqual(condition4.sql, #""key" <= 10"#)
+        XCTAssertEqual(condition5.sql, #""key" > 12"#)
+        XCTAssertEqual(condition6.sql, #""key" >= 12"#)
+        XCTAssertEqual(condition7.sql, #""key" BETWEEN 5.0 AND 100.0"#)
+    }
 }

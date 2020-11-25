@@ -80,7 +80,7 @@ extension SQLite3.Translator.Metadata {
         return MemoryLayout<Target>.offset(of: keyPath)!
     }
     
-    var sql: String {
+    var declareSQL: String {
         
         let elements = [
             SQLite3.fieldName(name),

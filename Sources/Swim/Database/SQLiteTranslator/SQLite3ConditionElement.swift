@@ -5,23 +5,25 @@
 //  Created by Tomohiro Kumagai on 2020/11/24.
 //
 
-extension SQLite3.Translator.Condition {
+extension SQLite3 {
 
-    public enum Element {
+    public enum ConditionElement<Target> where Target : SQLite3Translateable {
         
-        case equal(PartialKeyPath<Target>, SQLite3.Value)
-        case notEqual(PartialKeyPath<Target>, SQLite3.Value)
-        case lessOrEqual(PartialKeyPath<Target>, SQLite3.Value)
-        case lessThan(PartialKeyPath<Target>, SQLite3.Value)
-        case greaterOrEqual(PartialKeyPath<Target>, SQLite3.Value)
-        case greaterThan(PartialKeyPath<Target>, SQLite3.Value)
-        case between(PartialKeyPath<Target>, SQLite3.Value, SQLite3.Value)
-        case notBetween(PartialKeyPath<Target>, SQLite3.Value, SQLite3.Value)
+        public typealias Path = PartialKeyPath<Target>
+        
+        case equal(Path, SQLite3.Value)
+        case notEqual(Path, SQLite3.Value)
+        case lessOrEqual(Path, SQLite3.Value)
+        case lessThan(Path, SQLite3.Value)
+        case greaterOrEqual(Path, SQLite3.Value)
+        case greaterThan(Path, SQLite3.Value)
+        case between(Path, SQLite3.Value, SQLite3.Value)
+        case notBetween(Path, SQLite3.Value, SQLite3.Value)
         case rawSQL(String)
     }
 }
 
-extension SQLite3.Translator.Condition.Element : CustomDebugStringConvertible {
+extension SQLite3.ConditionElement : CustomDebugStringConvertible {
 
     public var debugDescription: String {
         
@@ -29,7 +31,7 @@ extension SQLite3.Translator.Condition.Element : CustomDebugStringConvertible {
     }
 }
 
-extension SQLite3.Translator.Condition.Element {
+extension SQLite3.ConditionElement {
     
     public var sql: String {
         

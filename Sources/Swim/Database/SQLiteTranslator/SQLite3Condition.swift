@@ -5,75 +5,133 @@
 //  Created by Tomohiro Kumagai on 2020/11/25.
 //
 
-extension SQLite3.Translator {
+public protocol SQLite3Condition {
     
-    public struct Condition {
+    var sql: String { get }
+}
+
+public func == <Target : SQLite3Translateable>(lhs: PartialKeyPath<Target>, rhs: SQLite3.Value) -> SQLite3.Condition<Target> {
+    
+    return .init(.equal(lhs, rhs))
+}
+
+public func != <Target : SQLite3Translateable>(lhs: PartialKeyPath<Target>, rhs: SQLite3.Value) -> SQLite3.Condition<Target> {
+    
+    return .init(.notEqual(lhs, rhs))
+}
+
+public func <= <Target : SQLite3Translateable>(lhs: PartialKeyPath<Target>, rhs: SQLite3.Value) -> SQLite3.Condition<Target> {
+    
+    return .init(.lessOrEqual(lhs, rhs))
+}
+
+public func >= <Target : SQLite3Translateable>(lhs: PartialKeyPath<Target>, rhs: SQLite3.Value) -> SQLite3.Condition<Target> {
+    
+    return .init(.greaterOrEqual(lhs, rhs))
+}
+
+public func < <Target : SQLite3Translateable>(lhs: PartialKeyPath<Target>, rhs: SQLite3.Value) -> SQLite3.Condition<Target> {
+    
+    return .init(.lessThan(lhs, rhs))
+}
+
+public func > <Target : SQLite3Translateable>(lhs: PartialKeyPath<Target>, rhs: SQLite3.Value) -> SQLite3.Condition<Target> {
+    
+    return .init(.greaterThan(lhs, rhs))
+}
+
+extension SQLite3 {
+
+    public struct Condition<Target> where Target : SQLite3Translateable {
         
+        public typealias Path = PartialKeyPath<Target>
+        public typealias Value = SQLite3.Value
+
         private var conditions: Array<Item>
         
-        private init(_ element: Element) {
+        public init(_ element: ConditionElement<Target>) {
 
-            conditions = [.rootElement(element)]
+            conditions = [.element(element)]
         }
         
-        private init(_ condition: Self) {
+        public static func between(_ path: Path, _ lhs: Value, _ rhs: Value) -> Self {
+            
+            return .init(.between(path, lhs, rhs))
+        }
+        
+        public static func notBetween(_ path: Path, _ lhs: Value, _ rhs: Value) -> Self {
+            
+            return .init(.notBetween(path, lhs, rhs))
+        }
+        
+        public static func rawSQL(_ sql: String) -> Self {
+            
+            return .init(.rawSQL(sql))
+        }
+        
+        public static func satisfyAll(_ condition: Self, _ conditions: Self ...) -> Self {
 
-            conditions = [.rootCondition(condition)]
+            return conditions.reduce(condition) { $0.and($1) }
         }
         
-        static func condition(_ element: Element) -> Self {
-            
-            return self.init(element)
-        }
-        
-        static func conditions(_ condition: Self) -> Self {
-            
-            return self.init(condition)
+        public static func satisfyEither(_ condition: Self, _ conditions: Self ...) -> Self {
+
+            return conditions.reduce(condition) { $0.or($1) }
         }
     }
 }
 
-internal extension SQLite3.Translator.Condition {
+internal extension SQLite3.Condition {
     
     enum Item {
     
-        case rootCondition(SQLite3.Translator<Target>.Condition)
-        case rootElement(Element)
-        case andCondition(SQLite3.Translator<Target>.Condition)
-        case andElement(Element)
-        case orCondition(SQLite3.Translator<Target>.Condition)
-        case orElement(Element)
+        case element(SQLite3.ConditionElement<Target>)
+        case root(Array<Self>)
+        case and(Array<Self>)
+        case or(Array<Self>)
     }
 }
 
-internal extension SQLite3.Translator.Condition.Item {
-
-    var sql: String {
+extension Collection where Element : SQLite3Condition {
+    
+    public var sql: String {
         
-        switch self {
+        switch count {
         
-        case .rootCondition(let condition):
-            return "(\(condition.sql))"
+        case 0:
+            return ""
             
-        case .rootElement(let element):
-            return "(\(element.sql))"
+        case 1:
+            return first!.sql
             
-        case .andCondition(let condition):
-            return "AND (\(condition.sql))"
-
-        case .andElement(let element):
-            return "AND (\(element.sql))"
-            
-        case .orCondition(let condition):
-            return "OR (\(condition.sql))"
-            
-        case .orElement(let element):
-            return "OR (\(element.sql))"
+        default:
+            return "(\(map(\.sql).joined(separator: " ")))"
         }
     }
 }
 
-extension SQLite3.Translator.Condition {
+extension SQLite3.Condition.Item : SQLite3Condition {
+
+    var sql: String {
+
+        switch self {
+        
+        case .element(let element):
+            return "(\(element.sql))"
+            
+        case .root(let elements):
+            return "\(elements.sql)"
+            
+        case .and(let elements):
+            return "AND \(elements.sql)"
+            
+        case .or(let elements):
+            return "OR \(elements.sql)"
+        }
+    }
+}
+
+extension SQLite3.Condition {
  
     private init(conditions: Array<Item>) {
         
@@ -82,29 +140,19 @@ extension SQLite3.Translator.Condition {
 
     public func and(_ condition: Self) -> Self {
         
-        return Self(conditions: conditions + [.andCondition(condition)])
-    }
-
-    public func and(_ element: Element) -> Self {
-        
-        return Self(conditions: conditions + [.andElement(element)])
+        return Self(conditions: conditions + [.and(condition.conditions)])
     }
     
     public func or(_ condition: Self) -> Self {
         
-        return Self(conditions: conditions + [.orCondition(condition)])
-    }
-    
-    public func or(_ element: Element) -> Self {
-        
-        return Self(conditions: conditions + [.orElement(element)])
+        return Self(conditions: conditions + [.or(condition.conditions)])
     }
 }
 
-extension SQLite3.Translator.Condition {
+extension SQLite3.Condition {
     
     public var sql: String {
         
-        return conditions.map(\.sql).joined(separator: " ")
+        return conditions.sql
     }
 }

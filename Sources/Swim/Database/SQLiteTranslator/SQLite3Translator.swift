@@ -9,92 +9,50 @@ extension SQLite3 {
     
     public struct Translator<Target> where Target : SQLite3Translateable {
         
-        public private(set) var tableName: String
-        public private(set) var metadata: Array<Metadata>
-
-        public init(tableName: String? = nil) throws {
-
-            self.tableName = SQLite3.fieldName(tableName ?? "\(Target.self)")
-            self.metadata = Target.sqlite3Columns
+        public init() {
+        }
+        
+        public init(_ target: Target.Type) {
+            
         }
     }
 }
 
 extension SQLite3.Translator {
  
-    public typealias ConditionsPredicate = () -> Condition
+    public func makeCreateTableSQL() -> SQLite3.SQL<Target, SQLite3.NoConditions> {
     
-    public func makeCreateTableSQL() -> String {
+        return .createTable(Target.self)
+    }
+    
+    public func makeSelectSQL() -> SQLite3.SQL<Target, SQLite3.NoConditions> {
         
-        let columns = metadata.map(\.sql)
+        return .select(from: Target.self)
+    }
+    
+    public func makeInsertSQL(with value: Target) -> SQLite3.SQL<Target, SQLite3.NoConditions> {
         
-        return "CREATE TABLE \(tableName) (\(columns.joined(separator: ", ")))"
+        return .insert(value)
+    }
+    
+    public func makeDeleteSQL() -> SQLite3.SQL<Target, SQLite3.NoConditions> {
+        
+        return .delete(from: Target.self)
     }
 
-    public func makeSelectSQL(where conditions: ConditionsPredicate? = nil) -> String {
+    public func makeSelectSQL(where conditions: SQLite3.Condition<Target>) -> SQLite3.SQL<Target, SQLite3.WithConditions> {
 
-        let statement = "SELECT * FROM \(tableName)"
-
-        if let conditionSQL = conditions?().sql {
-
-            return statement + " WHERE \(conditionSQL)"
-        }
-        else {
-
-            return statement
-        }
+        return .select(from: Target.self, where: conditions)
     }
-
-    public func makeDeleteSQL(where conditions: Condition? = nil) -> String {
-
-        let statement = "DELETE FROM \(tableName)"
-
-        if let conditionSQL = conditions?.sql {
-
-            return statement + " WHERE \(conditionSQL)"
-        }
-        else {
-
-            return statement
-        }
+    
+    public func makeInsertSQL(_ value: Target, where conditions: SQLite3.Condition<Target>) -> SQLite3.SQL<Target, SQLite3.WithConditions> {
+        
+        return .insert(value, where: conditions)
     }
-
-    public func makeInsertSQL(for value: Target) -> String {
+    
+    public func makeDeleteSQL(from table: Target.Type, where conditions: SQLite3.Condition<Target>) -> SQLite3.SQL<Target, SQLite3.WithConditions> {
         
-        let fields = metadata.map(\.name).map(SQLite3.fieldName)
-        let values = metadata.map { meta -> String in
-            
-            let value = value[keyPath: meta.keyPath]
-            
-            switch (meta.datatype, meta.nullable) {
-
-            case (.variant, true):
-                return (value as? SQLite3.Value)?.description ?? "NULL"
-  
-            case (.variant, false):
-                return (value as! SQLite3.Value).description
-                
-            case (.integer, true):
-                return (value as? Int)?.description ?? "NULL"
-                
-            case (.integer, false):
-                return (value as! Int).description
-                
-            case (.real, true):
-                return (value as? Double)?.description ?? "NULL"
-                
-            case (.real, false):
-                return (value as! Double).description
-                
-            case (.text, true):
-                 return (value as? String).map(SQLite3.quoted) ?? "NULL"
-                
-            case (.text, false):
-                return SQLite3.quoted(value as! String)
-            }
-        }
-        
-        return "INSERT INTO \(tableName) (\(fields.joined(separator: ", "))) VALUES (\(values.joined(separator: ", ")))"
+        return .delete(from: Target.self, where: conditions)
     }
     
     public func instantiate(from statement: SQLite3.Statement) -> Target {
@@ -103,6 +61,8 @@ extension SQLite3.Translator {
     }
     
     public func instantiate(from row: SQLite3.Row) -> Target {
+        
+        let metadata = Target.sqlite3Columns
         
         guard row.count == metadata.count else {
         

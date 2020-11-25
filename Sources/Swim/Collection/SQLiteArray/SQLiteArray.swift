@@ -13,11 +13,10 @@ public struct SQLiteArray<Element> where Element : SQLite3Translateable {
     public init() throws {
         
         sqlite = try! SQLite3(store: .onMemory, options: .readwrite)
-        translator = try! SQLite3.Translator<Element>()
+        translator = SQLite3.Translator<Element>()
         
-        let sql = translator.makeCreateTableSQL()
-        
-        try sqlite.execute(sql: sql)
+        let sql = SQLite3.SQL.createTable(Element.self)
+        try sqlite.execute(sql: sql.description)
     }
 }
 
@@ -27,7 +26,8 @@ extension SQLiteArray {
         
         do {
 
-            try sqlite.execute(sql: translator.makeInsertSQL(for: element))
+            let sql = SQLite3.SQL.insert(element)
+            try sqlite.execute(sql: sql.description)
         }
         catch {
             
@@ -40,7 +40,7 @@ extension SQLiteArray {
     
     public var count: Int {
         
-        let sql = "SELECT COUNT(*) FROM \(translator.tableName)"
+        let sql = "SELECT COUNT(*) FROM \(Element.tableName)"
         
         do {
 

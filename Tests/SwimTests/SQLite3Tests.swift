@@ -32,7 +32,7 @@ extension MyData : SQLite3Translateable {
     static var sqlite3Columns: Array<SQLite3.Translator<MyData>.Metadata> {
         
         return try! [
-
+            
             .init(name: "id", keyPath: \.id),
             .init(name: "flags", keyPath: \.flags),
             .init(name: "name", keyPath: \.name),
@@ -42,15 +42,15 @@ extension MyData : SQLite3Translateable {
 }
 
 class SQLite3Tests: XCTestCase {
-
+    
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.
     }
-
+    
     override func tearDownWithError() throws {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
     }
-
+    
     func testAttachDatabase() throws {
         
         let sqlite = try SQLite3(path: databasePath, options: .readonly)
@@ -60,29 +60,29 @@ class SQLite3Tests: XCTestCase {
             XCTFail("Expect some data exists.")
             return
         }
-
+        
         XCTAssertEqual(main.row.first!.integerValue, 1852)
-
+        
         XCTAssertThrowsError(try sqlite.execute(sql: "SELECT count(*) FROM sub.Updates"))
         XCTAssertNoThrow(try sqlite.attach(databasePath: databasePath, to: "sub"))
         XCTAssertNoThrow(try sqlite.execute(sql: "SELECT count(*) FROM sub.Updates"))
-
+        
         guard let sub = try sqlite.execute(sql: "SELECT count(*) FROM sub.Updates") else {
             
             XCTFail("Expect some data exists.")
             return
         }
-
+        
         XCTAssertEqual(sub.row.first!.integerValue, 1852)
     }
     
     func testRead() throws {
-                
+        
         let sqlite = try SQLite3(path: databasePath, options: .readonly)
         
         XCTAssertThrowsError(try sqlite.execute(sql: "SELECT FROM Updates"))
         XCTAssertThrowsError(try sqlite.execute(sql: "SELECT * FROM Dummy"))
-
+        
         let statement = try sqlite.prepareStatement(with: "SELECT * FROM Updates WHERE UpdateID BETWEEN @idMin AND @idMax ORDER BY UpdateID") { statement in
             
             try statement.parameter("@idMin").bind(1178)
@@ -91,23 +91,23 @@ class SQLite3Tests: XCTestCase {
         
         XCTAssertEqual(statement.columnCount, 6)
         XCTAssertEqual(statement.columnNames, ["UpdateID", "State", "Caption", "Description", "URI", "DateTime"])
-
+        
         XCTAssertTrue(try statement.step())
-
+        
         XCTAssertEqual(statement.row[0].actualType, .integer)
         XCTAssertEqual(statement.row[1].actualType, .text)
         XCTAssertEqual(statement.row[2].actualType, .text)
         XCTAssertEqual(statement.row[3].actualType, .text)
         XCTAssertEqual(statement.row[4].actualType, .text)
         XCTAssertEqual(statement.row[5].actualType, .text)
-
+        
         XCTAssertEqual(statement.row[0].integerValue, 1178)
         XCTAssertEqual(statement.row[2].textValue, "UISlider の値を操作する。")
         XCTAssertEqual(statement.row[4].textValue, "/article/8A/3GTRi2tH/SYJ1jMo5TVWw/")
         XCTAssertEqual(statement.row.columns.UpdateID.integerValue, 1178)
         XCTAssertEqual(statement.row.columns.Caption.textValue, "UISlider の値を操作する。")
         XCTAssertEqual(statement.row.columns.URI.textValue, "/article/8A/3GTRi2tH/SYJ1jMo5TVWw/")
-
+        
         XCTAssertTrue(try statement.step())
         
         XCTAssertEqual(statement.row[0].integerValue, 1179)
@@ -116,33 +116,33 @@ class SQLite3Tests: XCTestCase {
         XCTAssertEqual(statement.row["UpdateID"].integerValue, 1179)
         XCTAssertEqual(statement.row["Caption"].textValue, "UISwitch の値を操作する。")
         XCTAssertEqual(statement.row["URI"].textValue, "/article/51/_SXHqIpL/zaKazZyqkneE/")
-
+        
         XCTAssertTrue(try statement.step())
-
+        
         XCTAssertEqual(statement.row[0].integerValue, 1180)
         XCTAssertEqual(statement.row[2].textValue, "UIScrollView をスクロールさせる。")
         XCTAssertEqual(statement.row[4].textValue, "/article/51/KyIcnlBE/PadIz8Rd3cRa/")
-
+        
         XCTAssertFalse(try statement.step())
         
         XCTAssertNoThrow(try statement.reset())
         
         XCTAssertTrue(try statement.step())
-
+        
         XCTAssertEqual(statement.row[0].actualType, .integer)
         XCTAssertEqual(statement.row[1].actualType, .text)
         XCTAssertEqual(statement.row[2].actualType, .text)
         XCTAssertEqual(statement.row[3].actualType, .text)
         XCTAssertEqual(statement.row[4].actualType, .text)
         XCTAssertEqual(statement.row[5].actualType, .text)
-
+        
         XCTAssertEqual(statement.row[0].integerValue, 1178)
         XCTAssertEqual(statement.row[2].textValue, "UISlider の値を操作する。")
         XCTAssertEqual(statement.row[4].textValue, "/article/8A/3GTRi2tH/SYJ1jMo5TVWw/")
         XCTAssertEqual(statement.row.columns.UpdateID.integerValue, 1178)
         XCTAssertEqual(statement.row.columns.Caption.textValue, "UISlider の値を操作する。")
         XCTAssertEqual(statement.row.columns.URI.textValue, "/article/8A/3GTRi2tH/SYJ1jMo5TVWw/")
-
+        
         XCTAssertTrue(try statement.step())
         
         XCTAssertEqual(statement.row[0].integerValue, 1179)
@@ -151,21 +151,21 @@ class SQLite3Tests: XCTestCase {
         XCTAssertEqual(statement.row["UpdateID"].integerValue, 1179)
         XCTAssertEqual(statement.row["Caption"].textValue, "UISwitch の値を操作する。")
         XCTAssertEqual(statement.row["URI"].textValue, "/article/51/_SXHqIpL/zaKazZyqkneE/")
-
+        
         XCTAssertTrue(try statement.step())
-
+        
         XCTAssertEqual(statement.row[0].integerValue, 1180)
         XCTAssertEqual(statement.row[2].textValue, "UIScrollView をスクロールさせる。")
         XCTAssertEqual(statement.row[4].textValue, "/article/51/KyIcnlBE/PadIz8Rd3cRa/")
     }
     
     func testKeepCurrentStepIteration() throws {
-
+        
         let sqlite = try SQLite3(path: databasePath, options: .readonly)
         
         XCTAssertThrowsError(try sqlite.execute(sql: "SELECT FROM Updates"))
         XCTAssertThrowsError(try sqlite.execute(sql: "SELECT * FROM Dummy"))
-
+        
         let statement = try sqlite.prepareStatement(with: "SELECT * FROM Updates WHERE UpdateID BETWEEN @idMin AND @idMax ORDER BY UpdateID") { statement in
             
             try statement.parameter("@idMin").bind(1178)
@@ -191,10 +191,10 @@ class SQLite3Tests: XCTestCase {
         
         try sqlite.execute(sql: "CREATE TABLE sample(id INTEGER NOT NULL PRIMARY KEY, name TEXT, flag REAL DEFAULT 1.5, dummy NULL)")
         XCTAssertEqual(sqlite.recentChanges, 0)
-
+        
         let info = try sqlite.execute(sql: "PRAGMA table_info('sample')")!
         XCTAssertEqual(sqlite.recentChanges, 0)
-
+        
         XCTAssertEqual(info.columnCount, 6)
         
         XCTAssertEqual(info.row.columns.cid.integerValue, 0)
@@ -203,7 +203,7 @@ class SQLite3Tests: XCTestCase {
         XCTAssertEqual(info.row.columns.notnull.integerValue, 1)
         XCTAssertTrue(info.row.columns.dflt_value.isNull)
         XCTAssertEqual(info.row.columns.pk.integerValue, 1)
-
+        
         XCTAssertTrue(try info.step())
         
         XCTAssertEqual(info.row.columns.cid.integerValue, 1)
@@ -212,7 +212,7 @@ class SQLite3Tests: XCTestCase {
         XCTAssertEqual(info.row.columns.notnull.integerValue, 0)
         XCTAssertTrue(info.row.columns.dflt_value.isNull)
         XCTAssertEqual(info.row.columns.pk.integerValue, 0)
-
+        
         XCTAssertTrue(try info.step())
         
         XCTAssertEqual(info.row.columns.cid.integerValue, 2)
@@ -221,53 +221,53 @@ class SQLite3Tests: XCTestCase {
         XCTAssertEqual(info.row.columns.notnull.integerValue, 0)
         XCTAssertEqual(info.row.columns.dflt_value.textValue, "1.5")
         XCTAssertEqual(info.row.columns.pk.integerValue, 0)
-
+        
         XCTAssertTrue(try info.step())
-
+        
         XCTAssertEqual(info.row.columns.cid.integerValue, 3)
         XCTAssertEqual(info.row.columns.name.textValue, "dummy")
         XCTAssertEqual(info.row.columns.type.textValue, "")
         XCTAssertEqual(info.row.columns.notnull.integerValue, 0)
         XCTAssertTrue(info.row.columns.dflt_value.isNull)
         XCTAssertEqual(info.row.columns.pk.integerValue, 0)
-
+        
         XCTAssertFalse(try info.step())
         
         let st1 = try sqlite.execute(sql: "SELECT * FROM sample")
         XCTAssertEqual(sqlite.recentChanges, 0)
-
+        
         XCTAssertNil(st1)
         
         try sqlite.execute(sql: "INSERT INTO sample (id, name, flag) VALUES (10, 'EZ-NET', 1.5), (22, 'ORIENT', NULL)")
         XCTAssertEqual(sqlite.recentChanges, 2)
-
+        
         guard let st2 = try sqlite.execute(sql: "SELECT * FROM sample") else {
             
             XCTFail("Expect some data exists.")
             return
         }
-
+        
         XCTAssertEqual(sqlite.recentChanges, 2)
-
+        
         XCTAssertEqual(st2.row.columns.id.integerValue, 10)
         XCTAssertEqual(st2.row.columns.name.textValue, "EZ-NET")
         XCTAssertEqual(st2.row.columns.flag.realValue, 1.5)
-
+        
         XCTAssertTrue(try st2.step())
-
+        
         XCTAssertEqual(st2.row.columns.id.integerValue, 22)
         XCTAssertEqual(st2.row.columns.name.textValue, "ORIENT")
         XCTAssertNil(st2.row.columns.flag.realValue)
-
+        
         XCTAssertFalse(try st2.step())
-
+        
         let st3 = try sqlite.prepareStatement(with: "SELECT * FROM sample ORDER BY id DESC")
-
+        
         let values = st3.map {
             
             $0.row.columns.name.textValue
         }
-
+        
         XCTAssertEqual(values, ["ORIENT", "EZ-NET"])
     }
     
@@ -285,7 +285,7 @@ class SQLite3Tests: XCTestCase {
     }
     
     func testText() throws {
-    
+        
         XCTAssertEqual(SQLite3.quoted("TEXT"), "'TEXT'")
         XCTAssertEqual(SQLite3.fieldName("FIELD"), "\"FIELD\"")
         XCTAssertEqual(SQLite3.quoted("TE'XT"), "'TE''XT'")
@@ -293,14 +293,14 @@ class SQLite3Tests: XCTestCase {
     }
     
     func testArray() throws {
-                
+        
         let array = try SQLiteArray<MyData>()
         
         XCTAssertEqual(array.count, 0)
         
         array.insert(MyData(id: 5, flags: 1.5, name: "AAA", option: SQLite3.Value(10)))
         XCTAssertEqual(array.count, 1)
-
+        
         array.insert(MyData(id: 12, flags: nil, name: "BBB", option: SQLite3.Value(10.5)))
         XCTAssertEqual(array.count, 2)
     }
@@ -308,64 +308,90 @@ class SQLite3Tests: XCTestCase {
     func testTranslate() throws {
         
         let translator = try SQLite3.Translator<MyData>()
-        let metadata = translator.metadata
+        let datatype = MyData.self
 
-        let createSQL = translator.makeCreateTableSQL()
-        XCTAssertEqual(createSQL, #"CREATE TABLE "MyData" ("id" INTEGER NOT NULL, "flags" REAL, "name" TEXT NOT NULL, "option" NOT NULL)"#)
-
-        XCTAssertEqual(translator.tableName, "\"MyData\"")
+        let metadata = datatype.sqlite3Columns
+        
+        let createSQL = SQLite3.SQL.createTable(datatype)
+        XCTAssertEqual(createSQL.description, #"CREATE TABLE "MyData" ("id" INTEGER NOT NULL, "flags" REAL, "name" TEXT NOT NULL, "option" NOT NULL)"#)
+        
+        XCTAssertEqual(datatype.tableName, "MyData")
         XCTAssertEqual(metadata.map(\.name), ["id", "flags", "name", "option"])
         XCTAssertEqual(metadata.map(\.datatype), [.integer, .real, .text, .variant])
         XCTAssertEqual(metadata.map(\.nullable), [false, true, false, false])
         XCTAssertEqual(metadata.map(\.offset), [MemoryLayout<MyData>.offset(of: \MyData.id), MemoryLayout<MyData>.offset(of: \MyData.flags), MemoryLayout<MyData>.offset(of: \MyData.name), MemoryLayout<MyData>.offset(of: \MyData.option)])
-
-        XCTAssertEqual(metadata[0].sql, "\"id\" INTEGER NOT NULL")
-        XCTAssertEqual(metadata[1].sql, "\"flags\" REAL")
-        XCTAssertEqual(metadata[2].sql, "\"name\" TEXT NOT NULL")
-        XCTAssertEqual(metadata[3].sql, "\"option\" NOT NULL")
-
+        
+        XCTAssertEqual(metadata[0].declareSQL, "\"id\" INTEGER NOT NULL")
+        XCTAssertEqual(metadata[1].declareSQL, "\"flags\" REAL")
+        XCTAssertEqual(metadata[2].declareSQL, "\"name\" TEXT NOT NULL")
+        XCTAssertEqual(metadata[3].declareSQL, "\"option\" NOT NULL")
+        
         let data1 = MyData(id: 5, flags: 1.23, name: "D1", option: .init(10))
         let data2 = MyData(id: 12, flags: nil, name: "D2", option: .init(10.5))
         
-        let insertSQL1 = translator.makeInsertSQL(for: data1)
-        let insertSQL2 = translator.makeInsertSQL(for: data2)
-
-        XCTAssertEqual(insertSQL1, #"INSERT INTO "MyData" ("id", "flags", "name", "option") VALUES (5, 1.23, 'D1', 10)"#)
-        XCTAssertEqual(insertSQL2, #"INSERT INTO "MyData" ("id", "flags", "name", "option") VALUES (12, NULL, 'D2', 10.5)"#)
+        let insertSQL1 = SQLite3.SQL.insert(data1)
+        let insertSQL2 = SQLite3.SQL.insert(data2)
+        
+        XCTAssertEqual(insertSQL1.description, #"INSERT INTO "MyData" ("id", "flags", "name", "option") VALUES (5, 1.23, 'D1', 10)"#)
+        XCTAssertEqual(insertSQL2.description, #"INSERT INTO "MyData" ("id", "flags", "name", "option") VALUES (12, NULL, 'D2', 10.5)"#)
         
         
         let sqlite = try SQLite3(store: .onMemory, options: .readwrite)
         
-        XCTAssertNoThrow(try sqlite.execute(sql: createSQL))
-        XCTAssertNoThrow(try sqlite.execute(sql: insertSQL1))
-        XCTAssertNoThrow(try sqlite.execute(sql: insertSQL2))
+        XCTAssertNoThrow(try sqlite.execute(sql: createSQL.description))
+        XCTAssertNoThrow(try sqlite.execute(sql: insertSQL1.description))
+        XCTAssertNoThrow(try sqlite.execute(sql: insertSQL2.description))
+        
+        let selectSQL1 = SQLite3.SQL.select(from: datatype)
+        let selectSQL2 = SQLite3.SQL.select(from: datatype, where: .between(\MyData.id, 3, 5))
+        let selectSQL3 = SQLite3.SQL.select(from: datatype, where: \MyData.name == "TEST")
+        let selectSQL4 = SQLite3.SQL.select(from: datatype, where: \MyData.id < 3)
+        let selectSQL5 = SQLite3.SQL.select(from: datatype, where: \MyData.id <= 3)
+        let selectSQL6 = SQLite3.SQL.select(from: datatype, where: \MyData.id > 3)
+        let selectSQL7 = SQLite3.SQL.select(from: datatype, where: \MyData.id >= 3)
+        let selectSQL8 = SQLite3.SQL.select(from: datatype, where: .notBetween(\MyData.id, 3, 5))
+        let selectSQL9 = SQLite3.SQL.select(from: datatype, where: SQLite3.Condition.notBetween(\MyData.id, 3, 5).and(\MyData.name == "TEST"))
+        let selectSQL10 = SQLite3.SQL.select(from: datatype, where:
+                                                SQLite3.Condition.satisfyAll(.notBetween(\MyData.id, 3, 5), \MyData.name == "TEST")
+                                                .or(\MyData.option < 10))
+        
+        let selectSQL11 = SQLite3.SQL.select(from: datatype, where: .notBetween(\MyData.id, 3, 5)).and((\MyData.name == "TEST").or(\MyData.option < 10))
+        let selectSQL12 = SQLite3.SQL.select(from: datatype, where:
+                                                .satisfyAll(.notBetween(\MyData.id, 3, 5), \MyData.name == "TEST", \MyData.option < 10))
 
-        let selectSQL1 = translator.makeSelectSQL()
-        let selectSQL2 = translator.makeSelectSQL { .condition(.between(\MyData.id, 3, 5)) }
-        let selectSQL3 = translator.makeSelectSQL { .condition(.equal(\MyData.name, "TEST")) }
-        let selectSQL4 = translator.makeSelectSQL { .condition(.lessThan(\MyData.id, 3)) }
-        let selectSQL5 = translator.makeSelectSQL { .condition(.lessOrEqual(\MyData.id, 3)) }
-        let selectSQL6 = translator.makeSelectSQL { .condition(.greaterThan(\MyData.id, 3)) }
-        let selectSQL7 = translator.makeSelectSQL { .condition(.greaterOrEqual(\MyData.id, 3)) }
-        let selectSQL8 = translator.makeSelectSQL { .condition(.notBetween(\MyData.id, 3, 5)) }
-        let selectSQL9 = translator.makeSelectSQL {
-            
-            SQLite3.Translator<MyData>.Condition.condition(.notBetween(\MyData.id, 3, 5))
-                .and(.equal(\MyData.name, "TEST"))
-        }
+        XCTAssertEqual(selectSQL1.description, #"SELECT * FROM "MyData""#)
+        XCTAssertEqual(selectSQL2.description, #"SELECT * FROM "MyData" WHERE ("id" BETWEEN 3 AND 5)"#)
+        XCTAssertEqual(selectSQL3.description, #"SELECT * FROM "MyData" WHERE ("name" = 'TEST')"#)
+        XCTAssertEqual(selectSQL4.description, #"SELECT * FROM "MyData" WHERE ("id" < 3)"#)
+        XCTAssertEqual(selectSQL5.description, #"SELECT * FROM "MyData" WHERE ("id" <= 3)"#)
+        XCTAssertEqual(selectSQL6.description, #"SELECT * FROM "MyData" WHERE ("id" > 3)"#)
+        XCTAssertEqual(selectSQL7.description, #"SELECT * FROM "MyData" WHERE ("id" >= 3)"#)
+        XCTAssertEqual(selectSQL8.description, #"SELECT * FROM "MyData" WHERE ("id" NOT BETWEEN 3 AND 5)"#)
+        XCTAssertEqual(selectSQL9.description, #"SELECT * FROM "MyData" WHERE (("id" NOT BETWEEN 3 AND 5) AND ("name" = 'TEST'))"#)
+        XCTAssertEqual(selectSQL10.description, #"SELECT * FROM "MyData" WHERE (("id" NOT BETWEEN 3 AND 5) AND ("name" = 'TEST') OR ("option" < 10))"#)
+        XCTAssertEqual(selectSQL11.description, #"SELECT * FROM "MyData" WHERE (("id" NOT BETWEEN 3 AND 5) AND (("name" = 'TEST') OR ("option" < 10)))"#)
+        XCTAssertEqual(selectSQL12.description, #"SELECT * FROM "MyData" WHERE (("id" NOT BETWEEN 3 AND 5) AND ("name" = 'TEST') AND ("option" < 10))"#)
 
-        XCTAssertEqual(selectSQL1, #"SELECT * FROM "MyData""#)
-        XCTAssertEqual(selectSQL2, #"SELECT * FROM "MyData" WHERE ("id" BETWEEN 3 AND 5)"#)
-        XCTAssertEqual(selectSQL3, #"SELECT * FROM "MyData" WHERE ("name" = 'TEST')"#)
-        XCTAssertEqual(selectSQL4, #"SELECT * FROM "MyData" WHERE ("id" < 3)"#)
-        XCTAssertEqual(selectSQL5, #"SELECT * FROM "MyData" WHERE ("id" <= 3)"#)
-        XCTAssertEqual(selectSQL6, #"SELECT * FROM "MyData" WHERE ("id" > 3)"#)
-        XCTAssertEqual(selectSQL7, #"SELECT * FROM "MyData" WHERE ("id" >= 3)"#)
-        XCTAssertEqual(selectSQL8, #"SELECT * FROM "MyData" WHERE ("id" NOT BETWEEN 3 AND 5)"#)
-        XCTAssertEqual(selectSQL9, #"SELECT * FROM "MyData" WHERE ("id" NOT BETWEEN 3 AND 5) AND ("name" = 'TEST')"#)
+        let selectSQL1t = translator.makeSelectSQL()
+        let selectSQL2t = translator.makeSelectSQL(where: .between(\MyData.id, 3, 5))
+        let selectSQL3t = translator.makeSelectSQL(where: \MyData.name == "TEST")
+        let selectSQL4t = translator.makeSelectSQL(where: \MyData.id < 3)
+        let selectSQL5t = translator.makeSelectSQL(where: \MyData.id <= 3)
+        let selectSQL6t = translator.makeSelectSQL(where: \MyData.id > 3)
+        let selectSQL7t = translator.makeSelectSQL(where: \MyData.id >= 3)
+        let selectSQL8t = translator.makeSelectSQL(where: .notBetween(\MyData.id, 3, 5))
 
-        let statement = try sqlite.prepareStatement(with: selectSQL1)
+        XCTAssertEqual(selectSQL1.description, selectSQL1t.description)
+        XCTAssertEqual(selectSQL2.description, selectSQL2t.description)
+        XCTAssertEqual(selectSQL3.description, selectSQL3t.description)
+        XCTAssertEqual(selectSQL4.description, selectSQL4t.description)
+        XCTAssertEqual(selectSQL5.description, selectSQL5t.description)
+        XCTAssertEqual(selectSQL6.description, selectSQL6t.description)
+        XCTAssertEqual(selectSQL7.description, selectSQL7t.description)
+        XCTAssertEqual(selectSQL8.description, selectSQL8t.description)
 
+        let statement = try sqlite.prepareStatement(with: selectSQL1.description)
+        
         let values = statement.map(translator.instantiate(from:))
         
         XCTAssertEqual(values[0], data1)
@@ -377,7 +403,7 @@ class SQLite3Tests: XCTestCase {
         let sqlite = try SQLite3.instantiateOnMemory()
         try sqlite.execute(sql: "CREATE TABLE sample(id INTEGER NOT NULL PRIMARY KEY, name TEXT, flag REAL DEFAULT 1.5, dummy NULL)")
         try sqlite.execute(sql: "INSERT INTO sample (id, name, flag, dummy) VALUES (22, 'ORIENT', NULL, 'TEXT')")
-
+        
         let statement = try sqlite.execute(sql: "SELECT * FROM sample")!
         
         
@@ -385,14 +411,14 @@ class SQLite3Tests: XCTestCase {
         XCTAssertEqual(statement.row[0].actualType, .integer)
         XCTAssertEqual(statement.row[2].declaredType, .real)
         XCTAssertEqual(statement.row[2].actualType, .null)
-//        XCTAssertEqual(statement.row[3].declaredType, .real) // Undefined type is not supported yet.
+        //        XCTAssertEqual(statement.row[3].declaredType, .real) // Undefined type is not supported yet.
         XCTAssertEqual(statement.row[3].actualType, .text)
     }
     
     func testArrayMetadata() throws {
         
         let array = try SQLiteArray<MyData>()
-
+        
     }
     
     func testDataType() throws {
@@ -401,7 +427,7 @@ class SQLite3Tests: XCTestCase {
         XCTAssertEqual(SQLite3.DefineDataType.real.description, "REAL")
         XCTAssertEqual(SQLite3.DefineDataType.text.description, "TEXT")
         XCTAssertEqual(SQLite3.DefineDataType.variant.description, "")
-
+        
         XCTAssertEqual(SQLite3.ActualDataType.integer.description, "INTEGER")
         XCTAssertEqual(SQLite3.ActualDataType.real.description, "REAL")
         XCTAssertEqual(SQLite3.ActualDataType.text.description, "TEXT")
@@ -463,21 +489,21 @@ class SQLite3Tests: XCTestCase {
         XCTAssertEqual(v3b.self, v3b)
         XCTAssertEqual(v4a.self, v4a)
         XCTAssertEqual(v4b.self, v4b)
-
+        
         XCTAssertEqual(v1a, v4a)
         XCTAssertNotEqual(v1a, v2a)
     }
     
     func testCondition() throws {
         
-        let condition1 = SQLite3.Translator<MyData>.Condition.Element.equal(\MyData.id, .integer(10))
-        let condition2 = SQLite3.Translator<MyData>.Condition.Element.notEqual(\MyData.name, .text("ABC"))
-        let condition3 = SQLite3.Translator<MyData>.Condition.Element.lessThan(\MyData.flags, .integer(10))
-        let condition4 = SQLite3.Translator<MyData>.Condition.Element.lessOrEqual(\MyData.id, .integer(10))
-        let condition5 = SQLite3.Translator<MyData>.Condition.Element.greaterThan(\MyData.id, .integer(12))
-        let condition6 = SQLite3.Translator<MyData>.Condition.Element.greaterOrEqual(\MyData.id, .integer(12))
-        let condition7 = SQLite3.Translator<MyData>.Condition.Element.between(\MyData.flags, .real(5), .real(100))
-
+        let condition1 = SQLite3.ConditionElement.equal(\MyData.id, .integer(10))
+        let condition2 = SQLite3.ConditionElement.notEqual(\MyData.name, .text("ABC"))
+        let condition3 = SQLite3.ConditionElement.lessThan(\MyData.flags, .integer(10))
+        let condition4 = SQLite3.ConditionElement.lessOrEqual(\MyData.id, .integer(10))
+        let condition5 = SQLite3.ConditionElement.greaterThan(\MyData.id, .integer(12))
+        let condition6 = SQLite3.ConditionElement.greaterOrEqual(\MyData.id, .integer(12))
+        let condition7 = SQLite3.ConditionElement.between(\MyData.flags, .real(5), .real(100))
+        
         XCTAssertEqual(condition1.sql, #""id" = 10"#)
         XCTAssertEqual(condition2.sql, #""name" != 'ABC'"#)
         XCTAssertEqual(condition3.sql, #""flags" < 10"#)

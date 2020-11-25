@@ -23,16 +23,16 @@ extension SQLite3.SQL.Query {
         switch self {
         
         case .createTable:
-            return "CREATE TABLE \(SQLite3.fieldName(Target.tableName)) (\(Target.declaresSQL))"
+            return "CREATE TABLE \(SQLite3.quotedFieldName(Target.tableName)) (\(Target.declaresSQL))"
             
         case .select:
-            return "SELECT * FROM \(SQLite3.fieldName(Target.tableName))"
+            return "SELECT * FROM \(SQLite3.quotedFieldName(Target.tableName))"
             
         case .insert(let value):
-            return "INSERT INTO \(SQLite3.fieldName(value.tableName)) (\(value.fieldsSQL)) VALUES (\(value.valuesSQL))"
+            return "INSERT INTO \(SQLite3.quotedFieldName(value.tableName)) (\(value.fieldsSQL)) VALUES (\(value.valuesSQL))"
             
         case .delete:
-            return "DELETE * FROM \(SQLite3.fieldName(Target.tableName))"
+            return "DELETE * FROM \(SQLite3.quotedFieldName(Target.tableName))"
         }
     }
 }

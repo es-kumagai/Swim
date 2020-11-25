@@ -76,8 +76,8 @@ public final class SQLite3 {
     /// - Throws: SQLite3.ResultCode
     public func attach(databasePath: String, to name: String) throws {
         
-        let path = SQLite3.quoted(databasePath)
-        let name = SQLite3.fieldName(name)
+        let path = SQLite3.quotedText(databasePath)
+        let name = SQLite3.quotedFieldName(name)
         
         try execute(sql: "ATTACH DATABASE \(path) AS \(name)")
     }

@@ -23,7 +23,7 @@ extension SQLite3Translateable {
         return Self.tableName
     }
     
-    public static func sqliteName(of keyPath: PartialKeyPath<Self>) -> String {
+    public static func sqliteFieldName(of keyPath: PartialKeyPath<Self>) -> String {
         
         guard let column = sqlite3Columns.first(where: { $0.keyPath == keyPath }) else {
 
@@ -40,7 +40,7 @@ extension SQLite3Translateable {
     
     public static var fieldsSQL: String {
         
-        return sqlite3Columns.map(\.name).map(SQLite3.fieldName).joined(separator: ", ")
+        return sqlite3Columns.map(\.name).map(SQLite3.quotedFieldName).joined(separator: ", ")
     }
     
     public var fieldsSQL: String {
@@ -75,10 +75,10 @@ extension SQLite3Translateable {
                 return (value as! Double).description
                 
             case (.text, true):
-                 return (value as? String).map(SQLite3.quoted) ?? "NULL"
+                 return (value as? String).map(SQLite3.quotedText) ?? "NULL"
                 
             case (.text, false):
-                return SQLite3.quoted(value as! String)
+                return SQLite3.quotedText(value as! String)
             }
         }
         

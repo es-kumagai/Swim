@@ -135,7 +135,7 @@ extension SQLite3.Column : CustomStringConvertible {
             return realValue!.description
             
         case .text:
-            return SQLite3.quoted(textValue!)
+            return SQLite3.quotedText(textValue!)
             
         case .null:
             return "NULL"

@@ -162,7 +162,7 @@ extension SQLite3.Value : CustomStringConvertible {
             return value?.description ?? "NULL"
             
         case .text(let value):
-            return (value?.description).map(SQLite3.quoted) ?? "NULL"
+            return (value?.description).map(SQLite3.quotedText) ?? "NULL"
             
         case .unspecified(let value?):
             return "\(value)"

@@ -11,7 +11,7 @@ extension SQLite3 {
     ///
     /// - Parameter source: The text to enclose in a single quotation.
     /// - Returns: The text that enclosed in a single quotation.
-    public static func quoted(_ source: String) -> String {
+    public static func quotedText(_ source: String) -> String {
         
         let text = source
             .map(String.init)
@@ -35,7 +35,7 @@ extension SQLite3 {
     ///
     /// - Parameter name: The text to enclose in a double quotation.
     /// - Returns: The text that enclosed in a double quotation.
-    public static func fieldName(_ name: String) -> String {
+    public static func quotedFieldName(_ name: String) -> String {
         
         let text = name
             .map(String.init)

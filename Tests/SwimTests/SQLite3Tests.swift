@@ -286,10 +286,10 @@ class SQLite3Tests: XCTestCase {
     
     func testText() throws {
         
-        XCTAssertEqual(SQLite3.quoted("TEXT"), "'TEXT'")
-        XCTAssertEqual(SQLite3.fieldName("FIELD"), "\"FIELD\"")
-        XCTAssertEqual(SQLite3.quoted("TE'XT"), "'TE''XT'")
-        XCTAssertEqual(SQLite3.fieldName("FI\"ELD"), "\"FI\"\"ELD\"")
+        XCTAssertEqual(SQLite3.quotedText("TEXT"), "'TEXT'")
+        XCTAssertEqual(SQLite3.quotedFieldName("FIELD"), "\"FIELD\"")
+        XCTAssertEqual(SQLite3.quotedText("TE'XT"), "'TE''XT'")
+        XCTAssertEqual(SQLite3.quotedFieldName("FI\"ELD"), "\"FI\"\"ELD\"")
     }
     
     func testArray() throws {
@@ -307,7 +307,7 @@ class SQLite3Tests: XCTestCase {
     
     func testTranslate() throws {
         
-        let translator = try SQLite3.Translator<MyData>()
+        let translator = SQLite3.Translator<MyData>()
         let datatype = MyData.self
 
         let metadata = datatype.sqlite3Columns

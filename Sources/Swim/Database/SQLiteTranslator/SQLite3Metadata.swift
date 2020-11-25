@@ -83,7 +83,7 @@ extension SQLite3.Translator.Metadata {
     var declareSQL: String {
         
         let elements = [
-            SQLite3.fieldName(name),
+            SQLite3.quotedFieldName(name),
             datatype.description,
             (nullable ? "" : "NOT NULL")
         ]

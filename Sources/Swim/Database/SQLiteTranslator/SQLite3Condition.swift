@@ -16,17 +16,17 @@ extension SQLite3.Translator {
             conditions = [.rootElement(element)]
         }
         
-        private init(_ condition: Condition) {
+        private init(_ condition: Self) {
 
             conditions = [.rootCondition(condition)]
         }
         
-        static func condition(_ element: Element) -> Condition {
+        static func condition(_ element: Element) -> Self {
             
             return self.init(element)
         }
         
-        static func conditions(_ condition: Condition) -> Condition {
+        static func conditions(_ condition: Self) -> Self {
             
             return self.init(condition)
         }
@@ -80,24 +80,24 @@ extension SQLite3.Translator.Condition {
         self.conditions = conditions
     }
 
-    public func and(_ condition: SQLite3.Translator<Target>.Condition) -> SQLite3.Translator<Target>.Condition {
+    public func and(_ condition: Self) -> Self {
         
-        return SQLite3.Translator<Target>.Condition(conditions: conditions + [.andCondition(condition)])
+        return Self(conditions: conditions + [.andCondition(condition)])
     }
 
-    public func and(_ element: Element) -> SQLite3.Translator<Target>.Condition {
+    public func and(_ element: Element) -> Self {
         
-        return SQLite3.Translator<Target>.Condition(conditions: conditions + [.andElement(element)])
+        return Self(conditions: conditions + [.andElement(element)])
     }
     
-    public func or(_ condition: SQLite3.Translator<Target>.Condition) -> SQLite3.Translator<Target>.Condition {
+    public func or(_ condition: Self) -> Self {
         
-        return SQLite3.Translator<Target>.Condition(conditions: conditions + [.orCondition(condition)])
+        return Self(conditions: conditions + [.orCondition(condition)])
     }
     
-    public func or(_ element: Element) -> SQLite3.Translator<Target>.Condition {
+    public func or(_ element: Element) -> Self {
         
-        return SQLite3.Translator<Target>.Condition(conditions: conditions + [.orElement(element)])
+        return Self(conditions: conditions + [.orElement(element)])
     }
 }
 

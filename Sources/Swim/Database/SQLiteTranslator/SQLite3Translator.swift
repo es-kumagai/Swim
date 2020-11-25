@@ -45,7 +45,7 @@ extension SQLite3.Translator {
         }
     }
 
-    public func makeDeleteSQL(where conditions: SQLite3.Translator<Target>.Condition? = nil) -> String {
+    public func makeDeleteSQL(where conditions: Condition? = nil) -> String {
 
         let statement = "DELETE FROM \(tableName)"
 

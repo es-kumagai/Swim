@@ -19,7 +19,7 @@ extension SQLite3 {
 
 extension SQLite3.Value {
     
-    public init<Value>(_ value: Value) where Value : SQLite3ValueCompatible {
+    public init<T>(_ value: T) where T : SQLite3ValueCompatible {
         
         self = value.sqliteValue
     }

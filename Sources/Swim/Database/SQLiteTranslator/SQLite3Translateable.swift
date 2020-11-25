@@ -7,17 +7,18 @@
 
 public protocol SQLite3Translateable {
     
+    static var sqlite3Columns: Array<SQLite3.Translator<Self>.Metadata> { get }
 }
 
 extension SQLite3Translateable {
     
-    public static var mirror: Mirror {
+    public static func sqliteName(of keyPath: PartialKeyPath<Self>) -> String {
         
-        let dummyData = UnsafeMutableBufferPointer<Self>.allocate(capacity: 1)
-        let dummyInstance = UnsafeRawBufferPointer(dummyData).load(as: Self.self)
+        guard let column = sqlite3Columns.first(where: { $0.keyPath == keyPath }) else {
+
+            fatalError("Specified key path is not defined in 'sqlite3Columns'.")
+        }
         
-        dummyData.deallocate()
-        
-        return Mirror(reflecting: dummyInstance)
+        return column.name
     }
 }

@@ -100,7 +100,7 @@ extension SQLite3.DefineDataType : CustomStringConvertible {
             throw SQLite3.TranslationError.unsupportedSQLiteType(description)
         }
     }
-    
+
     public var description: String {
         
         switch self {

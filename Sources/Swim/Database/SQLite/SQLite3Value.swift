@@ -49,7 +49,36 @@ extension SQLite3.Value {
     }
 }
 
-extension SQLite3.Value : SQLite3Translateable {
+extension SQLite3.Value : ExpressibleByIntegerLiteral {
+    
+    public init(integerLiteral value: Int) {
+        
+        self = .integer(value)
+    }
+}
+
+extension SQLite3.Value : ExpressibleByFloatLiteral {
+    
+    public init(floatLiteral value: Double) {
+        
+        self = .real(value)
+    }
+}
+
+extension SQLite3.Value : ExpressibleByStringLiteral {
+    
+    public init(stringLiteral value: String) {
+        
+        self = .text(value)
+    }
+}
+
+extension SQLite3.Value : ExpressibleByNilLiteral {
+    
+    public init(nilLiteral: ()) {
+        
+        self = .unspecified(nil)
+    }
 }
 
 extension SQLite3.Value : Equatable {

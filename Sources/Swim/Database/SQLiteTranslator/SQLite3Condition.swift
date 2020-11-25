@@ -11,14 +11,24 @@ extension SQLite3.Translator {
         
         private var conditions: Array<Item>
         
-        public init(_ element: Element) {
+        private init(_ element: Element) {
 
             conditions = [.rootElement(element)]
         }
         
-        public init(_ condition: Condition) {
+        private init(_ condition: Condition) {
 
             conditions = [.rootCondition(condition)]
+        }
+        
+        static func condition(_ element: Element) -> Condition {
+            
+            return self.init(element)
+        }
+        
+        static func conditions(_ condition: Condition) -> Condition {
+            
+            return self.init(condition)
         }
     }
 }
@@ -27,11 +37,11 @@ internal extension SQLite3.Translator.Condition {
     
     enum Item {
     
-        case rootCondition(SQLite3.Translator<Type>.Condition)
+        case rootCondition(SQLite3.Translator<Target>.Condition)
         case rootElement(Element)
-        case andCondition(SQLite3.Translator<Type>.Condition)
+        case andCondition(SQLite3.Translator<Target>.Condition)
         case andElement(Element)
-        case orCondition(SQLite3.Translator<Type>.Condition)
+        case orCondition(SQLite3.Translator<Target>.Condition)
         case orElement(Element)
     }
 }
@@ -43,22 +53,22 @@ internal extension SQLite3.Translator.Condition.Item {
         switch self {
         
         case .rootCondition(let condition):
-            return condition.sql
+            return "(\(condition.sql))"
             
         case .rootElement(let element):
-            return element.sql
+            return "(\(element.sql))"
             
         case .andCondition(let condition):
             return "AND (\(condition.sql))"
 
         case .andElement(let element):
-            return "AND \(element.sql)"
+            return "AND (\(element.sql))"
             
         case .orCondition(let condition):
             return "OR (\(condition.sql))"
             
         case .orElement(let element):
-            return "OR \(element.sql)"
+            return "OR (\(element.sql))"
         }
     }
 }
@@ -70,24 +80,24 @@ extension SQLite3.Translator.Condition {
         self.conditions = conditions
     }
 
-    public func and(_ condition: SQLite3.Translator<Type>.Condition) -> SQLite3.Translator<Type>.Condition {
+    public func and(_ condition: SQLite3.Translator<Target>.Condition) -> SQLite3.Translator<Target>.Condition {
         
-        return SQLite3.Translator<Type>.Condition(conditions: conditions + [.andCondition(condition)])
+        return SQLite3.Translator<Target>.Condition(conditions: conditions + [.andCondition(condition)])
     }
 
-    public func and(_ element: Element) -> SQLite3.Translator<Type>.Condition {
+    public func and(_ element: Element) -> SQLite3.Translator<Target>.Condition {
         
-        return SQLite3.Translator<Type>.Condition(conditions: conditions + [.andElement(element)])
+        return SQLite3.Translator<Target>.Condition(conditions: conditions + [.andElement(element)])
     }
     
-    public func or(_ condition: SQLite3.Translator<Type>.Condition) -> SQLite3.Translator<Type>.Condition {
+    public func or(_ condition: SQLite3.Translator<Target>.Condition) -> SQLite3.Translator<Target>.Condition {
         
-        return SQLite3.Translator<Type>.Condition(conditions: conditions + [.orCondition(condition)])
+        return SQLite3.Translator<Target>.Condition(conditions: conditions + [.orCondition(condition)])
     }
     
-    public func or(_ element: Element) -> SQLite3.Translator<Type>.Condition {
+    public func or(_ element: Element) -> SQLite3.Translator<Target>.Condition {
         
-        return SQLite3.Translator<Type>.Condition(conditions: conditions + [.orElement(element)])
+        return SQLite3.Translator<Target>.Condition(conditions: conditions + [.orElement(element)])
     }
 }
 

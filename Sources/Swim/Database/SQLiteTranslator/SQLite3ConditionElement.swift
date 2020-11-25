@@ -9,13 +9,14 @@ extension SQLite3.Translator.Condition {
 
     public enum Element {
         
-        case equal(String, SQLite3.Value)
-        case notEqual(String, SQLite3.Value)
-        case lessOrEqual(String, SQLite3.Value)
-        case lessThan(String, SQLite3.Value)
-        case greaterOrEqual(String, SQLite3.Value)
-        case greaterThan(String, SQLite3.Value)
-        case between(String, SQLite3.Value, SQLite3.Value)
+        case equal(PartialKeyPath<Target>, SQLite3.Value)
+        case notEqual(PartialKeyPath<Target>, SQLite3.Value)
+        case lessOrEqual(PartialKeyPath<Target>, SQLite3.Value)
+        case lessThan(PartialKeyPath<Target>, SQLite3.Value)
+        case greaterOrEqual(PartialKeyPath<Target>, SQLite3.Value)
+        case greaterThan(PartialKeyPath<Target>, SQLite3.Value)
+        case between(PartialKeyPath<Target>, SQLite3.Value, SQLite3.Value)
+        case notBetween(PartialKeyPath<Target>, SQLite3.Value, SQLite3.Value)
         case rawSQL(String)
     }
 }
@@ -34,26 +35,29 @@ extension SQLite3.Translator.Condition.Element {
         
         switch self {
         
-        case let .equal(name, value):
-            return "\(SQLite3.fieldName(name)) = \(value)"
+        case let .equal(keyPath, value):
+            return "\(SQLite3.fieldName(Target.sqliteName(of: keyPath))) = \(value)"
 
-        case let .notEqual(name, value):
-            return "\(SQLite3.fieldName(name)) != \(value)"
+        case let .notEqual(keyPath, value):
+            return "\(SQLite3.fieldName(Target.sqliteName(of: keyPath))) != \(value)"
             
-        case let .lessOrEqual(name, value):
-            return "\(SQLite3.fieldName(name)) <= \(value)"
+        case let .lessOrEqual(keyPath, value):
+            return "\(SQLite3.fieldName(Target.sqliteName(of: keyPath))) <= \(value)"
             
-        case let .lessThan(name, value):
-            return "\(SQLite3.fieldName(name)) < \(value)"
+        case let .lessThan(keyPath, value):
+            return "\(SQLite3.fieldName(Target.sqliteName(of: keyPath))) < \(value)"
             
-        case let .greaterOrEqual(name, value):
-            return "\(SQLite3.fieldName(name)) >= \(value)"
+        case let .greaterOrEqual(keyPath, value):
+            return "\(SQLite3.fieldName(Target.sqliteName(of: keyPath))) >= \(value)"
             
-        case let .greaterThan(name, value):
-            return "\(SQLite3.fieldName(name)) > \(value)"
+        case let .greaterThan(keyPath, value):
+            return "\(SQLite3.fieldName(Target.sqliteName(of: keyPath))) > \(value)"
             
-        case let .between(name, lhs, rhs):
-            return "\(SQLite3.fieldName(name)) BETWEEN \(lhs) AND \(rhs)"
+        case let .between(keyPath, lhs, rhs):
+            return "\(SQLite3.fieldName(Target.sqliteName(of: keyPath))) BETWEEN \(lhs) AND \(rhs)"
+            
+        case let .notBetween(keyPath, lhs, rhs):
+            return "\(SQLite3.fieldName(Target.sqliteName(of: keyPath))) NOT BETWEEN \(lhs) AND \(rhs)"
             
         case let .rawSQL(sql):
             return sql

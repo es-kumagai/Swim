@@ -7,21 +7,23 @@
 
 extension SQLite3 {
     
-    public struct Translator<Type> where Type : SQLite3Translateable {
+    public struct Translator<Target> where Target : SQLite3Translateable {
         
         public private(set) var tableName: String
         public private(set) var metadata: Array<Metadata>
 
         public init(tableName: String? = nil) throws {
 
-            self.tableName = SQLite3.fieldName(tableName ?? "\(Type.self)")
-            self.metadata = try Self.makeMetadata()
+            self.tableName = SQLite3.fieldName(tableName ?? "\(Target.self)")
+            self.metadata = Target.sqlite3Columns
         }
     }
 }
 
 extension SQLite3.Translator {
  
+    public typealias ConditionsPredicate = () -> Condition
+    
     public func makeCreateTableSQL() -> String {
         
         let columns = metadata.map(\.sql)
@@ -29,11 +31,11 @@ extension SQLite3.Translator {
         return "CREATE TABLE \(tableName) (\(columns.joined(separator: ", ")))"
     }
 
-    public func makeSelectSQL(where conditions: SQLite3.Translator<Type>.Condition? = nil) -> String {
+    public func makeSelectSQL(where conditions: ConditionsPredicate? = nil) -> String {
 
         let statement = "SELECT * FROM \(tableName)"
 
-        if let conditionSQL = conditions?.sql {
+        if let conditionSQL = conditions?().sql {
 
             return statement + " WHERE \(conditionSQL)"
         }
@@ -43,7 +45,7 @@ extension SQLite3.Translator {
         }
     }
 
-    public func makeDeleteSQL(where conditions: SQLite3.Translator<Type>.Condition? = nil) -> String {
+    public func makeDeleteSQL(where conditions: SQLite3.Translator<Target>.Condition? = nil) -> String {
 
         let statement = "DELETE FROM \(tableName)"
 
@@ -57,50 +59,57 @@ extension SQLite3.Translator {
         }
     }
 
-    public func makeInsertSQL(for value: Type) -> String {
-        
-        let mirror = Mirror(reflecting: value)
+    public func makeInsertSQL(for value: Target) -> String {
         
         let fields = metadata.map(\.name).map(SQLite3.fieldName)
-        let values = zip(mirror.children, metadata).map { (item, meta) -> String in
+        let values = metadata.map { meta -> String in
             
-            guard let itemMeta = Metadata(name: item.label!, value: item.value, offset: meta.offset), meta == itemMeta else {
-                
-                fatalError("Unexpected data type. (metadata: \(meta.datatype), type of value: \(type(of: item.value))")
-            }
+            let value = value[keyPath: meta.keyPath]
             
-            switch itemMeta.datatype {
+            switch (meta.datatype, meta.nullable) {
 
-            case .variant:
-                return (item.value as? SQLite3.Value)?.description ?? "NULL"
+            case (.variant, true):
+                return (value as? SQLite3.Value)?.description ?? "NULL"
+  
+            case (.variant, false):
+                return (value as! SQLite3.Value).description
                 
-            case .integer:
-                return (item.value as? Int)?.description ?? "NULL"
+            case (.integer, true):
+                return (value as? Int)?.description ?? "NULL"
                 
-            case .real:
-                return (item.value as? Double)?.description ?? "NULL"
+            case (.integer, false):
+                return (value as! Int).description
                 
-            case .text:
-                 return (item.value as? String).map(SQLite3.quoted) ?? "NULL"
+            case (.real, true):
+                return (value as? Double)?.description ?? "NULL"
+                
+            case (.real, false):
+                return (value as! Double).description
+                
+            case (.text, true):
+                 return (value as? String).map(SQLite3.quoted) ?? "NULL"
+                
+            case (.text, false):
+                return SQLite3.quoted(value as! String)
             }
         }
         
         return "INSERT INTO \(tableName) (\(fields.joined(separator: ", "))) VALUES (\(values.joined(separator: ", ")))"
     }
     
-    public func instantiate(from statement: SQLite3.Statement) -> Type {
+    public func instantiate(from statement: SQLite3.Statement) -> Target {
     
         return instantiate(from: statement.row)
     }
     
-    public func instantiate(from row: SQLite3.Row) -> Type {
+    public func instantiate(from row: SQLite3.Row) -> Target {
         
         guard row.count == metadata.count else {
         
             fatalError("Expect the number of columns (\(row.count)) is equals to the number of metadata (\(metadata.count)).")
         }
         
-        let dataLength = MemoryLayout<Type>.size
+        let dataLength = MemoryLayout<Target>.size
         let dataBytes = UnsafeMutableBufferPointer<Int8>.allocate(capacity: dataLength)
         
         let rawBytes = UnsafeMutableRawBufferPointer(dataBytes)
@@ -145,32 +154,6 @@ extension SQLite3.Translator {
             }
         }
         
-        return rawBytes.load(as: Type.self)
-    }
-}
-
-internal extension SQLite3.Translator {
-    
-    static func makeMetadata() throws -> Array<Metadata> {
-        
-        let mirror = Type.mirror
-        let alignment = Double(MemoryLayout<Self>.alignment)
-        
-        var offset = 0
-        
-        return try mirror.children.map { item in
-            
-            guard let metadata = Metadata(name: item.label!, value: item.value, offset: offset) else {
-                
-                throw SQLite3.TranslationError.uncompatibleSwiftType(type(of: item.value))
-            }
-
-            defer {
-                
-                offset = Int((Double(offset + metadata.size) / alignment).rounded(.up) * alignment)
-            }
-            
-            return metadata
-        }
+        return rawBytes.load(as: Target.self)
     }
 }

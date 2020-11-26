@@ -38,28 +38,28 @@ extension SQLite3.ConditionElement {
         switch self {
         
         case let .equal(keyPath, value):
-            return "\(SQLite3.quotedFieldName(Target.sqliteFieldName(of: keyPath))) = \(value)"
+            return "\(Target.sqliteField(of: keyPath).quotedFieldName) = \(value)"
 
         case let .notEqual(keyPath, value):
-            return "\(SQLite3.quotedFieldName(Target.sqliteFieldName(of: keyPath))) != \(value)"
+            return "\(Target.sqliteField(of: keyPath).quotedFieldName) != \(value)"
             
         case let .lessOrEqual(keyPath, value):
-            return "\(SQLite3.quotedFieldName(Target.sqliteFieldName(of: keyPath))) <= \(value)"
+            return "\(Target.sqliteField(of: keyPath).quotedFieldName) <= \(value)"
             
         case let .lessThan(keyPath, value):
-            return "\(SQLite3.quotedFieldName(Target.sqliteFieldName(of: keyPath))) < \(value)"
+            return "\(Target.sqliteField(of: keyPath).quotedFieldName) < \(value)"
             
         case let .greaterOrEqual(keyPath, value):
-            return "\(SQLite3.quotedFieldName(Target.sqliteFieldName(of: keyPath))) >= \(value)"
+            return "\(Target.sqliteField(of: keyPath).quotedFieldName) >= \(value)"
             
         case let .greaterThan(keyPath, value):
-            return "\(SQLite3.quotedFieldName(Target.sqliteFieldName(of: keyPath))) > \(value)"
+            return "\(Target.sqliteField(of: keyPath).quotedFieldName) > \(value)"
             
         case let .between(keyPath, lhs, rhs):
-            return "\(SQLite3.quotedFieldName(Target.sqliteFieldName(of: keyPath))) BETWEEN \(lhs) AND \(rhs)"
+            return "\(Target.sqliteField(of: keyPath).quotedFieldName) BETWEEN \(lhs) AND \(rhs)"
             
         case let .notBetween(keyPath, lhs, rhs):
-            return "\(SQLite3.quotedFieldName(Target.sqliteFieldName(of: keyPath))) NOT BETWEEN \(lhs) AND \(rhs)"
+            return "\(Target.sqliteField(of: keyPath).quotedFieldName) NOT BETWEEN \(lhs) AND \(rhs)"
             
         case let .rawSQL(sql):
             return sql

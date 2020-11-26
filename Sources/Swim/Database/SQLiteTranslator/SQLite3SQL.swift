@@ -8,9 +8,26 @@
 @_functionBuilder
 struct SQLite3SQLBuilder {
     
-    static func buildBlock(_ statements: String ...) -> String {
+    static func buildBlock(_ statements: String? ...) -> String {
         
         return statements
+            .compactMap { $0 }
+            .filter { !$0.isEmpty }
+            .joined(separator: " ")
+    }
+    
+    static func buildEither(first: String? ...) -> String {
+        
+        return first
+            .compactMap { $0 }
+            .filter { !$0.isEmpty }
+            .joined(separator: " ")
+    }
+    
+    static func buildEither(second: String? ...) -> String {
+        
+        return second
+            .compactMap { $0 }
             .filter { !$0.isEmpty }
             .joined(separator: " ")
     }
@@ -29,7 +46,7 @@ extension SQLite3 {
     public struct SQL<Target, Kind> where Target : SQLite3Translateable, Kind : SQLite3SQLKind {
         
         public private(set) var query: Query
-        public private(set) var conditions: SQLite3.Condition<Target>?
+        public private(set) var conditions: SQLite3.Conditions<Target>?
 
         private init(query: Query) {
         
@@ -48,7 +65,17 @@ extension SQLite3.SQL where Kind == SQLite3.NoConditions {
     
     public static func select(from table: Target.Type) -> Self {
         
-        self.init(query: .select)
+        self.init(query: .select())
+    }
+    
+    public static func select(_ field: SQLite3.Field, from table: Target.Type) -> Self {
+        
+        self.init(query: .select([field]))
+    }
+
+    public static func select(_ fields: [SQLite3.Field], from table: Target.Type) -> Self {
+        
+        self.init(query: .select(fields))
     }
     
     public static func insert(_ value: Target) -> Self {
@@ -64,33 +91,43 @@ extension SQLite3.SQL where Kind == SQLite3.NoConditions {
 
 extension SQLite3.SQL where Kind == SQLite3.WithConditions {
     
-    private init(query: Query, where conditions: SQLite3.Condition<Target>) {
+    private init(query: Query, where conditions: SQLite3.Conditions<Target>) {
     
         self.query = query
         self.conditions = conditions
     }
 
-    public static func select(from table: Target.Type, where conditions: SQLite3.Condition<Target>) -> Self {
+    public static func select(from table: Target.Type, where conditions: SQLite3.Conditions<Target>) -> Self {
         
-        self.init(query: .select, where: conditions)
+        self.init(query: .select(), where: conditions)
+    }
+
+    public static func select(_ field: SQLite3.Field, from table: Target.Type, where conditions: SQLite3.Conditions<Target>) -> Self {
+        
+        self.init(query: .select([field]), where: conditions)
+    }
+
+    public static func select(_ fields: [SQLite3.Field], from table: Target.Type, where conditions: SQLite3.Conditions<Target>) -> Self {
+        
+        self.init(query: .select(fields), where: conditions)
     }
     
-    public static func insert(_ value: Target, where conditions: SQLite3.Condition<Target>) -> Self {
+    public static func insert(_ value: Target, where conditions: SQLite3.Conditions<Target>) -> Self {
         
         self.init(query: .insert(value), where: conditions)
     }
     
-    public static func delete(from table: Target.Type, where conditions: SQLite3.Condition<Target>) -> Self {
+    public static func delete(from table: Target.Type, where conditions: SQLite3.Conditions<Target>) -> Self {
         
         self.init(query: .delete, where: conditions)
     }
 
-    public func and(_ conditions: SQLite3.Condition<Target>) -> Self {
+    public func and(_ conditions: SQLite3.Conditions<Target>) -> Self {
     
         return Self.init(query: query, where: self.conditions?.and(conditions) ?? conditions)
     }
 
-    public func or(_ conditions: SQLite3.Condition<Target>) -> Self {
+    public func or(_ conditions: SQLite3.Conditions<Target>) -> Self {
     
         return Self.init(query: query, where: self.conditions?.or(conditions) ?? conditions)
     }
@@ -102,7 +139,7 @@ extension SQLite3.SQL {
     public func text() -> String {
 
         query.sqlWithoutConditions
-        (conditions?.sql).map { "WHERE \($0)" } ?? ""
+        (conditions?.sql).map { "WHERE \($0)" }
     }
 }
 

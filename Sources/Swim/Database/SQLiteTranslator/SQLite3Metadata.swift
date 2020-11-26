@@ -9,7 +9,7 @@ extension SQLite3 {
     
     public struct ColumnMetadata<Target> where Target : SQLite3Translateable {
         
-        public var name: String
+        public var field: Field
         public var keyPath: PartialKeyPath<Target>
         public var datatype: SQLite3.DefineDataType
         public var nullable: Bool
@@ -18,12 +18,12 @@ extension SQLite3 {
         /// If the `keyPath`'s type is not supported by SQLite3, aborting program in runtime.
         ///
         /// - Parameters:
-        ///   - name: The name of this metadata.
+        ///   - field: The SQLite filed of this metadata.
         ///   - value: The value that use to analyze metadata.
         ///   - offset: The offset data of this metadata.
-        public init<Value>(name: String, keyPath: KeyPath<Target, Value>) {
+        public init<Value>(_ field: Field, keyPath: KeyPath<Target, Value>) {
             
-            self.name = name
+            self.field = field
             self.keyPath = keyPath as PartialKeyPath<Target>
             
             switch Value.self {
@@ -82,7 +82,7 @@ extension SQLite3.ColumnMetadata {
     var declareSQL: String {
         
         let elements = [
-            SQLite3.quotedFieldName(name),
+            field.quotedName,
             datatype.description,
             (nullable ? "" : "NOT NULL")
         ]

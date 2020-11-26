@@ -40,11 +40,11 @@ extension SQLiteArray {
     
     public var count: Int {
         
-        let sql = "SELECT COUNT(*) FROM \(Element.tableName)"
+        let sql = translator.makeSelectSQL(fields: [.init("*", function: "COUNT")])
         
         do {
 
-            guard let statement = try sqlite.execute(sql: sql) else {
+            guard let statement = try sqlite.execute(sql: sql.description) else {
             
                 fatalError("Failed to get count.")
             }

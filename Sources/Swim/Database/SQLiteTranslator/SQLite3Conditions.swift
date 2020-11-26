@@ -10,39 +10,39 @@ public protocol SQLite3Condition {
     var sql: String { get }
 }
 
-public func == <Target : SQLite3Translateable>(lhs: PartialKeyPath<Target>, rhs: SQLite3.Value) -> SQLite3.Condition<Target> {
+public func == <Target : SQLite3Translateable>(lhs: PartialKeyPath<Target>, rhs: SQLite3.Value) -> SQLite3.Conditions<Target> {
     
     return .init(.equal(lhs, rhs))
 }
 
-public func != <Target : SQLite3Translateable>(lhs: PartialKeyPath<Target>, rhs: SQLite3.Value) -> SQLite3.Condition<Target> {
+public func != <Target : SQLite3Translateable>(lhs: PartialKeyPath<Target>, rhs: SQLite3.Value) -> SQLite3.Conditions<Target> {
     
     return .init(.notEqual(lhs, rhs))
 }
 
-public func <= <Target : SQLite3Translateable>(lhs: PartialKeyPath<Target>, rhs: SQLite3.Value) -> SQLite3.Condition<Target> {
+public func <= <Target : SQLite3Translateable>(lhs: PartialKeyPath<Target>, rhs: SQLite3.Value) -> SQLite3.Conditions<Target> {
     
     return .init(.lessOrEqual(lhs, rhs))
 }
 
-public func >= <Target : SQLite3Translateable>(lhs: PartialKeyPath<Target>, rhs: SQLite3.Value) -> SQLite3.Condition<Target> {
+public func >= <Target : SQLite3Translateable>(lhs: PartialKeyPath<Target>, rhs: SQLite3.Value) -> SQLite3.Conditions<Target> {
     
     return .init(.greaterOrEqual(lhs, rhs))
 }
 
-public func < <Target : SQLite3Translateable>(lhs: PartialKeyPath<Target>, rhs: SQLite3.Value) -> SQLite3.Condition<Target> {
+public func < <Target : SQLite3Translateable>(lhs: PartialKeyPath<Target>, rhs: SQLite3.Value) -> SQLite3.Conditions<Target> {
     
     return .init(.lessThan(lhs, rhs))
 }
 
-public func > <Target : SQLite3Translateable>(lhs: PartialKeyPath<Target>, rhs: SQLite3.Value) -> SQLite3.Condition<Target> {
+public func > <Target : SQLite3Translateable>(lhs: PartialKeyPath<Target>, rhs: SQLite3.Value) -> SQLite3.Conditions<Target> {
     
     return .init(.greaterThan(lhs, rhs))
 }
 
 extension SQLite3 {
 
-    public struct Condition<Target> where Target : SQLite3Translateable {
+    public struct Conditions<Target> where Target : SQLite3Translateable {
         
         public typealias Path = PartialKeyPath<Target>
         public typealias Value = SQLite3.Value
@@ -81,7 +81,7 @@ extension SQLite3 {
     }
 }
 
-internal extension SQLite3.Condition {
+internal extension SQLite3.Conditions {
     
     enum Item {
     
@@ -110,7 +110,7 @@ extension Collection where Element : SQLite3Condition {
     }
 }
 
-extension SQLite3.Condition.Item : SQLite3Condition {
+extension SQLite3.Conditions.Item : SQLite3Condition {
 
     var sql: String {
 
@@ -131,7 +131,7 @@ extension SQLite3.Condition.Item : SQLite3Condition {
     }
 }
 
-extension SQLite3.Condition {
+extension SQLite3.Conditions {
  
     private init(conditions: Array<Item>) {
         
@@ -149,7 +149,7 @@ extension SQLite3.Condition {
     }
 }
 
-extension SQLite3.Condition {
+extension SQLite3.Conditions {
     
     public var sql: String {
         

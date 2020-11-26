@@ -30,9 +30,10 @@ extension SQLite3.Translator {
         return .createTable(Target.self)
     }
     
-    public func makeSelectSQL() -> SQLite3.SQL<Target, SQLite3.NoConditions> {
+    public func makeSelectSQL(fields: [SQLite3.Field] = []) -> SQLite3.SQL<Target, SQLite3.NoConditions> {
+        print(separator: "")
         
-        return .select(from: Target.self)
+        return .select(fields, from: Target.self)
     }
     
     public func makeInsertSQL(with value: Target) -> SQLite3.SQL<Target, SQLite3.NoConditions> {
@@ -45,17 +46,17 @@ extension SQLite3.Translator {
         return .delete(from: Target.self)
     }
 
-    public func makeSelectSQL(where conditions: SQLite3.Condition<Target>) -> SQLite3.SQL<Target, SQLite3.WithConditions> {
+    public func makeSelectSQL(fields: [SQLite3.Field] = [], where conditions: SQLite3.Conditions<Target>) -> SQLite3.SQL<Target, SQLite3.WithConditions> {
 
-        return .select(from: Target.self, where: conditions)
+        return .select(fields, from: Target.self, where: conditions)
     }
     
-    public func makeInsertSQL(_ value: Target, where conditions: SQLite3.Condition<Target>) -> SQLite3.SQL<Target, SQLite3.WithConditions> {
+    public func makeInsertSQL(_ value: Target, where conditions: SQLite3.Conditions<Target>) -> SQLite3.SQL<Target, SQLite3.WithConditions> {
         
         return .insert(value, where: conditions)
     }
     
-    public func makeDeleteSQL(from table: Target.Type, where conditions: SQLite3.Condition<Target>) -> SQLite3.SQL<Target, SQLite3.WithConditions> {
+    public func makeDeleteSQL(from table: Target.Type, where conditions: SQLite3.Conditions<Target>) -> SQLite3.SQL<Target, SQLite3.WithConditions> {
         
         return .delete(from: Target.self, where: conditions)
     }
@@ -88,7 +89,7 @@ extension SQLite3.Translator {
 
             guard column.declaredType == metadata.datatype else {
 
-                fatalError("Type mismatch. Type of column '\(column.name)' is \(column.declaredType), but type of property '\(metadata.name)' is \(metadata.datatype).")
+                fatalError("Type mismatch. Type of column '\(column.name)' is \(column.declaredType), but type of property '\(metadata.field)' is \(metadata.datatype).")
             }
             
             switch (metadata.datatype, metadata.nullable) {

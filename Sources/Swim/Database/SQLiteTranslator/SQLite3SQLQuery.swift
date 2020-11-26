@@ -10,7 +10,7 @@ extension SQLite3.SQL {
     public enum Query {
         
         case createTable
-        case select
+        case select(Array<SQLite3.Field> = [])
         case insert(Target)
         case delete
     }
@@ -18,21 +18,35 @@ extension SQLite3.SQL {
 
 extension SQLite3.SQL.Query {
 
+    @SQLite3SQLBuilder
     public var sqlWithoutConditions: String {
         
         switch self {
         
         case .createTable:
-            return "CREATE TABLE \(SQLite3.quotedFieldName(Target.tableName)) (\(Target.declaresSQL))"
+            "CREATE TABLE"
+            Target.quotedTableName
+            "(\(Target.declaresSQL))"
             
-        case .select:
-            return "SELECT * FROM \(SQLite3.quotedFieldName(Target.tableName))"
-            
+        case .select(let fields) where fields.isEmpty:
+            "SELECT * FROM"
+            Target.quotedTableName
+
+        case .select(let fields):
+            "SELECT"
+            fields.map(\.sql).joined(separator: ", ")
+            "FROM"
+            Target.quotedTableName
+
         case .insert(let value):
-            return "INSERT INTO \(SQLite3.quotedFieldName(value.tableName)) (\(value.fieldsSQL)) VALUES (\(value.valuesSQL))"
+            "INSERT INTO"
+            value.quotedTableName
+            "(\(value.fieldsSQL))"
+            "VALUES (\(value.valuesSQL))"
             
         case .delete:
-            return "DELETE * FROM \(SQLite3.quotedFieldName(Target.tableName))"
-        }
+            "DELETE * FROM"
+            Target.quotedTableName
+       }
     }
 }

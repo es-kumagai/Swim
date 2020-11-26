@@ -29,14 +29,34 @@ extension SQLite3Translateable {
         return Self.tableName
     }
     
-    public static func sqliteFieldName(of keyPath: PartialKeyPath<Self>) -> String {
+    public static var quotedTableName: String {
+        
+        return SQLite3.quotedFieldName(tableName)
+    }
+    
+    public var quotedTableName: String {
+        
+        return Self.quotedTableName
+    }
+    
+    public static func sqliteField(by name: String) -> SQLite3.Field {
+        
+        guard let column = sqlite3Columns.first(where: { $0.field.name == name }) else {
+
+            fatalError("Specified name '\(name)' is not defined in 'sqlite3Columns'.")
+        }
+        
+        return column.field
+    }
+    
+    public static func sqliteField(of keyPath: PartialKeyPath<Self>) -> SQLite3.Field {
         
         guard let column = sqlite3Columns.first(where: { $0.keyPath == keyPath }) else {
 
             fatalError("Specified key path is not defined in 'sqlite3Columns'.")
         }
         
-        return column.name
+        return column.field
     }
     
     public static var declaresSQL: String {
@@ -46,7 +66,7 @@ extension SQLite3Translateable {
     
     public static var fieldsSQL: String {
         
-        return sqlite3Columns.map(\.name).map(SQLite3.quotedFieldName).joined(separator: ", ")
+        return sqlite3Columns.map(\.field.sql).joined(separator: ", ")
     }
     
     public var fieldsSQL: String {

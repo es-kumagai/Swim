@@ -6,6 +6,7 @@
 //
 
 infix operator <=>
+infix operator =~
 
 public protocol SQLite3Condition {
     
@@ -37,6 +38,16 @@ public func != <Target : SQLite3Translateable>(lhs: PartialKeyPath<Target>, rhs:
     return .init(.notBetween(lhs, rhs.lowerBound, rhs.upperBound))
 }
 
+public func == <Target : SQLite3Translateable>(lhs: PartialKeyPath<Target>, rhs: Array<SQLite3.Value>) -> SQLite3.Conditions<Target> {
+    
+    return .init(.in(lhs, rhs))
+}
+
+public func != <Target : SQLite3Translateable>(lhs: PartialKeyPath<Target>, rhs: Array<SQLite3.Value>) -> SQLite3.Conditions<Target> {
+    
+    return .init(.notIn(lhs, rhs))
+}
+
 public func <= <Target : SQLite3Translateable>(lhs: PartialKeyPath<Target>, rhs: SQLite3.Value) -> SQLite3.Conditions<Target> {
     
     return .init(.lessOrEqual(lhs, rhs))
@@ -55,6 +66,11 @@ public func < <Target : SQLite3Translateable>(lhs: PartialKeyPath<Target>, rhs: 
 public func > <Target : SQLite3Translateable>(lhs: PartialKeyPath<Target>, rhs: SQLite3.Value) -> SQLite3.Conditions<Target> {
     
     return .init(.greaterThan(lhs, rhs))
+}
+
+public func =~ <Target : SQLite3Translateable>(path: PartialKeyPath<Target>, pattern: String) -> SQLite3.Conditions<Target> {
+    
+    return .init(.regularExpression(path, pattern, caseSensitive: false))
 }
 
 extension SQLite3 {
@@ -132,6 +148,11 @@ extension SQLite3 {
             return .init(.notLike(path, pattern))
         }
 
+        public static func regularExpression(_ path: Path, _ pattern: String, caseSensitive: Bool) -> Self {
+        
+            return .init(.regularExpression(path, pattern, caseSensitive: caseSensitive))
+        }
+        
         public static func rawSQL(_ sql: String) -> Self {
             
             return .init(.rawSQL(sql))

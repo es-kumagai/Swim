@@ -366,10 +366,12 @@ class SQLite3Tests: XCTestCase {
         let selectSQL13 = SQLite3.SQL.select(SQLite3.Field("*", function: "COUNT"), from: MyData.self)
         let selectSQL14 = SQLite3.SQL.select(from: datatype, where: .isNull(\MyData.option))
         let selectSQL15 = SQLite3.SQL.select(from: datatype, where: .isNotNull(\MyData.option))
-        let selectSQL16 = SQLite3.SQL.select(from: datatype, where: .in(\MyData.name, ["A", "B", "C"]))
-        let selectSQL17 = SQLite3.SQL.select(from: datatype, where: .notIn(\MyData.id, [3, 8, 10]))
+        let selectSQL16 = SQLite3.SQL.select(from: datatype, where: \MyData.name == ["A", "B", "C"])
+        let selectSQL17 = SQLite3.SQL.select(from: datatype, where: \MyData.id != [3, 8, 10])
         let selectSQL18 = SQLite3.SQL.select(from: datatype, where: .like(\MyData.name, "%TEST%"))
         let selectSQL19 = SQLite3.SQL.select(from: datatype, where: .notLike(\MyData.name, "%TEST%"))
+        let selectSQL20 = SQLite3.SQL.select(from: datatype, where: \MyData.name =~ ".*")
+        let selectSQL21 = SQLite3.SQL.select(from: datatype, where: .regularExpression(\MyData.name, ".*", caseSensitive: true))
 
         
         XCTAssertEqual(selectSQL1.description, #"SELECT * FROM "MyData""#)
@@ -391,6 +393,8 @@ class SQLite3Tests: XCTestCase {
         XCTAssertEqual(selectSQL17.description, #"SELECT * FROM "MyData" WHERE ("id" NOT IN (3, 8, 10))"#)
         XCTAssertEqual(selectSQL18.description, #"SELECT * FROM "MyData" WHERE ("name" LIKE '%TEST%')"#)
         XCTAssertEqual(selectSQL19.description, #"SELECT * FROM "MyData" WHERE ("name" NOT LIKE '%TEST%')"#)
+        XCTAssertEqual(selectSQL20.description, #"SELECT * FROM "MyData" WHERE ("name" REGEXP '.*')"#)
+        XCTAssertEqual(selectSQL21.description, #"SELECT * FROM "MyData" WHERE ("name" REGEXP BINARY '.*')"#)
 
         let selectSQL1t = translator.makeSelectSQL()
         let selectSQL2t = translator.makeSelectSQL(where: \MyData.id == (3...5))

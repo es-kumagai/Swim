@@ -26,6 +26,7 @@ extension SQLite3 {
         case notIn(Path, [Value])
         case like(Path, String)
         case notLike(Path, String)
+        case regularExpression(Path, String, caseSensitive: Bool)
         case rawSQL(String)
     }
 }
@@ -120,6 +121,16 @@ extension SQLite3.ConditionElement {
         case let .notLike(keyPath, pattern):
             Target.sqliteField(of: keyPath).quotedFieldName
             "NOT LIKE"
+            SQLite3.quotedText(pattern)
+
+        case let .regularExpression(keyPath, pattern, caseSensitive: true):
+            Target.sqliteField(of: keyPath).quotedFieldName
+            "REGEXP BINARY"
+            SQLite3.quotedText(pattern)
+
+        case let .regularExpression(keyPath, pattern, caseSensitive: false):
+            Target.sqliteField(of: keyPath).quotedFieldName
+            "REGEXP"
             SQLite3.quotedText(pattern)
 
         case let .rawSQL(sql):

@@ -7,6 +7,11 @@
 
 extension SQLite3 {
 
+    public static func enclosedList<Value>(_ values: [Value], separator: String = ", ") -> String where Value : CustomStringConvertible {
+    
+        return "(\(values.map(\.description).joined(separator: separator)))"
+    }
+    
     /// [Swim] Make `source` enclosing in a single quotation.
     ///
     /// - Parameter source: The text to enclose in a single quotation.

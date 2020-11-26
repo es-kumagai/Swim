@@ -341,23 +341,37 @@ class SQLite3Tests: XCTestCase {
         XCTAssertNoThrow(try sqlite.execute(sql: insertSQL2.description))
         
         let selectSQL1 = SQLite3.SQL.select(from: datatype)
-        let selectSQL2 = SQLite3.SQL.select(from: datatype, where: .between(\MyData.id, 3, 5))
+        let selectSQL2 = SQLite3.SQL.select(from: datatype, where: \MyData.id == (3...5))
         let selectSQL3 = SQLite3.SQL.select(from: datatype, where: \MyData.name == "TEST")
         let selectSQL4 = SQLite3.SQL.select(from: datatype, where: \MyData.id < 3)
         let selectSQL5 = SQLite3.SQL.select(from: datatype, where: \MyData.id <= 3)
         let selectSQL6 = SQLite3.SQL.select(from: datatype, where: \MyData.id > 3)
         let selectSQL7 = SQLite3.SQL.select(from: datatype, where: \MyData.id >= 3)
-        let selectSQL8 = SQLite3.SQL.select(from: datatype, where: .notBetween(\MyData.id, 3, 5))
+        let selectSQL8 = SQLite3.SQL.select(from: datatype, where: \MyData.id == (3...5))
         let selectSQL9 = SQLite3.SQL.select(from: datatype, where: SQLite3.Conditions.notBetween(\MyData.id, 3, 5).and(\MyData.name == "TEST"))
         let selectSQL10 = SQLite3.SQL.select(from: datatype, where:
-                                                SQLite3.Conditions.satisfyAll(.notBetween(\MyData.id, 3, 5), \MyData.name == "TEST")
+                                                SQLite3.Conditions.satisfyAll {
+                                                    \MyData.id != (3...5)
+                                                    \MyData.name == "TEST"
+                                                }
                                                 .or(\MyData.option < 10))
         
         let selectSQL11 = SQLite3.SQL.select(from: datatype, where: .notBetween(\MyData.id, 3, 5)).and((\MyData.name == "TEST").or(\MyData.option < 10))
         let selectSQL12 = SQLite3.SQL.select(from: datatype, where:
-                                                .satisfyAll(.notBetween(\MyData.id, 3, 5), \MyData.name == "TEST", \MyData.option < 10))
+                                                .satisfyAll {
+                                                    \MyData.id != (3...5)
+                                                    \MyData.name == "TEST"
+                                                    \MyData.option < 10
+                                                })
         let selectSQL13 = SQLite3.SQL.select(SQLite3.Field("*", function: "COUNT"), from: MyData.self)
+        let selectSQL14 = SQLite3.SQL.select(from: datatype, where: .isNull(\MyData.option))
+        let selectSQL15 = SQLite3.SQL.select(from: datatype, where: .isNotNull(\MyData.option))
+        let selectSQL16 = SQLite3.SQL.select(from: datatype, where: .in(\MyData.name, ["A", "B", "C"]))
+        let selectSQL17 = SQLite3.SQL.select(from: datatype, where: .notIn(\MyData.id, [3, 8, 10]))
+        let selectSQL18 = SQLite3.SQL.select(from: datatype, where: .like(\MyData.name, "%TEST%"))
+        let selectSQL19 = SQLite3.SQL.select(from: datatype, where: .notLike(\MyData.name, "%TEST%"))
 
+        
         XCTAssertEqual(selectSQL1.description, #"SELECT * FROM "MyData""#)
         XCTAssertEqual(selectSQL2.description, #"SELECT * FROM "MyData" WHERE ("id" BETWEEN 3 AND 5)"#)
         XCTAssertEqual(selectSQL3.description, #"SELECT * FROM "MyData" WHERE ("name" = 'TEST')"#)
@@ -365,21 +379,27 @@ class SQLite3Tests: XCTestCase {
         XCTAssertEqual(selectSQL5.description, #"SELECT * FROM "MyData" WHERE ("id" <= 3)"#)
         XCTAssertEqual(selectSQL6.description, #"SELECT * FROM "MyData" WHERE ("id" > 3)"#)
         XCTAssertEqual(selectSQL7.description, #"SELECT * FROM "MyData" WHERE ("id" >= 3)"#)
-        XCTAssertEqual(selectSQL8.description, #"SELECT * FROM "MyData" WHERE ("id" NOT BETWEEN 3 AND 5)"#)
+        XCTAssertEqual(selectSQL8.description, #"SELECT * FROM "MyData" WHERE ("id" BETWEEN 3 AND 5)"#)
         XCTAssertEqual(selectSQL9.description, #"SELECT * FROM "MyData" WHERE (("id" NOT BETWEEN 3 AND 5) AND ("name" = 'TEST'))"#)
         XCTAssertEqual(selectSQL10.description, #"SELECT * FROM "MyData" WHERE (("id" NOT BETWEEN 3 AND 5) AND ("name" = 'TEST') OR ("option" < 10))"#)
         XCTAssertEqual(selectSQL11.description, #"SELECT * FROM "MyData" WHERE (("id" NOT BETWEEN 3 AND 5) AND (("name" = 'TEST') OR ("option" < 10)))"#)
         XCTAssertEqual(selectSQL12.description, #"SELECT * FROM "MyData" WHERE (("id" NOT BETWEEN 3 AND 5) AND ("name" = 'TEST') AND ("option" < 10))"#)
         XCTAssertEqual(selectSQL13.description, #"SELECT COUNT(*) FROM "MyData""#)
+        XCTAssertEqual(selectSQL14.description, #"SELECT * FROM "MyData" WHERE ("option" IS NULL)"#)
+        XCTAssertEqual(selectSQL15.description, #"SELECT * FROM "MyData" WHERE ("option" IS NOT NULL)"#)
+        XCTAssertEqual(selectSQL16.description, #"SELECT * FROM "MyData" WHERE ("name" IN ('A', 'B', 'C'))"#)
+        XCTAssertEqual(selectSQL17.description, #"SELECT * FROM "MyData" WHERE ("id" NOT IN (3, 8, 10))"#)
+        XCTAssertEqual(selectSQL18.description, #"SELECT * FROM "MyData" WHERE ("name" LIKE '%TEST%')"#)
+        XCTAssertEqual(selectSQL19.description, #"SELECT * FROM "MyData" WHERE ("name" NOT LIKE '%TEST%')"#)
 
         let selectSQL1t = translator.makeSelectSQL()
-        let selectSQL2t = translator.makeSelectSQL(where: .between(\MyData.id, 3, 5))
+        let selectSQL2t = translator.makeSelectSQL(where: \MyData.id == (3...5))
         let selectSQL3t = translator.makeSelectSQL(where: \MyData.name == "TEST")
         let selectSQL4t = translator.makeSelectSQL(where: \MyData.id < 3)
         let selectSQL5t = translator.makeSelectSQL(where: \MyData.id <= 3)
         let selectSQL6t = translator.makeSelectSQL(where: \MyData.id > 3)
         let selectSQL7t = translator.makeSelectSQL(where: \MyData.id >= 3)
-        let selectSQL8t = translator.makeSelectSQL(where: .notBetween(\MyData.id, 3, 5))
+        let selectSQL8t = translator.makeSelectSQL(where: \MyData.id == (3...5))
 
         XCTAssertEqual(selectSQL1.description, selectSQL1t.description)
         XCTAssertEqual(selectSQL2.description, selectSQL2t.description)
@@ -482,16 +502,25 @@ class SQLite3Tests: XCTestCase {
         XCTAssertEqual(v4b.actualType, .null)
         
         XCTAssertEqual(v1a.self, v1a)
-        XCTAssertEqual(v1b.self, v1b)
+        XCTAssertNotEqual(v1b.self, v1b, "Either one is null.")
         XCTAssertEqual(v2a.self, v2a)
-        XCTAssertEqual(v2b.self, v2b)
+        XCTAssertNotEqual(v2b.self, v2b, "Either one is null.")
         XCTAssertEqual(v3a.self, v3a)
-        XCTAssertEqual(v3b.self, v3b)
+        XCTAssertNotEqual(v3b.self, v3b, "Either one is null.")
         XCTAssertEqual(v4a.self, v4a)
-        XCTAssertEqual(v4b.self, v4b)
-        
+        XCTAssertNotEqual(v4b.self, v4b, "Either one is null.")
+
+        XCTAssertFalse(v1b.self == v1b, "Both is null.")
+        XCTAssertFalse(v2b.self == v2b, "Both is null.")
+        XCTAssertFalse(v3b.self == v3b, "Both is null.")
+        XCTAssertFalse(v4b.self == v4b, "Both is null.")
+        XCTAssertTrue(v1b.self <=> v1b, "Both is null.")
+        XCTAssertTrue(v2b.self <=> v2b, "Both is null.")
+        XCTAssertTrue(v3b.self <=> v3b, "Both is null.")
+        XCTAssertTrue(v4b.self <=> v4b, "Both is null.")
+
         XCTAssertEqual(v1a, v4a)
-        XCTAssertNotEqual(v1a, v2a)
+        XCTAssertEqual(v1a, v2a, "In SQLite3, it can compare between real and integer.")
     }
     
     func testCondition() throws {

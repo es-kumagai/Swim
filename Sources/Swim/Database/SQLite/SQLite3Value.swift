@@ -23,6 +23,18 @@ extension SQLite3.Value {
         
         self = value.sqliteValue
     }
+        
+    /// [Swim] A defined data type of this instance. This returns the same value as 'declaredSQLiteType' property.
+    public var declaredType: SQLite3.DefineDataType {
+        
+        return declaredSQLiteType
+    }
+    
+    /// [Swim] A actual data type of this instance. This returns the same value as 'actualSQLiteType' property.
+    public var actualType: SQLite3.ActualDataType {
+        
+        return actualSQLiteType
+    }
     
     public var isNull: Bool {
         
@@ -35,17 +47,50 @@ extension SQLite3.Value {
             return false
         }
     }
-    
-    /// [Swim] A defined data type of this instance. This returns the same value as 'declaredSQLiteType' property.
-    public var declaredType: SQLite3.DefineDataType {
+
+    public var integerValue: Int? {
         
-        return declaredSQLiteType
+        switch self {
+        
+        case .integer(let value):
+            return value.integerValue
+            
+        case .unspecified(let value):
+            return value?.integerValue
+            
+        default:
+            return nil
+        }
     }
     
-    /// [Swim] A actual data type of this instance. This returns the same value as 'actualSQLiteType' property.
-    public var actualType: SQLite3.ActualDataType {
+    public var realValue: Double? {
         
-        return actualSQLiteType
+        switch self {
+        
+        case .real(let value):
+            return value.realValue
+            
+        case .unspecified(let value):
+            return value?.realValue
+            
+        default:
+            return nil
+        }
+    }
+
+    public var textValue: String? {
+        
+        switch self {
+        
+        case .text(let value):
+            return value.textValue
+            
+        case .unspecified(let value):
+            return value?.textValue
+            
+        default:
+            return nil
+        }
     }
 }
 
@@ -83,30 +128,87 @@ extension SQLite3.Value : ExpressibleByNilLiteral {
 
 extension SQLite3.Value : Equatable {
 
-    public static func == (lhs: SQLite3.Value, rhs: SQLite3.Value) -> Bool {
-
-        switch (lhs, rhs) {
+    /// [Swim] Check the equality between `lhs` and `rhs`.
+    /// This comparation is same as the SQLite's `<=>` operator.
+    /// If either `lhs` or `rhs` is null, and both of them is not null, this operator returns false instead of NULL. Both of them is equal to null, returns true.
+    ///
+    /// - Parameters:
+    ///   - lhs: The left side value for comparison.
+    ///   - rhs: The right side value for comparison.
+    /// - Returns: True if the both values is same, otherwise false.
+    public static func <=> (lhs: Self, rhs: Self) -> Bool {
         
-        case let (.unspecified(nil), rhs):
-            return rhs.isNull
+        guard !lhs.isNull, !rhs.isNull else {
             
-        case let (lhs, .unspecified(nil)):
-            return lhs.isNull
+            return lhs.isNull == rhs.isNull
+        }
+
+        return lhs == rhs
+    }
+    
+    /// [Swim] Check the equality between `lhs` and `rhs`.
+    /// This comparation is same as the SQLite's `==` operator.
+    /// If either `lhs` or `rhs` is null, this operator returns false instead of NULL.
+    ///
+    /// - Parameters:
+    ///   - lhs: The left side value for comparison.
+    ///   - rhs: The right side value for comparison.
+    /// - Returns: True if the both values is same, otherwise false.
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        
+        guard !lhs.isNull, !rhs.isNull else {
             
-        case let (.unspecified(lhs?), rhs):
-            return lhs.sqliteValue.description == rhs.description
+            return false
+        }
+        
+        switch (lhs.actualType, rhs.actualType) {
+        
+        case (.integer, .integer):
+            return lhs.integerValue! == rhs.integerValue!
+            
+        case (.real, .real):
+            return lhs.realValue! == rhs.realValue!
+            
+        case (.text, .text):
+            return lhs.textValue! == rhs.textValue!
+            
+        case (.integer, .real):
+            return Double(lhs.integerValue!) == rhs.realValue!
+            
+        case (.real, .integer):
+            return lhs.realValue! == Double(rhs.integerValue!)
+            
+        default:
+            return false
+        }
+    }
+}
 
-        case let (lhs, .unspecified(rhs?)):
-            return lhs.description == rhs.sqliteValue.description
+extension SQLite3.Value : Comparable {
+    
+    public static func < (lhs: Self, rhs: Self) -> Bool {
+        
+        guard !lhs.isNull, !rhs.isNull else {
+            
+            return false
+        }
+        
+        switch (lhs.actualType, rhs.actualType) {
+        
+        case (.integer, .integer):
+            return lhs.integerValue! < rhs.integerValue!
+            
+        case (.real, .real):
+            return lhs.realValue! < rhs.realValue!
 
-        case let (.integer(lhs), .integer(rhs)):
-            return lhs == rhs
-
-        case let (.real(lhs), .real(rhs)):
-            return lhs == rhs
-
-        case let (.text(lhs), .text(rhs)):
-            return lhs == rhs
+        case (.text, .text):
+            return lhs.textValue! < rhs.textValue!
+            
+        case (.integer, .real):
+            return Double(lhs.integerValue!) < rhs.realValue!
+            
+        case (.real, .integer):
+            return lhs.realValue! < Double(rhs.integerValue!)
             
         default:
             return false
@@ -143,7 +245,7 @@ extension SQLite3.Value : SQLite3ValueCompatible {
         }
     }
     
-    public var sqliteValue: SQLite3.Value {
+    public var sqliteValue: Self {
         
         return self
     }

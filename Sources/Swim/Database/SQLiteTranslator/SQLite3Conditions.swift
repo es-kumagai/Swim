@@ -5,6 +5,8 @@
 //  Created by Tomohiro Kumagai on 2020/11/25.
 //
 
+infix operator <=>
+
 public protocol SQLite3Condition {
     
     var sql: String { get }
@@ -18,6 +20,21 @@ public func == <Target : SQLite3Translateable>(lhs: PartialKeyPath<Target>, rhs:
 public func != <Target : SQLite3Translateable>(lhs: PartialKeyPath<Target>, rhs: SQLite3.Value) -> SQLite3.Conditions<Target> {
     
     return .init(.notEqual(lhs, rhs))
+}
+
+public func <=> <Target : SQLite3Translateable>(lhs: PartialKeyPath<Target>, rhs: SQLite3.Value) -> SQLite3.Conditions<Target> {
+    
+    return .init(.equalConsiderNull(lhs, rhs))
+}
+
+public func == <Target : SQLite3Translateable>(lhs: PartialKeyPath<Target>, rhs: ClosedRange<SQLite3.Value>) -> SQLite3.Conditions<Target> {
+    
+    return .init(.between(lhs, rhs.lowerBound, rhs.upperBound))
+}
+
+public func != <Target : SQLite3Translateable>(lhs: PartialKeyPath<Target>, rhs: ClosedRange<SQLite3.Value>) -> SQLite3.Conditions<Target> {
+    
+    return .init(.notBetween(lhs, rhs.lowerBound, rhs.upperBound))
 }
 
 public func <= <Target : SQLite3Translateable>(lhs: PartialKeyPath<Target>, rhs: SQLite3.Value) -> SQLite3.Conditions<Target> {
@@ -38,6 +55,27 @@ public func < <Target : SQLite3Translateable>(lhs: PartialKeyPath<Target>, rhs: 
 public func > <Target : SQLite3Translateable>(lhs: PartialKeyPath<Target>, rhs: SQLite3.Value) -> SQLite3.Conditions<Target> {
     
     return .init(.greaterThan(lhs, rhs))
+}
+
+extension SQLite3 {
+    
+    @_functionBuilder
+    public struct ConditionsSatisfyAll<Target> where Target : SQLite3Translateable {
+        
+        public static func buildBlock(_ condition: SQLite3.Conditions<Target>, _ conditions: SQLite3.Conditions<Target> ...) -> SQLite3.Conditions<Target> {
+            
+            return conditions.reduce(condition) { $0.and($1) }
+        }
+    }
+    
+    @_functionBuilder
+    public struct ConditionsSatisfyEither<Target> where Target : SQLite3Translateable {
+        
+        public static func buildBlock(_ condition: SQLite3.Conditions<Target>, _ conditions: SQLite3.Conditions<Target> ...) -> SQLite3.Conditions<Target> {
+            
+            return conditions.reduce(condition) { $0.or($1) }
+        }
+    }
 }
 
 extension SQLite3 {
@@ -64,19 +102,49 @@ extension SQLite3 {
             return .init(.notBetween(path, lhs, rhs))
         }
         
+        public static func isNull(_ path: Path) -> Self {
+            
+            return .init(.isNull(path))
+        }
+        
+        public static func isNotNull(_ path: Path) -> Self {
+            
+            return .init(.isNotNull(path))
+        }
+
+        public static func `in`(_ path: Path, _ values: [Value]) -> Self {
+        
+            return .init(.in(path, values))
+        }
+        
+        public static func notIn(_ path: Path, _ values: [Value]) -> Self {
+        
+            return .init(.notIn(path, values))
+        }
+        
+        public static func like(_ path: Path, _ pattern: String) -> Self {
+        
+            return .init(.like(path, pattern))
+        }
+        
+        public static func notLike(_ path: Path, _ pattern: String) -> Self {
+        
+            return .init(.notLike(path, pattern))
+        }
+
         public static func rawSQL(_ sql: String) -> Self {
             
             return .init(.rawSQL(sql))
         }
         
-        public static func satisfyAll(_ condition: Self, _ conditions: Self ...) -> Self {
-
-            return conditions.reduce(condition) { $0.and($1) }
+        public static func satisfyAll(@SQLite3.ConditionsSatisfyAll<Target> _ predicate: () -> Self) -> Self {
+        
+            return predicate()
         }
         
-        public static func satisfyEither(_ condition: Self, _ conditions: Self ...) -> Self {
-
-            return conditions.reduce(condition) { $0.or($1) }
+        public static func satisfyEither(@SQLite3.ConditionsSatisfyEither<Target> _ predicate: () -> Self) -> Self {
+        
+            return predicate()
         }
     }
 }
@@ -105,7 +173,7 @@ extension Collection where Element : SQLite3Condition {
             return first!.sql
             
         default:
-            return "(\(map(\.sql).joined(separator: " ")))"
+            return SQLite3.enclosedList(map(\.sql), separator: " ")
         }
     }
 }

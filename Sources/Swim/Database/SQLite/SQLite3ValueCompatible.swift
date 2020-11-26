@@ -12,6 +12,11 @@ public protocol SQLite3ValueCompatible {
     static var declaredSQLiteType: SQLite3.DefineDataType { get }
     var actualSQLiteType: SQLite3.ActualDataType { get }
     var sqliteValue: SQLite3.Value { get }
+    
+    var integerValue: Int? { get }
+    var realValue: Double? { get }
+    var textValue: String? { get }
+    var isNull: Bool { get }
 }
 
 extension Int : SQLite3ValueCompatible {
@@ -20,6 +25,11 @@ extension Int : SQLite3ValueCompatible {
     public static var declaredSQLiteType: SQLite3.DefineDataType { .integer }
     public var actualSQLiteType: SQLite3.ActualDataType { .integer }
     public var sqliteValue: SQLite3.Value { .integer(self) }
+    
+    public var integerValue: Int? { self }
+    public var realValue: Double? { nil }
+    public var textValue: String? { nil }
+    public var isNull: Bool { false }
 }
 
 extension Double : SQLite3ValueCompatible {
@@ -28,6 +38,11 @@ extension Double : SQLite3ValueCompatible {
     public static var declaredSQLiteType: SQLite3.DefineDataType { .real }
     public var actualSQLiteType: SQLite3.ActualDataType { .real }
     public var sqliteValue: SQLite3.Value { .real(self) }
+    
+    public var integerValue: Int? { nil }
+    public var realValue: Double? { self }
+    public var textValue: String? { nil }
+    public var isNull: Bool { false }
 }
 
 extension String : SQLite3ValueCompatible {
@@ -36,6 +51,11 @@ extension String : SQLite3ValueCompatible {
     public static var declaredSQLiteType: SQLite3.DefineDataType { .text }
     public var actualSQLiteType: SQLite3.ActualDataType { .text }
     public var sqliteValue: SQLite3.Value { .text(self) }
+    
+    public var integerValue: Int? { nil }
+    public var realValue: Double? { nil }
+    public var textValue: String? { self }
+    public var isNull: Bool { false }
 }
 
 extension Optional : SQLite3ValueCompatible where Wrapped : SQLite3ValueCompatible {
@@ -43,7 +63,12 @@ extension Optional : SQLite3ValueCompatible where Wrapped : SQLite3ValueCompatib
     public static var acceptsSQLiteNull: Bool { true }
     public static var declaredSQLiteType: SQLite3.DefineDataType { Wrapped.declaredSQLiteType }
     public var actualSQLiteType: SQLite3.ActualDataType { self?.actualSQLiteType ?? .null }
-    
+        
+    public var integerValue: Int? { self?.integerValue }
+    public var realValue: Double? { self?.realValue }
+    public var textValue: String? { self?.textValue }
+    public var isNull: Bool { self == nil }
+
     public var sqliteValue: SQLite3.Value {
         
         if let value = self?.sqliteValue {

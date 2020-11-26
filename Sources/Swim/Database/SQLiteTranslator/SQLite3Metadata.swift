@@ -5,9 +5,9 @@
 //  Created by Tomohiro Kumagai on 2020/11/23.
 //
 
-extension SQLite3.Translator {
+extension SQLite3 {
     
-    public struct Metadata {
+    public struct ColumnMetadata<Target> where Target : SQLite3Translateable {
         
         public var name: String
         public var keyPath: PartialKeyPath<Target>
@@ -15,14 +15,13 @@ extension SQLite3.Translator {
         public var nullable: Bool
         
         /// [Swim] Create an instance that is analyzed by `keyPath`.
-        /// If the `keyPath`'s type is not supported by SQLite3, throws an error.
+        /// If the `keyPath`'s type is not supported by SQLite3, aborting program in runtime.
         ///
         /// - Parameters:
         ///   - name: The name of this metadata.
         ///   - value: The value that use to analyze metadata.
         ///   - offset: The offset data of this metadata.
-        /// - Throws: SQLite3.TranslationError.uncompatibleSwiftType
-        public init<Value>(name: String, keyPath: KeyPath<Target, Value>) throws {
+        public init<Value>(name: String, keyPath: KeyPath<Target, Value>) {
             
             self.name = name
             self.keyPath = keyPath as PartialKeyPath<Target>
@@ -62,7 +61,7 @@ extension SQLite3.Translator {
                 nullable = true
                 
             default:
-                throw SQLite3.TranslationError.uncompatibleSwiftType(Value.self)
+                fatalError("Uncompatible Swift type: \(Value.self)")
             }
         }
     }
@@ -73,7 +72,7 @@ private func ~= (pattern: Any.Type, value: Any.Type) -> Bool {
     return pattern == value
 }
 
-extension SQLite3.Translator.Metadata {
+extension SQLite3.ColumnMetadata {
     
     var offset: Int {
     
@@ -94,6 +93,6 @@ extension SQLite3.Translator.Metadata {
     }
 }
 
-extension SQLite3.Translator.Metadata : Equatable {
+extension SQLite3.ColumnMetadata : Equatable {
     
 }

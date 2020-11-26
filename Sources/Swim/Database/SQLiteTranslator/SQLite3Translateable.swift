@@ -7,8 +7,14 @@
 
 public protocol SQLite3Translateable {
     
+    typealias Column = SQLite3.ColumnMetadata<Self>
+    
     static var tableName: String { get }
-    static var sqlite3Columns: Array<SQLite3.Translator<Self>.Metadata> { get }
+    
+    /// [Swim] The definition for mapping Swift properties and SQLite3 columns.
+    /// This property is referenced when using metadata by a 'Translator', a 'SQL' and so on.
+    /// This value can be created by Function builder with attribute '@SQLite3.ColumnsDeclaration'.
+    static var sqlite3Columns: [Column] { get }
 }
 
 extension SQLite3Translateable {

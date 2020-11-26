@@ -29,15 +29,13 @@ private struct MyData : Equatable {
 
 extension MyData : SQLite3Translateable {
     
-    static var sqlite3Columns: Array<SQLite3.Translator<MyData>.Metadata> {
+    @SQLite3.ColumnsDeclaration
+    static var sqlite3Columns: [Column] {
         
-        return try! [
-            
-            .init(name: "id", keyPath: \.id),
-            .init(name: "flags", keyPath: \.flags),
-            .init(name: "name", keyPath: \.name),
-            .init(name: "option", keyPath: \.option),
-        ]
+        Column(name: "id", keyPath: \.id)
+        Column(name: "flags", keyPath: \.flags)
+        Column(name: "name", keyPath: \.name)
+        Column(name: "option", keyPath: \.option)
     }
 }
 
@@ -310,7 +308,7 @@ class SQLite3Tests: XCTestCase {
         let translator = SQLite3.Translator<MyData>()
         let datatype = MyData.self
 
-        let metadata = datatype.sqlite3Columns
+        let metadata = MyData.sqlite3Columns
         
         let createSQL = SQLite3.SQL.createTable(datatype)
         XCTAssertEqual(createSQL.description, #"CREATE TABLE "MyData" ("id" INTEGER NOT NULL, "flags" REAL, "name" TEXT NOT NULL, "option" NOT NULL)"#)

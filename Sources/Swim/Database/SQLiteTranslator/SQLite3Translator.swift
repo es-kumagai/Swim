@@ -8,10 +8,15 @@
 extension SQLite3 {
     
     public struct Translator<Target> where Target : SQLite3Translateable {
-        
+                
+        /// [Swim] Create an new instance that bridging 'Target' to SQLite records.
+        /// This initializer is used to specify 'Target' type in type parameter by your self.
         public init() {
+            
         }
         
+        /// [Swim] Create an new instance that translating
+        /// - Parameter target: The type for translating; this initializer is used for type inference.
         public init(_ target: Target.Type) {
             
         }

@@ -57,6 +57,12 @@ extension MyData2 : SQLite3Translateable {
         Column("name", keyPath: \.name)
         Column("option", keyPath: \.option)
     }
+    
+    @SQLite3.IndexDeclaration
+    static var sqlite3Indexes: [Index] {
+        
+        Index("id", fieldNames: ["id"])
+    }
 }
 
 private struct MyData3 : Equatable {
@@ -76,6 +82,13 @@ extension MyData3 : SQLite3Translateable {
         Column("flags", keyPath: \.flags)
         Column("name", keyPath: \.name, primaryKey: true)
         Column("option", keyPath: \.option)
+    }
+    
+    @SQLite3.IndexDeclaration
+    static var sqlite3Indexes: [Index] {
+        
+        Index("id", fieldNames: ["id"], unique: true)
+        Index("option", fieldNames: ["option", "flags"])
     }
 }
 
@@ -343,6 +356,55 @@ class SQLite3Tests: XCTestCase {
         XCTAssertEqual(array.count, 2)
     }
     
+    func testSQL() throws {
+    
+        let translatorA = SQLite3.Translator<MyData>()
+        let translatorB = SQLite3.Translator<MyData2>()
+        let translatorC = SQLite3.Translator<MyData3>()
+
+        let sql1a = translatorA.makeCreateTableSQL()
+        let sql2a = translatorA.makeDropTableSQL()
+        let sql3a = translatorA.makeCreateIndexSQLs()
+        let sql4a = translatorA.makeBeginTransactionSQL()
+        let sql5a = translatorA.makeCommitTransactionSQL()
+        let sql6a = translatorA.makeRollbackTransactionSQL()
+        
+        let sql1b = translatorB.makeCreateTableSQL()
+        let sql2b = translatorB.makeDropTableSQL()
+        let sql3b = translatorB.makeCreateIndexSQLs()
+        let sql4b = translatorB.makeBeginTransactionSQL()
+        let sql5b = translatorB.makeCommitTransactionSQL()
+        let sql6b = translatorB.makeRollbackTransactionSQL()
+        
+        let sql1c = translatorC.makeCreateTableSQL()
+        let sql2c = translatorC.makeDropTableSQL()
+        let sql3c = translatorC.makeCreateIndexSQLs()
+        let sql4c = translatorC.makeBeginTransactionSQL()
+        let sql5c = translatorC.makeCommitTransactionSQL()
+        let sql6c = translatorC.makeRollbackTransactionSQL()
+        
+        XCTAssertEqual(sql1a.description, #"CREATE TABLE "MyData" ("id" INTEGER NOT NULL, "flags" REAL, "name" TEXT NOT NULL, "option" NOT NULL)"#)
+        XCTAssertEqual(sql2a.description, #"DROP TABLE "MyData""#)
+        XCTAssertEqual(sql3a.map(\.description), [])
+        XCTAssertEqual(sql4a.description, #"BEGIN TRANSACTION"#)
+        XCTAssertEqual(sql5a.description, #"COMMIT TRANSACTION"#)
+        XCTAssertEqual(sql6a.description, #"ROLLBACK TRANSACTION"#)
+        
+        XCTAssertEqual(sql1b.description, #"CREATE TABLE "MyData2" ("id" INTEGER PRIMARY KEY NOT NULL, "flags" REAL, "name" TEXT NOT NULL, "option" NOT NULL)"#)
+        XCTAssertEqual(sql2b.description, #"DROP TABLE "MyData2""#)
+        XCTAssertEqual(sql3b.map(\.description), [#"CREATE INDEX "Index_MyData2_id" ON "MyData2" ("id")"#])
+        XCTAssertEqual(sql4b.description, #"BEGIN TRANSACTION"#)
+        XCTAssertEqual(sql5b.description, #"COMMIT TRANSACTION"#)
+        XCTAssertEqual(sql6b.description, #"ROLLBACK TRANSACTION"#)
+        
+        XCTAssertEqual(sql1c.description, #"CREATE TABLE "MyData3" ("id" INTEGER NOT NULL, "flags" REAL, "name" TEXT NOT NULL, "option" NOT NULL, PRIMARY KEY ("id", "name"))"#)
+        XCTAssertEqual(sql2c.description, #"DROP TABLE "MyData3""#)
+        XCTAssertEqual(sql3c.map(\.description), [#"CREATE UNIQUE INDEX "Index_MyData3_id" ON "MyData3" ("id")"#, #"CREATE INDEX "Index_MyData3_option" ON "MyData3" ("option", "flags")"#])
+        XCTAssertEqual(sql4c.description, #"BEGIN TRANSACTION"#)
+        XCTAssertEqual(sql5c.description, #"COMMIT TRANSACTION"#)
+        XCTAssertEqual(sql6c.description, #"ROLLBACK TRANSACTION"#)
+    }
+    
     func testTranslate() throws {
         
         let translator = SQLite3.Translator<MyData>()
@@ -412,7 +474,6 @@ class SQLite3Tests: XCTestCase {
         let selectSQL19 = SQLite3.SQL.select(from: datatype, where: .notLike(\MyData.name, "%TEST%"))
         let selectSQL20 = SQLite3.SQL.select(from: datatype, where: \MyData.name =~ ".*")
         let selectSQL21 = SQLite3.SQL.select(from: datatype, where: .regularExpression(\MyData.name, ".*", caseSensitive: true))
-
         
         XCTAssertEqual(selectSQL1.description, #"SELECT * FROM "MyData""#)
         XCTAssertEqual(selectSQL2.description, #"SELECT * FROM "MyData" WHERE ("id" BETWEEN 3 AND 5)"#)

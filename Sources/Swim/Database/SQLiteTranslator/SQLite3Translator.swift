@@ -9,6 +9,10 @@ extension SQLite3 {
     
     public struct Translator<Target> where Target : SQLite3Translateable {
                 
+        public typealias SQLWithNoConditions = SQLite3.SQL<Target, SQLite3.NoConditions>
+        public typealias SQLWithConditions = SQLite3.SQL<Target, SQLite3.WithConditions>
+        public typealias Conditions = SQLite3.Conditions<Target>
+        
         /// [Swim] Create an new instance that bridging 'Target' to SQLite records.
         /// This initializer is used to specify 'Target' type in type parameter by your self.
         public init() {
@@ -25,38 +29,73 @@ extension SQLite3 {
 
 extension SQLite3.Translator {
  
-    public func makeCreateTableSQL() -> SQLite3.SQL<Target, SQLite3.NoConditions> {
+    public func makeCreateTableSQL() -> SQLWithNoConditions {
     
         return .createTable(Target.self)
     }
     
-    public func makeSelectSQL(fields: [SQLite3.Field] = []) -> SQLite3.SQL<Target, SQLite3.NoConditions> {
+    public func makeDropTableSQL() -> SQLWithNoConditions {
+        
+        return .dropTable(Target.self)
+    }
+    
+    public func makeCreateIndexSQLs() -> [SQLWithNoConditions] {
+    
+        return SQLite3.SQL.createIndexes(for: Target.self)
+    }
+    
+    public func makeBeginTransactionSQL() -> SQLWithNoConditions {
+    
+        return .beginTransaction(on: Target.self)
+    }
+    
+    public func makeCommitTransactionSQL() -> SQLWithNoConditions {
+        
+        return .commitTransaction(on: Target.self)
+    }
+    
+    public func makeRollbackTransactionSQL() -> SQLWithNoConditions {
+        
+        return .rollbackTransaction(on: Target.self)
+    }
+    
+    public func makeSelectSQL(fields: [SQLite3.Field] = []) -> SQLWithNoConditions {
         print(separator: "")
         
         return .select(fields, from: Target.self)
     }
     
-    public func makeInsertSQL(with value: Target) -> SQLite3.SQL<Target, SQLite3.NoConditions> {
+    public func makeInsertSQL(with value: Target) -> SQLWithNoConditions {
         
         return .insert(value)
     }
     
-    public func makeDeleteSQL() -> SQLite3.SQL<Target, SQLite3.NoConditions> {
+    public func makeReplaceSQL(with value: Target) -> SQLWithNoConditions {
+        
+        return .replace(value)
+    }
+    
+    public func makeDeleteSQL() -> SQLWithNoConditions {
         
         return .delete(from: Target.self)
     }
 
-    public func makeSelectSQL(fields: [SQLite3.Field] = [], where conditions: SQLite3.Conditions<Target>) -> SQLite3.SQL<Target, SQLite3.WithConditions> {
+    public func makeSelectSQL(fields: [SQLite3.Field] = [], where conditions: Conditions) -> SQLWithConditions {
 
         return .select(fields, from: Target.self, where: conditions)
     }
     
-    public func makeInsertSQL(_ value: Target, where conditions: SQLite3.Conditions<Target>) -> SQLite3.SQL<Target, SQLite3.WithConditions> {
+    public func makeInsertSQL(_ value: Target, where conditions: Conditions) -> SQLWithConditions {
         
         return .insert(value, where: conditions)
     }
-    
-    public func makeDeleteSQL(from table: Target.Type, where conditions: SQLite3.Conditions<Target>) -> SQLite3.SQL<Target, SQLite3.WithConditions> {
+
+    public func makeReplaceSQL(_ value: Target, where conditions: Conditions) -> SQLWithConditions {
+        
+        return .replace(value, where: conditions)
+    }
+
+    public func makeDeleteSQL(from table: Target.Type, where conditions: SQLite3.Conditions<Target>) -> SQLWithConditions {
         
         return .delete(from: Target.self, where: conditions)
     }

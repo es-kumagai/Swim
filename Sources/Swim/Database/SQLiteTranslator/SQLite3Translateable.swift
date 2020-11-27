@@ -8,13 +8,19 @@
 public protocol SQLite3Translateable {
     
     typealias Column = SQLite3.ColumnMetadata<Self>
-    
+    typealias Index = SQLite3.Index<Self>
+
     static var tableName: String { get }
     
     /// [Swim] The definition for mapping Swift properties and SQLite3 columns.
-    /// This property is referenced when using metadata by a 'Translator', a 'SQL' and so on.
+    /// This property is referenced when using this metadata by a 'Translator', a 'SQL' and so on.
     /// This value can be created by Function builder with attribute '@SQLite3.ColumnsDeclaration'.
     static var sqlite3Columns: [Column] { get }
+
+    /// [Swim] The definition of SQLite3 indexes.
+    /// This property is referenced when using this metadata by a 'Translator', a 'SQL' and so on.
+    /// This value can be created by Function builder with attribute '@SQLite3.IndexDeclaration'.
+    static var sqlite3Indexes: [Index] { get }
 }
 
 extension SQLite3Translateable {
@@ -27,6 +33,11 @@ extension SQLite3Translateable {
     public var tableName: String {
         
         return Self.tableName
+    }
+    
+    static var sqlite3Indexes: [Index] {
+        
+        return []
     }
     
     public static var quotedTableName: String {
@@ -75,7 +86,7 @@ extension SQLite3Translateable {
 
             if !primaryKeys.isEmpty {
 
-                "PRIMARY KEY \(SQLite3.enclosedList(primaryKeys.map(\.field.quotedFieldName)))"
+                "PRIMARY KEY \(SQLite3.enclosedList(primaryKeys.map(\.field.quotedName)))"
             }
         }
         else {

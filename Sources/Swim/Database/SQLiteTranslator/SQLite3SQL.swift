@@ -35,6 +35,36 @@ extension SQLite3.SQL where Kind == SQLite3.NoConditions {
         self.init(query: .createTable)
     }
     
+    public static func dropTable(_ table: Target.Type) -> Self {
+        
+        self.init(query: .dropTable)
+    }
+    
+    public static func createIndex(_ index: SQLite3.Index<Target>) -> Self {
+     
+        self.init(query: .createIndex(index))
+    }
+    
+    public static func createIndexes(for target: Target.Type) -> [Self] {
+        
+        Target.sqlite3Indexes.map(createIndex)
+    }
+    
+    public static func beginTransaction(on table: Target.Type) -> Self {
+        
+        self.init(query: .beginTransaction)
+    }
+    
+    public static func commitTransaction(on table: Target.Type) -> Self {
+        
+        self.init(query: .commitTransaction)
+    }
+    
+    public static func rollbackTransaction(on table: Target.Type) -> Self {
+        
+        self.init(query: .rollbackTransaction)
+    }
+    
     public static func select(from table: Target.Type) -> Self {
         
         self.init(query: .select())
@@ -53,6 +83,11 @@ extension SQLite3.SQL where Kind == SQLite3.NoConditions {
     public static func insert(_ value: Target) -> Self {
         
         self.init(query: .insert(value))
+    }
+    
+    public static func replace(_ value: Target) -> Self {
+        
+        self.init(query: .replace(value))
     }
     
     public static func delete(from table: Target.Type) -> Self {
@@ -87,6 +122,11 @@ extension SQLite3.SQL where Kind == SQLite3.WithConditions {
     public static func insert(_ value: Target, where conditions: SQLite3.Conditions<Target>) -> Self {
         
         self.init(query: .insert(value), where: conditions)
+    }
+    
+    public static func replace(_ value: Target, where conditions: SQLite3.Conditions<Target>) -> Self {
+        
+        self.init(query: .replace(value), where: conditions)
     }
     
     public static func delete(from table: Target.Type, where conditions: SQLite3.Conditions<Target>) -> Self {

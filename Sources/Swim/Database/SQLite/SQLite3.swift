@@ -81,6 +81,16 @@ public final class SQLite3 {
         
         try execute(sql: "ATTACH DATABASE \(path) AS \(name)")
     }
+    
+    /// [Swim] Detach database
+    /// - Parameter name: The name of the database that will be detached.
+    /// - Throws: SQLite3.ResultCode
+    public func detach(database name: String) throws {
+        
+        let name = SQLite3.quotedFieldName(name)
+        
+        try execute(sql: "DETACH DATABASE \(name)")
+    }
 }
 
 extension SQLite3 {

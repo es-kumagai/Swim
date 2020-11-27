@@ -73,29 +73,14 @@ extension SQLite3Translateable {
 
             sqlite3Columns.map { $0.declareSQL(markAsPrimaryKey: false) }
 
-            switch primaryKeys.isEmpty {
+            if !primaryKeys.isEmpty {
 
-            case true:
-                nil
-
-            case false:
-                "PRIMARY KEY"
-                SQLite3.enclosedList(primaryKeys.map(\.field.fieldName))
+                "PRIMARY KEY \(SQLite3.enclosedList(primaryKeys.map(\.field.quotedFieldName)))"
             }
         }
         else {
 
             sqlite3Columns.map { $0.declareSQL(markAsPrimaryKey: primaryKeys.contains($0)) }
-        }
-        
-        if primaryKeys.isEmpty {
-            
-            nil
-        }
-        else {
-            
-            "PRIMARY KEY"
-            SQLite3.enclosedList(primaryKeys.map(\.field.fieldName))
         }
     }
     

@@ -39,6 +39,46 @@ extension MyData : SQLite3Translateable {
     }
 }
 
+private struct MyData2 : Equatable {
+    
+    var id: Int
+    var flags: Double?
+    var name: String
+    var option: SQLite3.Value
+}
+
+extension MyData2 : SQLite3Translateable {
+    
+    @SQLite3.ColumnsDeclaration
+    static var sqlite3Columns: [Column] {
+        
+        Column("id", keyPath: \.id, primaryKey: true)
+        Column("flags", keyPath: \.flags)
+        Column("name", keyPath: \.name)
+        Column("option", keyPath: \.option)
+    }
+}
+
+private struct MyData3 : Equatable {
+    
+    var id: Int
+    var flags: Double?
+    var name: String
+    var option: SQLite3.Value
+}
+
+extension MyData3 : SQLite3Translateable {
+    
+    @SQLite3.ColumnsDeclaration
+    static var sqlite3Columns: [Column] {
+        
+        Column("id", keyPath: \.id, primaryKey: true)
+        Column("flags", keyPath: \.flags)
+        Column("name", keyPath: \.name, primaryKey: true)
+        Column("option", keyPath: \.option)
+    }
+}
+
 class SQLite3Tests: XCTestCase {
     
     override func setUpWithError() throws {
@@ -420,6 +460,21 @@ class SQLite3Tests: XCTestCase {
         
         XCTAssertEqual(values[0], data1)
         XCTAssertEqual(values[1], data2)
+    }
+    
+    func testTranslatePrimaryKey() throws {
+        
+        let translator1 = SQLite3.Translator(MyData.self)
+        let translator2 = SQLite3.Translator(MyData2.self)
+        let translator3 = SQLite3.Translator(MyData3.self)
+        
+        let sql1 = translator1.makeCreateTableSQL()
+        let sql2 = translator2.makeCreateTableSQL()
+        let sql3 = translator3.makeCreateTableSQL()
+
+        XCTAssertEqual(sql1.description, #"CREATE TABLE "MyData" ("id" INTEGER NOT NULL, "flags" REAL, "name" TEXT NOT NULL, "option" NOT NULL)"#)
+        XCTAssertEqual(sql2.description, #"CREATE TABLE "MyData2" ("id" INTEGER PRIMARY KEY NOT NULL, "flags" REAL, "name" TEXT NOT NULL, "option" NOT NULL)"#)
+        XCTAssertEqual(sql3.description, #"CREATE TABLE "MyData3" ("id" INTEGER NOT NULL, "flags" REAL, "name" TEXT NOT NULL, "option" NOT NULL, PRIMARY KEY ("id", "name"))"#)
     }
     
     func testColumnType() throws {

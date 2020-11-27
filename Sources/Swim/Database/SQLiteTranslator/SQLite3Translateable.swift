@@ -21,6 +21,11 @@ public protocol SQLite3Translateable {
     /// This property is referenced when using this metadata by a 'Translator', a 'SQL' and so on.
     /// This value can be created by Function builder with attribute '@SQLite3.IndexDeclaration'.
     static var sqlite3Indexes: [Index] { get }
+    
+    
+    /// [Swim] The instance means default or empty value of this type.
+    /// This value is used to base value for instantiation by Translator.
+    static var sqlite3DefaultValue: Self { get }
 }
 
 extension SQLite3Translateable {

@@ -23,6 +23,11 @@ extension SQLite3.Value {
         
         self = value.sqliteValue
     }
+    
+    public static var null: Self {
+        
+        return .unspecified(nil)
+    }
         
     /// [Swim] A defined data type of this instance. This returns the same value as 'declaredSQLiteType' property.
     public var declaredType: SQLite3.DefineDataType {

@@ -114,15 +114,16 @@ extension SQLite3.Translator {
             fatalError("Expect the number of columns (\(row.count)) is equals to the number of metadata (\(metadata.count)).")
         }
         
-        let dataLength = MemoryLayout<Target>.size
-        let dataBytes = UnsafeMutableBufferPointer<Int8>.allocate(capacity: dataLength)
-        
+//        let dataLength = MemoryLayout<Target>.size
+        let dataBytes = UnsafeMutableBufferPointer<Target>.allocate(capacity: 1)
         let rawBytes = UnsafeMutableRawBufferPointer(dataBytes)
         
         defer {
         
             dataBytes.deallocate()
         }
+        
+        dataBytes[0] = Target.sqlite3DefaultValue
         
         for (column, metadata) in zip(row, metadata) {
 

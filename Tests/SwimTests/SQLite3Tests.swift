@@ -29,6 +29,8 @@ private struct MyData : Equatable {
 
 extension MyData : SQLite3Translateable {
     
+    static var sqlite3DefaultValue = MyData(id: 0, flags: nil, name: "", option: .null)
+
     @SQLite3.ColumnsDeclaration
     static var sqlite3Columns: [Column] {
         
@@ -48,6 +50,8 @@ private struct MyData2 : Equatable {
 }
 
 extension MyData2 : SQLite3Translateable {
+    
+    static var sqlite3DefaultValue = MyData2(id: 0, flags: nil, name: "", option: .null)
     
     @SQLite3.ColumnsDeclaration
     static var sqlite3Columns: [Column] {
@@ -74,6 +78,8 @@ private struct MyData3 : Equatable {
 }
 
 extension MyData3 : SQLite3Translateable {
+    
+    static var sqlite3DefaultValue = MyData3(id: 0, flags: nil, name: "", option: .null)
     
     @SQLite3.ColumnsDeclaration
     static var sqlite3Columns: [Column] {

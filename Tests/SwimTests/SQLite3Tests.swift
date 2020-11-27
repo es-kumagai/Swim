@@ -343,7 +343,7 @@ class SQLite3Tests: XCTestCase {
         XCTAssertEqual(SQLite3.quotedFieldName("FI\"ELD"), "\"FI\"\"ELD\"")
     }
     
-    func testArray() throws {
+    func testArray1() throws {
         
         let array = try SQLiteArray<MyData>()
         
@@ -353,6 +353,32 @@ class SQLite3Tests: XCTestCase {
         XCTAssertEqual(array.count, 1)
         
         array.insert(MyData(id: 12, flags: nil, name: "BBB", option: SQLite3.Value(10.5)))
+        XCTAssertEqual(array.count, 2)
+    }
+    
+    func testArray2() throws {
+        
+        let array = try SQLiteArray<MyData2>()
+        
+        XCTAssertEqual(array.count, 0)
+        
+        array.insert(MyData2(id: 5, flags: 1.5, name: "AAA", option: SQLite3.Value(10)))
+        XCTAssertEqual(array.count, 1)
+        
+        array.insert(MyData2(id: 12, flags: nil, name: "BBB", option: SQLite3.Value(10.5)))
+        XCTAssertEqual(array.count, 2)
+    }
+    
+    func testArray3() throws {
+        
+        let array = try SQLiteArray<MyData3>()
+        
+        XCTAssertEqual(array.count, 0)
+        
+        array.insert(MyData3(id: 5, flags: 1.5, name: "AAA", option: SQLite3.Value(10)))
+        XCTAssertEqual(array.count, 1)
+        
+        array.insert(MyData3(id: 12, flags: nil, name: "BBB", option: SQLite3.Value(10.5)))
         XCTAssertEqual(array.count, 2)
     }
     

@@ -15,8 +15,13 @@ public struct SQLiteArray<Element> where Element : SQLite3Translateable {
         sqlite = try! SQLite3(store: .onMemory, options: .readwrite)
         translator = SQLite3.Translator<Element>()
         
-        let sql = SQLite3.SQL.createTable(Element.self)
+        let sql = translator.makeCreateTableSQL()
         try sqlite.execute(sql: sql.description)
+        
+        for sql in translator.makeCreateIndexSQLs() {
+            
+            try sqlite.execute(sql: sql.description)
+        }
     }
 }
 
@@ -26,7 +31,7 @@ extension SQLiteArray {
         
         do {
 
-            let sql = SQLite3.SQL.insert(element)
+            let sql = translator.makeInsertSQL(with: element)
             try sqlite.execute(sql: sql.description)
         }
         catch {

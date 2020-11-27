@@ -7,9 +7,19 @@
 
 extension SQLite3 {
 
+    public static func enclosedText(_ text: String) -> String {
+        
+        return "(\(text))"
+    }
+    
+    public static func listedText<Value>(_ values: [Value], separator: String = ", ") -> String {
+     
+        return values.map(String.init(describing:)).joined(separator: separator)
+    }
+    
     public static func enclosedList<Value>(_ values: [Value], separator: String = ", ") -> String where Value : CustomStringConvertible {
     
-        return "(\(values.map(\.description).joined(separator: separator)))"
+        return enclosedText(listedText(values, separator: separator))
     }
     
     /// [Swim] Make `source` enclosing in a single quotation.

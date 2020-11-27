@@ -59,17 +59,53 @@ extension SQLite3Translateable {
         return column.field
     }
     
+    public static var primaryKeys: Array<SQLite3.ColumnMetadata<Self>> {
+        
+        return sqlite3Columns.filter(\.primaryKey)
+    }
+
+    @CommaSeparatedList
     public static var declaresSQL: String {
         
-        return sqlite3Columns.map(\.declareSQL).joined(separator: ", ")
+        let primaryKeys = self.primaryKeys
+
+        if primaryKeys.count > 1 {
+
+            sqlite3Columns.map { $0.declareSQL(markAsPrimaryKey: false) }
+
+            switch primaryKeys.isEmpty {
+
+            case true:
+                nil
+
+            case false:
+                "PRIMARY KEY"
+                SQLite3.enclosedList(primaryKeys.map(\.field.fieldName))
+            }
+        }
+        else {
+
+            sqlite3Columns.map { $0.declareSQL(markAsPrimaryKey: primaryKeys.contains($0)) }
+        }
+        
+        if primaryKeys.isEmpty {
+            
+            nil
+        }
+        else {
+            
+            "PRIMARY KEY"
+            SQLite3.enclosedList(primaryKeys.map(\.field.fieldName))
+        }
     }
     
+    @CommaSeparatedList
     public static var fieldsSQL: String {
         
-        return sqlite3Columns.map(\.field.sql).joined(separator: ", ")
+        sqlite3Columns.map(\.field.sql)
     }
     
-    public var fieldsSQL: String {
+    public var fieldListSQL: String {
         
         return Self.fieldsSQL
     }
@@ -108,6 +144,6 @@ extension SQLite3Translateable {
             }
         }
         
-        return values.joined(separator: ", ")
+        return SQLite3.listedText(values)
     }
 }

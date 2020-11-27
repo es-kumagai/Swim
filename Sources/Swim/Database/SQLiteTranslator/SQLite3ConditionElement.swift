@@ -41,7 +41,7 @@ extension SQLite3.ConditionElement : CustomDebugStringConvertible {
 
 extension SQLite3.ConditionElement {
     
-    @SQLite3SQLBuilder
+    @SpaceSeparatedList
     public var sql: String {
         
         switch self {

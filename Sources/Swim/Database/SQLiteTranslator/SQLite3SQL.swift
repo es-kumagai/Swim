@@ -5,34 +5,6 @@
 //  Created by Tomohiro Kumagai on 2020/11/25.
 //
 
-@_functionBuilder
-struct SQLite3SQLBuilder {
-    
-    static func buildBlock(_ statements: String? ...) -> String {
-        
-        return statements
-            .compactMap { $0 }
-            .filter { !$0.isEmpty }
-            .joined(separator: " ")
-    }
-    
-    static func buildEither(first: String? ...) -> String {
-        
-        return first
-            .compactMap { $0 }
-            .filter { !$0.isEmpty }
-            .joined(separator: " ")
-    }
-    
-    static func buildEither(second: String? ...) -> String {
-        
-        return second
-            .compactMap { $0 }
-            .filter { !$0.isEmpty }
-            .joined(separator: " ")
-    }
-}
-
 public protocol SQLite3SQLKind {}
 
 extension SQLite3 {
@@ -135,11 +107,16 @@ extension SQLite3.SQL where Kind == SQLite3.WithConditions {
 
 extension SQLite3.SQL {
         
-    @SQLite3SQLBuilder
+    @SpaceSeparatedList
     public func text() -> String {
 
         query.sqlWithoutConditions
-        (conditions?.sql).map { "WHERE \($0)" }
+        
+        if let sql = conditions?.sql {
+            
+            "WHERE"
+            sql
+        }
     }
 }
 

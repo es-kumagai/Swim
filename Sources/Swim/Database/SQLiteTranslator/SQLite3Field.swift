@@ -52,7 +52,7 @@ extension SQLite3.Field {
     
     /// [Swim] The sql expression of this field.
     /// This expression's format is `function("name") AS "alias"`.
-    @SQLite3SQLBuilder
+    @SpaceSeparatedList
     public var sql: String {
 
         switch function {

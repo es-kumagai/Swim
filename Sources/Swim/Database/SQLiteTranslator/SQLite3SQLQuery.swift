@@ -18,7 +18,7 @@ extension SQLite3.SQL {
 
 extension SQLite3.SQL.Query {
 
-    @SQLite3SQLBuilder
+    @SpaceSeparatedList
     public var sqlWithoutConditions: String {
         
         switch self {
@@ -26,7 +26,7 @@ extension SQLite3.SQL.Query {
         case .createTable:
             "CREATE TABLE"
             Target.quotedTableName
-            "(\(Target.declaresSQL))"
+            SQLite3.enclosedText(Target.declaresSQL)
             
         case .select(let fields) where fields.isEmpty:
             "SELECT * FROM"
@@ -34,15 +34,16 @@ extension SQLite3.SQL.Query {
 
         case .select(let fields):
             "SELECT"
-            fields.map(\.sql).joined(separator: ", ")
+            SQLite3.listedText(fields.map(\.sql))
             "FROM"
             Target.quotedTableName
 
         case .insert(let value):
             "INSERT INTO"
             value.quotedTableName
-            "(\(value.fieldsSQL))"
-            "VALUES (\(value.valuesSQL))"
+            SQLite3.enclosedText(value.fieldListSQL)
+            "VALUES"
+            SQLite3.enclosedText(value.valuesSQL)
             
         case .delete:
             "DELETE * FROM"

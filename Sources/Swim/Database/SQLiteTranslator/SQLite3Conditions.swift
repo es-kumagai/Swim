@@ -183,18 +183,19 @@ internal extension SQLite3.Conditions {
 
 extension Collection where Element : SQLite3Condition {
     
+    @SpaceSeparatedList
     public var sql: String {
         
         switch count {
         
         case 0:
-            return ""
+            nil
             
         case 1:
-            return first!.sql
+            first!.sql
             
         default:
-            return SQLite3.enclosedList(map(\.sql), separator: " ")
+            SQLite3.enclosedList(map(\.sql), separator: " ")
         }
     }
 }
@@ -206,10 +207,10 @@ extension SQLite3.Conditions.Item : SQLite3Condition {
         switch self {
         
         case .element(let element):
-            return "(\(element.sql))"
+            return SQLite3.enclosedText(element.sql)
             
         case .root(let elements):
-            return "\(elements.sql)"
+            return SQLite3.enclosedText(elements.sql)
             
         case .and(let elements):
             return "AND \(elements.sql)"

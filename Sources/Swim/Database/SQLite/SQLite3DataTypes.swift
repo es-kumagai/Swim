@@ -31,6 +31,26 @@ extension SQLite3 {
 
 extension SQLite3.DefineDataType {
     
+    public var declareSQL: String? {
+        
+        switch self {
+        
+        case .variant:
+            return nil
+            
+        case .integer:
+            return "INTEGER"
+            
+        case .real:
+            return "REAL"
+            
+        case .text:
+            return "TEXT"
+            
+//        case .blob:
+//            return "BLOB"
+        }
+    }
 }
 
 extension SQLite3.ActualDataType {
@@ -102,24 +122,8 @@ extension SQLite3.DefineDataType : CustomStringConvertible {
     }
 
     public var description: String {
-        
-        switch self {
-        
-        case .variant:
-            return ""
-            
-        case .integer:
-            return "INTEGER"
-            
-        case .real:
-            return "REAL"
-            
-        case .text:
-            return "TEXT"
-            
-//        case .blob:
-//            return "BLOB"
-        }
+
+        return declareSQL ?? ""
     }
 }
 

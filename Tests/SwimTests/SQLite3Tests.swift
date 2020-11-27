@@ -319,10 +319,10 @@ class SQLite3Tests: XCTestCase {
         XCTAssertEqual(metadata.map(\.nullable), [false, true, false, false])
         XCTAssertEqual(metadata.map(\.offset), [MemoryLayout<MyData>.offset(of: \MyData.id), MemoryLayout<MyData>.offset(of: \MyData.flags), MemoryLayout<MyData>.offset(of: \MyData.name), MemoryLayout<MyData>.offset(of: \MyData.option)])
         
-        XCTAssertEqual(metadata[0].declareSQL, "\"id\" INTEGER NOT NULL")
-        XCTAssertEqual(metadata[1].declareSQL, "\"flags\" REAL")
-        XCTAssertEqual(metadata[2].declareSQL, "\"name\" TEXT NOT NULL")
-        XCTAssertEqual(metadata[3].declareSQL, "\"option\" NOT NULL")
+        XCTAssertEqual(metadata[0].declareSQL(markAsPrimaryKey: true), "\"id\" INTEGER PRIMARY KEY NOT NULL")
+        XCTAssertEqual(metadata[1].declareSQL(markAsPrimaryKey: false), "\"flags\" REAL")
+        XCTAssertEqual(metadata[2].declareSQL(markAsPrimaryKey: false), "\"name\" TEXT NOT NULL")
+        XCTAssertEqual(metadata[3].declareSQL(markAsPrimaryKey: false), "\"option\" NOT NULL")
         
         let data1 = MyData(id: 5, flags: 1.23, name: "D1", option: .init(10))
         let data2 = MyData(id: 12, flags: nil, name: "D2", option: .init(10.5))

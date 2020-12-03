@@ -7,13 +7,19 @@
 
 public struct SQLiteArray<Element> where Element : SQLite3Translateable {
     
+    public typealias Filter = SQLite3.Conditions<Element>
+    
     private var sqlite: SQLite3
     private var translator: SQLite3.Translator<Element>
     
-    public init() throws {
+    public var filter: Filter?
+    
+    public init(filter: Filter? = nil) throws {
         
         sqlite = try! SQLite3(store: .onMemory, options: .readwrite)
         translator = SQLite3.Translator<Element>()
+        
+        self.filter = filter
         
         try sqlite.execute(translator.makeCreateTableSQL())
         
@@ -26,7 +32,28 @@ public struct SQLiteArray<Element> where Element : SQLite3Translateable {
 
 extension SQLiteArray {
     
-    public func insert(_ element: Element) {
+    public func enumerated(with filter: Filter? = nil) -> SQLiteArraySequence<Element> {
+
+        let sql: String
+            
+        switch filter {
+        
+        case .none:
+            sql = translator.makeSelectSQL().text()
+            
+        case .some(let filter):
+            sql = translator.makeSelectSQL(where: filter).text()
+        }
+        
+        guard let statement = try! sqlite.execute(sql: sql) else {
+            
+            fatalError("Failed to create a statement with \(sql).")
+        }
+        
+        return SQLiteArraySequence(translator: translator, iterator: statement.makeIterator())
+    }
+
+    public mutating func append(_ element: Element) {
         
         do {
 
@@ -41,7 +68,7 @@ extension SQLiteArray {
         }
     }
     
-    public func removeAll() {
+    public mutating func removeAll() {
         
         do {
 
@@ -81,5 +108,13 @@ extension SQLiteArray {
         
             fatalError("\(error)")
         }
+    }
+}
+
+extension SQLiteArray : Sequence {
+    
+    public func makeIterator() -> some IteratorProtocol {
+     
+        return enumerated(with: filter)
     }
 }

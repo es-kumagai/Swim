@@ -17,6 +17,7 @@ extension SQLite3 {
         
         /// [Swim] Create an instance that is analyzed by `keyPath`.
         /// If the `keyPath`'s type is not supported by SQLite3, aborting program in runtime.
+        /// Currently, VARIANT always accept NULL.
         ///
         /// - Parameters:
         ///   - field: The SQLite filed of this metadata.
@@ -32,7 +33,7 @@ extension SQLite3 {
             
             case SQLite3.Value.self:
                 datatype = .variant
-                nullable = false
+                nullable = true     // Currently, VARIANT always accept NULL.
                 
             case Optional<SQLite3.Value>.self:
                 datatype = .variant

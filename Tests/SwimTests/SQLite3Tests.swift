@@ -351,40 +351,40 @@ class SQLite3Tests: XCTestCase {
     
     func testArray1() throws {
         
-        let array = try SQLiteArray<MyData>()
+        var array = try SQLiteArray<MyData>()
         
         XCTAssertEqual(array.count, 0)
         
-        array.insert(MyData(id: 5, flags: 1.5, name: "AAA", option: SQLite3.Value(10)))
+        array.append(MyData(id: 5, flags: 1.5, name: "AAA", option: SQLite3.Value(10)))
         XCTAssertEqual(array.count, 1)
         
-        array.insert(MyData(id: 12, flags: nil, name: "BBB", option: SQLite3.Value(10.5)))
+        array.append(MyData(id: 12, flags: nil, name: "BBB", option: SQLite3.Value(10.5)))
         XCTAssertEqual(array.count, 2)
     }
     
     func testArray2() throws {
         
-        let array = try SQLiteArray<MyData2>()
+        var array = try SQLiteArray<MyData2>()
         
         XCTAssertEqual(array.count, 0)
         
-        array.insert(MyData2(id: 5, flags: 1.5, name: "AAA", option: SQLite3.Value(10)))
+        array.append(MyData2(id: 5, flags: 1.5, name: "AAA", option: SQLite3.Value(10)))
         XCTAssertEqual(array.count, 1)
         
-        array.insert(MyData2(id: 12, flags: nil, name: "BBB", option: SQLite3.Value(10.5)))
+        array.append(MyData2(id: 12, flags: nil, name: "BBB", option: SQLite3.Value(10.5)))
         XCTAssertEqual(array.count, 2)
     }
     
     func testArray3() throws {
         
-        let array = try SQLiteArray<MyData3>()
+        var array = try SQLiteArray<MyData3>()
         
         XCTAssertEqual(array.count, 0)
         
-        array.insert(MyData3(id: 5, flags: 1.5, name: "AAA", option: SQLite3.Value(10)))
+        array.append(MyData3(id: 5, flags: 1.5, name: "AAA", option: SQLite3.Value(10)))
         XCTAssertEqual(array.count, 1)
         
-        array.insert(MyData3(id: 12, flags: nil, name: "BBB", option: SQLite3.Value(10.5)))
+        array.append(MyData3(id: 12, flags: nil, name: "BBB", option: SQLite3.Value(10.5)))
         XCTAssertEqual(array.count, 2)
     }
     
@@ -415,21 +415,21 @@ class SQLite3Tests: XCTestCase {
         let sql5c = translatorC.makeCommitTransactionSQL()
         let sql6c = translatorC.makeRollbackTransactionSQL()
         
-        XCTAssertEqual(sql1a.description, #"CREATE TABLE "MyData" ("id" INTEGER NOT NULL, "flags" REAL, "name" TEXT NOT NULL, "option" NOT NULL)"#)
+        XCTAssertEqual(sql1a.description, #"CREATE TABLE "MyData" ("id" INTEGER NOT NULL, "flags" REAL, "name" TEXT NOT NULL, "option")"#)
         XCTAssertEqual(sql2a.description, #"DROP TABLE "MyData""#)
         XCTAssertEqual(sql3a.map(\.description), [])
         XCTAssertEqual(sql4a.description, #"BEGIN TRANSACTION"#)
         XCTAssertEqual(sql5a.description, #"COMMIT TRANSACTION"#)
         XCTAssertEqual(sql6a.description, #"ROLLBACK TRANSACTION"#)
         
-        XCTAssertEqual(sql1b.description, #"CREATE TABLE "MyData2" ("id" INTEGER PRIMARY KEY NOT NULL, "flags" REAL, "name" TEXT NOT NULL, "option" NOT NULL)"#)
+        XCTAssertEqual(sql1b.description, #"CREATE TABLE "MyData2" ("id" INTEGER PRIMARY KEY NOT NULL, "flags" REAL, "name" TEXT NOT NULL, "option")"#)
         XCTAssertEqual(sql2b.description, #"DROP TABLE "MyData2""#)
         XCTAssertEqual(sql3b.map(\.description), [#"CREATE INDEX "Index_MyData2_id" ON "MyData2" ("id")"#])
         XCTAssertEqual(sql4b.description, #"BEGIN TRANSACTION"#)
         XCTAssertEqual(sql5b.description, #"COMMIT TRANSACTION"#)
         XCTAssertEqual(sql6b.description, #"ROLLBACK TRANSACTION"#)
         
-        XCTAssertEqual(sql1c.description, #"CREATE TABLE "MyData3" ("id" INTEGER NOT NULL, "flags" REAL, "name" TEXT NOT NULL, "option" NOT NULL, PRIMARY KEY ("id", "name"))"#)
+        XCTAssertEqual(sql1c.description, #"CREATE TABLE "MyData3" ("id" INTEGER NOT NULL, "flags" REAL, "name" TEXT NOT NULL, "option", PRIMARY KEY ("id", "name"))"#)
         XCTAssertEqual(sql2c.description, #"DROP TABLE "MyData3""#)
         XCTAssertEqual(sql3c.map(\.description), [#"CREATE UNIQUE INDEX "Index_MyData3_id" ON "MyData3" ("id")"#, #"CREATE INDEX "Index_MyData3_option" ON "MyData3" ("option", "flags")"#])
         XCTAssertEqual(sql4c.description, #"BEGIN TRANSACTION"#)
@@ -445,18 +445,18 @@ class SQLite3Tests: XCTestCase {
         let metadata = MyData.sqlite3Columns
         
         let createSQL = SQLite3.SQL.createTable(datatype)
-        XCTAssertEqual(createSQL.description, #"CREATE TABLE "MyData" ("id" INTEGER NOT NULL, "flags" REAL, "name" TEXT NOT NULL, "option" NOT NULL)"#)
+        XCTAssertEqual(createSQL.description, #"CREATE TABLE "MyData" ("id" INTEGER NOT NULL, "flags" REAL, "name" TEXT NOT NULL, "option")"#)
         
         XCTAssertEqual(datatype.tableName, "MyData")
         XCTAssertEqual(metadata.map(\.field.name), ["id", "flags", "name", "option"])
         XCTAssertEqual(metadata.map(\.datatype), [.integer, .real, .text, .variant])
-        XCTAssertEqual(metadata.map(\.nullable), [false, true, false, false])
+        XCTAssertEqual(metadata.map(\.nullable), [false, true, false, true])
         XCTAssertEqual(metadata.map(\.offset), [MemoryLayout<MyData>.offset(of: \MyData.id), MemoryLayout<MyData>.offset(of: \MyData.flags), MemoryLayout<MyData>.offset(of: \MyData.name), MemoryLayout<MyData>.offset(of: \MyData.option)])
         
         XCTAssertEqual(metadata[0].declareSQL(markAsPrimaryKey: true), "\"id\" INTEGER PRIMARY KEY NOT NULL")
         XCTAssertEqual(metadata[1].declareSQL(markAsPrimaryKey: false), "\"flags\" REAL")
         XCTAssertEqual(metadata[2].declareSQL(markAsPrimaryKey: false), "\"name\" TEXT NOT NULL")
-        XCTAssertEqual(metadata[3].declareSQL(markAsPrimaryKey: false), "\"option\" NOT NULL")
+        XCTAssertEqual(metadata[3].declareSQL(markAsPrimaryKey: false), "\"option\"", "Currenly, SQLite3.Value don't support nonnull VARIANT.")
         
         let data1 = MyData(id: 5, flags: 1.23, name: "D1", option: .init(10))
         let data2 = MyData(id: 12, flags: nil, name: "D2", option: .init(10.5))
@@ -565,9 +565,9 @@ class SQLite3Tests: XCTestCase {
         let sql2 = translator2.makeCreateTableSQL()
         let sql3 = translator3.makeCreateTableSQL()
 
-        XCTAssertEqual(sql1.description, #"CREATE TABLE "MyData" ("id" INTEGER NOT NULL, "flags" REAL, "name" TEXT NOT NULL, "option" NOT NULL)"#)
-        XCTAssertEqual(sql2.description, #"CREATE TABLE "MyData2" ("id" INTEGER PRIMARY KEY NOT NULL, "flags" REAL, "name" TEXT NOT NULL, "option" NOT NULL)"#)
-        XCTAssertEqual(sql3.description, #"CREATE TABLE "MyData3" ("id" INTEGER NOT NULL, "flags" REAL, "name" TEXT NOT NULL, "option" NOT NULL, PRIMARY KEY ("id", "name"))"#)
+        XCTAssertEqual(sql1.description, #"CREATE TABLE "MyData" ("id" INTEGER NOT NULL, "flags" REAL, "name" TEXT NOT NULL, "option")"#)
+        XCTAssertEqual(sql2.description, #"CREATE TABLE "MyData2" ("id" INTEGER PRIMARY KEY NOT NULL, "flags" REAL, "name" TEXT NOT NULL, "option")"#)
+        XCTAssertEqual(sql3.description, #"CREATE TABLE "MyData3" ("id" INTEGER NOT NULL, "flags" REAL, "name" TEXT NOT NULL, "option", PRIMARY KEY ("id", "name"))"#)
     }
     
     func testColumnType() throws {
@@ -589,8 +589,9 @@ class SQLite3Tests: XCTestCase {
     
     func testArrayMetadata() throws {
         
-        let array = try SQLiteArray<MyData>()
+        var array = try SQLiteArray<MyData>()
         
+        array.append(MyData(id: 5, flags: nil, name: "A", option: .null))
     }
     
     func testDataType() throws {

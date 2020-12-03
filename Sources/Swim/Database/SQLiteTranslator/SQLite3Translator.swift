@@ -79,6 +79,11 @@ extension SQLite3.Translator {
         
         return .delete(from: Target.self)
     }
+    
+    public func makeVacuumSQL() -> SQLWithNoConditions {
+        
+        return .vacuum()
+    }
 
     public func makeSelectSQL(fields: [SQLite3.Field] = [], where conditions: Conditions) -> SQLWithConditions {
 

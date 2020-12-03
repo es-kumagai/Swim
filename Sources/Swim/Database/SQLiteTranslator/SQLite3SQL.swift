@@ -94,6 +94,11 @@ extension SQLite3.SQL where Kind == SQLite3.NoConditions {
         
         self.init(query: .delete)
     }
+    
+    public static func vacuum() -> Self {
+        
+        self.init(query: .vacuum)
+    }
 }
 
 extension SQLite3.SQL where Kind == SQLite3.WithConditions {
@@ -165,5 +170,22 @@ extension SQLite3.SQL : CustomStringConvertible {
     public var description: String {
         
         return text()
+    }
+}
+
+extension SQLite3 {
+    
+    @discardableResult
+    public func execute<Target, Kind>(_ sql: SQLite3.SQL<Target, Kind>) throws -> SQLite3.Statement? where Target : SQLite3Translateable, Kind : SQLite3SQLKind {
+        
+        return try execute(sql: sql.text())
+    }
+    
+    public func execute(@SQLBundle sqls predicate: () -> [String]) throws {
+        
+        for sql in predicate() {
+            
+            try execute(sql: sql)
+        }
     }
 }

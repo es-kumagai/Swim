@@ -19,6 +19,7 @@ extension SQLite3.SQL {
         case insert(Target)
         case replace(Target)
         case delete
+        case vacuum
     }
 }
 
@@ -76,8 +77,11 @@ extension SQLite3.SQL.Query {
             SQLite3.enclosedText(value.valuesSQL)
             
         case .delete:
-            "DELETE * FROM"
+            "DELETE FROM"
             Target.quotedTableName
+            
+        case .vacuum:
+            "VACUUM"
        }
     }
 }

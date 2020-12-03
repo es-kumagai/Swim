@@ -15,8 +15,7 @@ public struct SQLiteArray<Element> where Element : SQLite3Translateable {
         sqlite = try! SQLite3(store: .onMemory, options: .readwrite)
         translator = SQLite3.Translator<Element>()
         
-        let sql = translator.makeCreateTableSQL()
-        try sqlite.execute(sql: sql.description)
+        try sqlite.execute(translator.makeCreateTableSQL())
         
         for sql in translator.makeCreateIndexSQLs() {
             
@@ -31,17 +30,39 @@ extension SQLiteArray {
         
         do {
 
-            let sql = translator.makeInsertSQL(with: element)
-            try sqlite.execute(sql: sql.description)
+            try sqlite.execute {
+
+                translator.makeInsertSQL(with: element)
+            }
         }
         catch {
             
             fatalError("Failed to insert. \(error)")
         }
     }
-}
+    
+    public func removeAll() {
+        
+        do {
 
-extension SQLiteArray {
+            try sqlite.execute {
+                
+                translator.makeBeginTransactionSQL()
+                translator.makeDeleteSQL()
+                translator.makeVacuumSQL()
+                translator.makeCommitTransactionSQL()
+            }
+        }
+        catch {
+            
+            try! sqlite.execute {
+
+                translator.makeRollbackTransactionSQL()
+            }
+            
+            fatalError("\(error)")
+        }
+    }
     
     public var count: Int {
         
@@ -49,7 +70,7 @@ extension SQLiteArray {
         
         do {
 
-            guard let statement = try sqlite.execute(sql: sql.description) else {
+            guard let statement = try sqlite.execute(sql) else {
             
                 fatalError("Failed to get count.")
             }

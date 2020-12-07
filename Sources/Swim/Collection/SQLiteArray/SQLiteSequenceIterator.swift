@@ -1,11 +1,11 @@
 //
-//  SQLiteArrayIterator.swift
+//  SQLiteSequenceIterator.swift
 //  Swim
 //
 //  Created by Tomohiro Kumagai on 2020/12/04.
 //
 
-public struct SQLiteArraySequence<Target> where Target : SQLite3Translateable {
+public struct SQLiteSequenceIterator<Target> where Target : SQLite3Translateable {
     
     internal private(set) var translator: SQLite3.Translator<Target>
     internal private(set) var iterator: SQLite3.StatementIterator
@@ -17,7 +17,7 @@ public struct SQLiteArraySequence<Target> where Target : SQLite3Translateable {
     }
 }
 
-extension SQLiteArraySequence : IteratorProtocol, Sequence {
+extension SQLiteSequenceIterator : IteratorProtocol, Sequence {
 
     public mutating func next() -> Target? {
         

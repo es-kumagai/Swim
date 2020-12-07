@@ -245,4 +245,60 @@ extension SQLite3.Conditions {
         
         return conditions.sql
     }
+    
+    public static func & (lhs: Self, rhs: Self) -> Self {
+        
+        return lhs.and(rhs)
+    }
+    
+    public static func | (lhs: Self, rhs: Self) -> Self {
+        
+        return lhs.or(rhs)
+    }
+    
+    public static func &= (lhs: inout Self, rhs: Self) {
+        
+        lhs = lhs & rhs
+    }
+    
+    public static func |= (lhs: inout Self, rhs: Self) {
+        
+        lhs = lhs | rhs
+    }
+}
+
+public func & <Target : SQLite3Translateable>(lhs: SQLite3.Conditions<Target>?, rhs: SQLite3.Conditions<Target>?) -> SQLite3.Conditions<Target>? {
+    
+    switch (lhs, rhs) {
+    
+    case (nil, nil):
+        return nil
+    
+    case let (lhs?, rhs?):
+        return lhs & rhs
+        
+    case let (lhs?, nil):
+        return lhs
+        
+    case let (nil, rhs?):
+        return rhs
+    }
+}
+
+public func | <Target : SQLite3Translateable>(lhs: SQLite3.Conditions<Target>?, rhs: SQLite3.Conditions<Target>?) -> SQLite3.Conditions<Target>? {
+    
+    switch (lhs, rhs) {
+    
+    case (nil, nil):
+        return nil
+    
+    case let (lhs?, rhs?):
+        return lhs | rhs
+        
+    case let (lhs?, nil):
+        return lhs
+        
+    case let (nil, rhs?):
+        return rhs
+    }
 }

@@ -1,25 +1,24 @@
 //
-//  SQLiteArray.swift
+//  SQLiteSequence.swift
 //  Swim
 //
 //  Created by Tomohiro Kumagai on 2020/11/12.
 //
 
-public struct SQLiteArray<Element> where Element : SQLite3Translateable {
+public struct SQLiteSequence<Element> where Element : SQLite3Translateable {
     
     public typealias Filter = SQLite3.Conditions<Element>
     
     private var sqlite: SQLite3
     private var translator: SQLite3.Translator<Element>
+}
+
+extension SQLiteSequence {
     
-    public var filter: Filter?
-    
-    public init(filter: Filter? = nil) throws {
+    public init() throws {
         
         sqlite = try! SQLite3(store: .onMemory, options: .readwrite)
         translator = SQLite3.Translator<Element>()
-        
-        self.filter = filter
         
         try sqlite.execute(translator.makeCreateTableSQL())
         
@@ -28,29 +27,10 @@ public struct SQLiteArray<Element> where Element : SQLite3Translateable {
             try sqlite.execute(sql: sql.description)
         }
     }
-}
 
-extension SQLiteArray {
-    
-    public func enumerated(with filter: Filter? = nil) -> SQLiteArraySequence<Element> {
+    public func filtered(by filter: Filter?) -> SQLiteFilteredSequence<Element> {
 
-        let sql: String
-            
-        switch filter {
-        
-        case .none:
-            sql = translator.makeSelectSQL().text()
-            
-        case .some(let filter):
-            sql = translator.makeSelectSQL(where: filter).text()
-        }
-        
-        guard let statement = try! sqlite.execute(sql: sql) else {
-            
-            fatalError("Failed to create a statement with \(sql).")
-        }
-        
-        return SQLiteArraySequence(translator: translator, iterator: statement.makeIterator())
+        return SQLiteFilteredSequence<Element>(sequence: self, filter: filter)
     }
 
     public mutating func append(_ element: Element) {
@@ -111,10 +91,31 @@ extension SQLiteArray {
     }
 }
 
-extension SQLiteArray : Sequence {
-    
+extension SQLiteSequence : Sequence {
+
     public func makeIterator() -> some IteratorProtocol {
+    
+        return makeIterator(with: nil)
+    }
+    
+    internal func makeIterator(with filter: Filter?) -> some IteratorProtocol {
      
-        return enumerated(with: filter)
+        let sql: String
+        
+        switch filter {
+        
+        case .none:
+            sql = translator.makeSelectSQL().text()
+            
+        case .some(let filter):
+            sql = translator.makeSelectSQL(where: filter).text()
+        }
+        
+        guard let statement = try! sqlite.execute(sql: sql) else {
+            
+            fatalError("Failed to create a statement with \(sql).")
+        }
+        
+        return SQLiteSequenceIterator(translator: translator, iterator: statement.makeIterator())
     }
 }

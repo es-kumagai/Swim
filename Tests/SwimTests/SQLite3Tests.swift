@@ -351,7 +351,7 @@ class SQLite3Tests: XCTestCase {
     
     func testArray1() throws {
         
-        var array = try SQLiteArray<MyData>()
+        var array = try SQLiteSequence<MyData>()
         
         XCTAssertEqual(array.count, 0)
         
@@ -364,7 +364,7 @@ class SQLite3Tests: XCTestCase {
     
     func testArray2() throws {
         
-        var array = try SQLiteArray<MyData2>()
+        var array = try SQLiteSequence<MyData2>()
         
         XCTAssertEqual(array.count, 0)
         
@@ -377,7 +377,7 @@ class SQLite3Tests: XCTestCase {
     
     func testArray3() throws {
         
-        var array = try SQLiteArray<MyData3>()
+        var array = try SQLiteSequence<MyData3>()
         
         XCTAssertEqual(array.count, 0)
         
@@ -589,7 +589,7 @@ class SQLite3Tests: XCTestCase {
     
     func testArrayMetadata() throws {
         
-        var array = try SQLiteArray<MyData>()
+        var array = try SQLiteSequence<MyData>()
         
         array.append(MyData(id: 5, flags: nil, name: "A", option: .null))
     }

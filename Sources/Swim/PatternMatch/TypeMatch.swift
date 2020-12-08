@@ -10,7 +10,7 @@
 ///   - pattern: A metatype.
 ///   - value: A value to match against `pattern`.
 /// - Returns: True iff the type that passed by `value` is equal to `pattern`, otherwise false.
-public func ~= (pattern: Any.Type, value: Any.Type) -> Bool {
+@inlinable public func ~= (pattern: Any.Type, value: Any.Type) -> Bool {
 
     return pattern == value
 }

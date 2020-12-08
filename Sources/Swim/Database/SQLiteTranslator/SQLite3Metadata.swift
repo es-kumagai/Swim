@@ -70,11 +70,6 @@ extension SQLite3 {
     }
 }
 
-private func ~= (pattern: Any.Type, value: Any.Type) -> Bool {
-
-    return pattern == value
-}
-
 extension SQLite3.ColumnMetadata {
     
     var offset: Int {

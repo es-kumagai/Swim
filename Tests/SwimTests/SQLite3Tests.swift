@@ -56,7 +56,7 @@ extension MyData2 : SQLite3Translateable {
     @SQLite3.ColumnsDeclaration
     static var sqlite3Columns: [Column] {
         
-        Column("id", keyPath: \.id, primaryKey: true)
+        Column("id", keyPath: \.id, primaryKey: true, autoIncrement: true, ignoreInsertion: true)
         Column("flags", keyPath: \.flags)
         Column("name", keyPath: \.name)
         Column("option", keyPath: \.option)
@@ -415,6 +415,9 @@ class SQLite3Tests: XCTestCase {
         let sql5c = translatorC.makeCommitTransactionSQL()
         let sql6c = translatorC.makeRollbackTransactionSQL()
         
+        let insert1 = translatorA.makeInsertSQL(with: MyData(id: 5, flags: nil, name: "TEST", option: SQLite3.Value(10)))
+        let insert2 = translatorB.makeInsertSQL(with: MyData2(id: 5, flags: nil, name: "TEST", option: SQLite3.Value(10)))
+
         XCTAssertEqual(sql1a.description, #"CREATE TABLE "MyData" ("id" INTEGER NOT NULL, "flags" REAL, "name" TEXT NOT NULL, "option")"#)
         XCTAssertEqual(sql2a.description, #"DROP TABLE "MyData""#)
         XCTAssertEqual(sql3a.map(\.description), [])
@@ -422,7 +425,7 @@ class SQLite3Tests: XCTestCase {
         XCTAssertEqual(sql5a.description, #"COMMIT TRANSACTION"#)
         XCTAssertEqual(sql6a.description, #"ROLLBACK TRANSACTION"#)
         
-        XCTAssertEqual(sql1b.description, #"CREATE TABLE "MyData2" ("id" INTEGER PRIMARY KEY NOT NULL, "flags" REAL, "name" TEXT NOT NULL, "option")"#)
+        XCTAssertEqual(sql1b.description, #"CREATE TABLE "MyData2" ("id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, "flags" REAL, "name" TEXT NOT NULL, "option")"#)
         XCTAssertEqual(sql2b.description, #"DROP TABLE "MyData2""#)
         XCTAssertEqual(sql3b.map(\.description), [#"CREATE INDEX "Index_MyData2_id" ON "MyData2" ("id")"#])
         XCTAssertEqual(sql4b.description, #"BEGIN TRANSACTION"#)
@@ -435,6 +438,9 @@ class SQLite3Tests: XCTestCase {
         XCTAssertEqual(sql4c.description, #"BEGIN TRANSACTION"#)
         XCTAssertEqual(sql5c.description, #"COMMIT TRANSACTION"#)
         XCTAssertEqual(sql6c.description, #"ROLLBACK TRANSACTION"#)
+        
+        XCTAssertEqual(insert1.text(), #"INSERT INTO "MyData" ("id", "flags", "name", "option") VALUES (5, NULL, 'TEST', 10)"#)
+        XCTAssertEqual(insert2.text(), #"INSERT INTO "MyData2" ("flags", "name", "option") VALUES (NULL, 'TEST', 10)"#)
     }
     
     func testTranslate() throws {
@@ -566,7 +572,7 @@ class SQLite3Tests: XCTestCase {
         let sql3 = translator3.makeCreateTableSQL()
 
         XCTAssertEqual(sql1.description, #"CREATE TABLE "MyData" ("id" INTEGER NOT NULL, "flags" REAL, "name" TEXT NOT NULL, "option")"#)
-        XCTAssertEqual(sql2.description, #"CREATE TABLE "MyData2" ("id" INTEGER PRIMARY KEY NOT NULL, "flags" REAL, "name" TEXT NOT NULL, "option")"#)
+        XCTAssertEqual(sql2.description, #"CREATE TABLE "MyData2" ("id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, "flags" REAL, "name" TEXT NOT NULL, "option")"#)
         XCTAssertEqual(sql3.description, #"CREATE TABLE "MyData3" ("id" INTEGER NOT NULL, "flags" REAL, "name" TEXT NOT NULL, "option", PRIMARY KEY ("id", "name"))"#)
     }
     

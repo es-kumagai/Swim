@@ -79,6 +79,11 @@ extension SQLite3Translateable {
         
         return sqlite3Columns.filter(\.primaryKey)
     }
+    
+    public static var sqlite3ColumnsForInsertion: [Column] {
+        
+        return sqlite3Columns.filter { !$0.ignoreInsertion }
+    }
 
     @CommaSeparatedList
     public static var declaresSQL: String {
@@ -106,44 +111,64 @@ extension SQLite3Translateable {
         sqlite3Columns.map(\.field.sql)
     }
     
+    @CommaSeparatedList
+    public static var fieldsSQLForInsertion: String {
+        
+        sqlite3ColumnsForInsertion.map(\.field.sql)
+    }
+    
     public var fieldListSQL: String {
         
         return Self.fieldsSQL
     }
     
+    public var fieldListSQLForInsertion: String {
+        
+        return Self.fieldsSQLForInsertion
+    }
+    
+    public func valueSQL(for column: Column) -> String {
+        
+        let value = self[keyPath: column.keyPath]
+        
+        switch (column.datatype, column.nullable) {
+
+        case (.variant, true):
+            return (value as? SQLite3.Value)?.description ?? "NULL"
+
+        case (.variant, false):
+            return (value as! SQLite3.Value).description
+            
+        case (.integer, true):
+            return (value as? Int)?.description ?? "NULL"
+            
+        case (.integer, false):
+            return (value as! Int).description
+            
+        case (.real, true):
+            return (value as? Double)?.description ?? "NULL"
+            
+        case (.real, false):
+            return (value as! Double).description
+            
+        case (.text, true):
+             return (value as? String).map(SQLite3.quotedText) ?? "NULL"
+            
+        case (.text, false):
+            return SQLite3.quotedText(value as! String)
+        }
+    }
+    
     public var valuesSQL: String {
         
-        let values = Self.sqlite3Columns.map { column -> String in
-            
-            let value = self[keyPath: column.keyPath]
-            
-            switch (column.datatype, column.nullable) {
-
-            case (.variant, true):
-                return (value as? SQLite3.Value)?.description ?? "NULL"
-  
-            case (.variant, false):
-                return (value as! SQLite3.Value).description
-                
-            case (.integer, true):
-                return (value as? Int)?.description ?? "NULL"
-                
-            case (.integer, false):
-                return (value as! Int).description
-                
-            case (.real, true):
-                return (value as? Double)?.description ?? "NULL"
-                
-            case (.real, false):
-                return (value as! Double).description
-                
-            case (.text, true):
-                 return (value as? String).map(SQLite3.quotedText) ?? "NULL"
-                
-            case (.text, false):
-                return SQLite3.quotedText(value as! String)
-            }
-        }
+        let values = Self.sqlite3Columns.map(self.valueSQL(for:))
+        
+        return SQLite3.listedText(values)
+    }
+    
+    public var valuesSQLForInsertion: String {
+        
+        let values = Self.sqlite3ColumnsForInsertion.map(self.valueSQL(for:))
         
         return SQLite3.listedText(values)
     }

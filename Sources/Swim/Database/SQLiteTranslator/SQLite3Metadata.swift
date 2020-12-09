@@ -14,6 +14,8 @@ extension SQLite3 {
         public var datatype: SQLite3.DefineDataType
         public var nullable: Bool
         public var primaryKey: Bool
+        public var autoIncrement: Bool
+        public var ignoreInsertion: Bool
         
         /// [Swim] Create an instance that is analyzed by `keyPath`.
         /// If the `keyPath`'s type is not supported by SQLite3, aborting program in runtime.
@@ -23,11 +25,13 @@ extension SQLite3 {
         ///   - field: The SQLite filed of this metadata.
         ///   - value: The value that use to analyze metadata.
         ///   - offset: The offset data of this metadata.
-        public init<Value>(_ field: Field, keyPath: KeyPath<Target, Value>, primaryKey: Bool = false) {
+        public init<Value>(_ field: Field, keyPath: KeyPath<Target, Value>, primaryKey: Bool = false, autoIncrement: Bool = false, ignoreInsertion: Bool = false) {
             
             self.field = field
             self.keyPath = keyPath as PartialKeyPath<Target>
             self.primaryKey = primaryKey
+            self.autoIncrement = autoIncrement
+            self.ignoreInsertion = ignoreInsertion
             
             switch Value.self {
             
@@ -84,6 +88,7 @@ extension SQLite3.ColumnMetadata {
         datatype.declareSQL
         
         if markAsPrimaryKey { "PRIMARY KEY" }
+        if autoIncrement { "AUTOINCREMENT" }
         if !nullable { "NOT NULL" }
     }
 }

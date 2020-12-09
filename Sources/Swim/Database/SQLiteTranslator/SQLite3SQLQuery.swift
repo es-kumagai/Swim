@@ -65,9 +65,9 @@ extension SQLite3.SQL.Query {
         case .insert(let value):
             "INSERT INTO"
             value.quotedTableName
-            SQLite3.enclosedText(value.fieldListSQL)
+            SQLite3.enclosedText(value.fieldListSQLForInsertion)
             "VALUES"
-            SQLite3.enclosedText(value.valuesSQL)
+            SQLite3.enclosedText(value.valuesSQLForInsertion)
             
         case .replace(let value):
             "REPLACE INTO"

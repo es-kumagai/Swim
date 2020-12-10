@@ -32,7 +32,7 @@ extension PartialRange : RangeExpression {
         }
     }
     
-    public func contains(_ element: PartialRange<Bound>.Bound) -> Bool {
+    public func contains(_ element: Bound) -> Bool {
         
         switch (lowerBound, upperBound) {
             

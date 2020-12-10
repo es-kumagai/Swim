@@ -31,7 +31,7 @@ public final class UnsafeDynamicPropertyWriter<Target> {
         return pointer.pointee
     }
     
-    public func write<Value : CSVColumnConvertible>(_ value: Value, to keyPath: PartialKeyPath<Target>) throws {
+    public func write<Value>(_ value: Value, to keyPath: PartialKeyPath<Target>) throws {
 
         let valueType = type(of: value)
         let propertyType = type(of: pointer.pointee[keyPath: keyPath])

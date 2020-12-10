@@ -76,11 +76,6 @@ extension SQLite3 {
 
 extension SQLite3.ColumnMetadata {
     
-    var offset: Int {
-    
-        return MemoryLayout<Target>.offset(of: keyPath)!
-    }
-    
     @SpaceSeparatedList
     func declareSQL(markAsPrimaryKey: Bool) -> String {
         

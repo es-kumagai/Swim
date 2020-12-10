@@ -119,16 +119,7 @@ extension SQLite3.Translator {
             fatalError("Expect the number of columns (\(row.count)) is equals to the number of metadata (\(metadata.count)).")
         }
         
-//        let dataLength = MemoryLayout<Target>.size
-        let dataBytes = UnsafeMutableBufferPointer<Target>.allocate(capacity: 1)
-        let rawBytes = UnsafeMutableRawBufferPointer(dataBytes)
-        
-        defer {
-        
-            dataBytes.deallocate()
-        }
-        
-        dataBytes[0] = Target.sqlite3DefaultValue
+        let propertyWriter = UnsafeDynamicPropertyWriter<Target>(initialValue: Target.sqlite3DefaultValue)
         
         for (column, metadata) in zip(row, metadata) {
 
@@ -140,31 +131,31 @@ extension SQLite3.Translator {
             switch (metadata.datatype, metadata.nullable) {
             
             case (.variant, false):
-                rawBytes.storeBytes(of: column.value, toByteOffset: metadata.offset, as: SQLite3.Value.self)
+                try! propertyWriter.write(column.value, to: metadata.keyPath)
 
             case (.variant, true):
-                rawBytes.storeBytes(of: column.value, toByteOffset: metadata.offset, as: SQLite3.Value.self)
+                try! propertyWriter.write(column.value, to: metadata.keyPath)
 
             case (.integer, false):
-                rawBytes.storeBytes(of: column.integerValue!, toByteOffset: metadata.offset, as: Int.self)
+                try! propertyWriter.write(column.integerValue!, to: metadata.keyPath)
 
             case (.integer, true):
-                rawBytes.storeBytes(of: column.integerValue, toByteOffset: metadata.offset, as: Optional<Int>.self)
+                try! propertyWriter.write(column.integerValue, to: metadata.keyPath)
 
             case (.real, false):
-                rawBytes.storeBytes(of: column.realValue!, toByteOffset: metadata.offset, as: Double.self)
+                try! propertyWriter.write(column.realValue!, to: metadata.keyPath)
 
             case (.real, true):
-                rawBytes.storeBytes(of: column.realValue, toByteOffset: metadata.offset, as: Optional<Double>.self)
+                try! propertyWriter.write(column.realValue, to: metadata.keyPath)
 
             case (.text, false):
-                rawBytes.storeBytes(of: column.textValue!, toByteOffset: metadata.offset, as: String.self)
+                try! propertyWriter.write(column.textValue!, to: metadata.keyPath)
                 
             case (.text, true):
-                rawBytes.storeBytes(of: column.textValue, toByteOffset: metadata.offset, as: Optional<String>.self)
+                try! propertyWriter.write(column.textValue, to: metadata.keyPath)
             }
         }
         
-        return rawBytes.load(as: Target.self)
+        return propertyWriter.value
     }
 }

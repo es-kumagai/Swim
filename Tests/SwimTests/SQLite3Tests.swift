@@ -457,7 +457,6 @@ class SQLite3Tests: XCTestCase {
         XCTAssertEqual(metadata.map(\.field.name), ["id", "flags", "name", "option"])
         XCTAssertEqual(metadata.map(\.datatype), [.integer, .real, .text, .variant])
         XCTAssertEqual(metadata.map(\.nullable), [false, true, false, true])
-        XCTAssertEqual(metadata.map(\.offset), [MemoryLayout<MyData>.offset(of: \MyData.id), MemoryLayout<MyData>.offset(of: \MyData.flags), MemoryLayout<MyData>.offset(of: \MyData.name), MemoryLayout<MyData>.offset(of: \MyData.option)])
         
         XCTAssertEqual(metadata[0].declareSQL(markAsPrimaryKey: true), "\"id\" INTEGER PRIMARY KEY NOT NULL")
         XCTAssertEqual(metadata[1].declareSQL(markAsPrimaryKey: false), "\"flags\" REAL")

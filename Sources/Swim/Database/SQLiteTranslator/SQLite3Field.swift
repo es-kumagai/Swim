@@ -64,7 +64,7 @@ extension SQLite3.Field {
             quotedName
         }
         
-        alias.map { "AS \(SQLite3.quotedText($0))"}
+        alias.map { "AS \(SQLite3.quotedFieldName($0))"}
     }
 }
 

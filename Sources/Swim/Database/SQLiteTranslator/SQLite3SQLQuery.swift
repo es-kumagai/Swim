@@ -6,7 +6,7 @@
 //
 
 extension SQLite3.SQL {
-
+    
     public enum Query {
         
         case createTable
@@ -15,7 +15,7 @@ extension SQLite3.SQL {
         case beginTransaction
         case commitTransaction
         case rollbackTransaction
-        case select(Array<SQLite3.Field> = [])
+        case select(Array<SQLite3.Field> = [], orderBy: [String] = [])
         case insert(Target)
         case replace(Target)
         case delete
@@ -25,6 +25,8 @@ extension SQLite3.SQL {
 
 extension SQLite3.SQL.Query {
 
+    fileprivate typealias Translator = SQLite3.Translator<Target>
+
     @SpaceSeparatedList
     public var sqlWithoutConditions: String {
         
@@ -32,12 +34,12 @@ extension SQLite3.SQL.Query {
         
         case .createTable:
             "CREATE TABLE"
-            Target.quotedTableName
-            SQLite3.enclosedText(Target.declaresSQL)
+            Translator.quotedTableName
+            SQLite3.enclosedText(Translator.declaresSQL)
             
         case .dropTable:
             "DROP TABLE"
-            Target.quotedTableName
+            SQLite3.Translator<Target>.quotedTableName
             
         case .createIndex(let index):
             "CREATE"
@@ -52,36 +54,44 @@ extension SQLite3.SQL.Query {
         case .rollbackTransaction:
             "ROLLBACK TRANSACTION"
             
-        case .select(let fields) where fields.isEmpty:
-            "SELECT * FROM"
-            Target.quotedTableName
-
-        case .select(let fields):
+        case .select(let fields, let orderBy):
             "SELECT"
-            SQLite3.listedText(fields.map(\.sql))
+            fields.isEmpty ? "*" : SQLite3.listedText(fields.map(\.sql))
             "FROM"
-            Target.quotedTableName
+            Translator.quotedTableName
 
         case .insert(let value):
             "INSERT INTO"
-            value.quotedTableName
-            SQLite3.enclosedText(value.fieldListSQLForInsertion)
+            Translator.quotedTableName
+            SQLite3.enclosedText(Translator.fieldsSQLForInsertion)
             "VALUES"
-            SQLite3.enclosedText(value.valuesSQLForInsertion)
+            SQLite3.enclosedText(Translator.valuesSQLForInsertion(of: value))
             
         case .replace(let value):
             "REPLACE INTO"
-            value.quotedTableName
-            SQLite3.enclosedText(value.fieldListSQL)
+            Translator.quotedTableName
+            SQLite3.enclosedText(Translator.fieldsSQL)
             "VALUES"
-            SQLite3.enclosedText(value.valuesSQL)
+            SQLite3.enclosedText(Translator.valuesSQL(of: value))
             
         case .delete:
             "DELETE FROM"
-            Target.quotedTableName
+            Translator.quotedTableName
             
         case .vacuum:
             "VACUUM"
        }
+    }
+    
+    public var sqlOnlyOrderBy: String? {
+        
+        switch self {
+        
+        case .select(_, let orderBy) where !orderBy.isEmpty:
+            return "ORDER BY " + SQLite3.listedText(orderBy.map(SQLite3.quotedFieldName))
+            
+        default:
+            return nil
+        }
     }
 }

@@ -12,6 +12,7 @@ extension SQLite3 {
         public typealias SQLWithNoConditions = SQLite3.SQL<Target, SQLite3.NoConditions>
         public typealias SQLWithConditions = SQLite3.SQL<Target, SQLite3.WithConditions>
         public typealias Conditions = SQLite3.Conditions<Target>
+        public typealias Column = SQLite3.ColumnMetadata<Target>
         
         /// [Swim] Create an new instance that bridging 'Target' to SQLite records.
         /// This initializer is used to specify 'Target' type in type parameter by your self.
@@ -29,6 +30,124 @@ extension SQLite3 {
 
 extension SQLite3.Translator {
  
+    public static var allFields: [SQLite3.Field] {
+    
+        return Target.sqlite3Columns.map(\.field)
+    }
+    
+    public static var tableName: String {
+        
+        return Target.sqlite3TableName
+    }
+    
+    public static var quotedTableName: String {
+        
+        return SQLite3.quotedFieldName(tableName)
+    }
+    
+    public static func sqliteField(by name: String) -> SQLite3.Field {
+        
+        guard let column = Target.sqlite3Columns.first(where: { $0.field.name == name }) else {
+
+            fatalError("Specified name '\(name)' is not defined in 'sqlite3Columns'.")
+        }
+        
+        return column.field
+    }
+    
+    public static func sqliteField(of keyPath: PartialKeyPath<Target>) -> SQLite3.Field {
+        
+        guard let column = Target.sqlite3Columns.first(where: { $0.keyPath == keyPath }) else {
+
+            fatalError("Specified key path is not defined in 'sqlite3Columns'.")
+        }
+        
+        return column.field
+    }
+    
+    public static var primaryKeys: Array<Column> {
+        
+        return Target.sqlite3Columns.filter(\.primaryKey)
+    }
+    
+    @CommaSeparatedList
+    public static var declaresSQL: String {
+        
+        let primaryKeys = self.primaryKeys
+
+        if primaryKeys.count > 1 {
+
+            Target.sqlite3Columns.map { $0.declareSQL(markAsPrimaryKey: false) }
+
+            if !primaryKeys.isEmpty {
+
+                "PRIMARY KEY \(SQLite3.enclosedList(primaryKeys.map(\.field.quotedName)))"
+            }
+        }
+        else {
+
+            Target.sqlite3Columns.map { $0.declareSQL(markAsPrimaryKey: primaryKeys.contains($0)) }
+        }
+    }
+    
+    @CommaSeparatedList
+    public static var fieldsSQL: String {
+        
+        Target.sqlite3Columns.map(\.field.sql)
+    }
+    
+    @CommaSeparatedList
+    public static var fieldsSQLForInsertion: String {
+        
+        Target.sqlite3ColumnsForInsertion.map(\.field.sql)
+    }
+    
+    public static func valueSQL(for column: Column, value: Target) -> String {
+        
+        let value = value[keyPath: column.keyPath]
+        
+        switch (column.datatype, column.nullable) {
+        
+        case (.variant, true):
+            return (value as? SQLite3.Value)?.description ?? "NULL"
+            
+        case (.variant, false):
+            return (value as! SQLite3.Value).description
+            
+        case (.integer, true):
+            return (value as? Int)?.description ?? "NULL"
+            
+        case (.integer, false):
+            return (value as! Int).description
+            
+        case (.real, true):
+            return (value as? Double)?.description ?? "NULL"
+            
+        case (.real, false):
+            return (value as! Double).description
+            
+        case (.text, true):
+            return (value as? String).map(SQLite3.quotedText) ?? "NULL"
+            
+        case (.text, false):
+            return SQLite3.quotedText(value as! String)
+        }
+    }
+    
+    public static func valuesSQL(of value: Target) -> String {
+        
+        let values = Target.sqlite3Columns.map { valueSQL(for: $0, value: value) }
+        
+        return SQLite3.listedText(values)
+    }
+    
+    public static func valuesSQLForInsertion(of value: Target) -> String {
+        
+        let values = Target.sqlite3ColumnsForInsertion.map { valueSQL(for: $0, value: value) }
+        
+        return SQLite3.listedText(values)
+    }
+
     public func makeCreateTableSQL() -> SQLWithNoConditions {
     
         return .createTable(Target.self)
@@ -58,11 +177,25 @@ extension SQLite3.Translator {
         
         return .rollbackTransaction(on: Target.self)
     }
+
+    public func makeSelectSQL() -> SQLWithNoConditions {
     
-    public func makeSelectSQL(fields: [SQLite3.Field] = []) -> SQLWithNoConditions {
-        print(separator: "")
+        return makeSelectSQL(fields: [], orderBy: [])
+    }
+    
+    public func makeSelectSQL(fields: [SQLite3.Field]) -> SQLWithNoConditions {
         
-        return .select(fields, from: Target.self)
+        return makeSelectSQL(fields: fields, orderBy: [])
+    }
+    
+    public func makeSelectSQL(orderBy: [String]) -> SQLWithNoConditions {
+        
+        return makeSelectSQL(fields: [], orderBy: orderBy)
+    }
+        
+    public func makeSelectSQL(fields: [SQLite3.Field], orderBy: [String]) -> SQLWithNoConditions {
+        
+        return .select(fields, from: Target.self, orderBy: orderBy)
     }
     
     public func makeInsertSQL(with value: Target) -> SQLWithNoConditions {
@@ -85,9 +218,24 @@ extension SQLite3.Translator {
         return .vacuum()
     }
 
-    public func makeSelectSQL(fields: [SQLite3.Field] = [], where conditions: Conditions) -> SQLWithConditions {
+    public func makeSelectSQL(where conditions: Conditions) -> SQLWithConditions {
+        
+        return makeSelectSQL(fields: [], where: conditions, orderBy: [])
+    }
+    
+    public func makeSelectSQL(fields: [SQLite3.Field], where conditions: Conditions) -> SQLWithConditions {
+        
+        return makeSelectSQL(fields: fields, where: conditions, orderBy: [])
+    }
+    
+    public func makeSelectSQL(where conditions: Conditions, orderBy: [String]) -> SQLWithConditions {
+        
+        return makeSelectSQL(fields: [], where: conditions, orderBy: orderBy)
+    }
+    
+    public func makeSelectSQL(fields: [SQLite3.Field], where conditions: Conditions, orderBy: [String]) -> SQLWithConditions {
 
-        return .select(fields, from: Target.self, where: conditions)
+        return .select(fields, from: Target.self, where: conditions, orderBy: orderBy)
     }
     
     public func makeInsertSQL(_ value: Target, where conditions: Conditions) -> SQLWithConditions {

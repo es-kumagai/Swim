@@ -26,7 +26,7 @@ extension SQLite3.Index {
     
     public var fullName: String {
         
-        return "Index_\(Target.tableName)_\(shortName)"
+        return "Index_\(Target.sqlite3TableName)_\(shortName)"
     }
     
     @SpaceSeparatedList
@@ -36,7 +36,7 @@ extension SQLite3.Index {
         "INDEX"
         SQLite3.quotedFieldName(fullName)
         "ON"
-        Target.quotedTableName
+        SQLite3.Translator<Target>.quotedTableName
         SQLite3.enclosedList(fieldNames.map(SQLite3.quotedFieldName))
     }
 }

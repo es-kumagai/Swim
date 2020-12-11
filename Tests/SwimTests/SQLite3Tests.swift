@@ -400,7 +400,7 @@ class SQLite3Tests: XCTestCase {
         let sql4a = translatorA.makeBeginTransactionSQL()
         let sql5a = translatorA.makeCommitTransactionSQL()
         let sql6a = translatorA.makeRollbackTransactionSQL()
-        
+                
         let sql1b = translatorB.makeCreateTableSQL()
         let sql2b = translatorB.makeDropTableSQL()
         let sql3b = translatorB.makeCreateIndexSQLs()
@@ -414,9 +414,6 @@ class SQLite3Tests: XCTestCase {
         let sql4c = translatorC.makeBeginTransactionSQL()
         let sql5c = translatorC.makeCommitTransactionSQL()
         let sql6c = translatorC.makeRollbackTransactionSQL()
-        
-        let insert1 = translatorA.makeInsertSQL(with: MyData(id: 5, flags: nil, name: "TEST", option: SQLite3.Value(10)))
-        let insert2 = translatorB.makeInsertSQL(with: MyData2(id: 5, flags: nil, name: "TEST", option: SQLite3.Value(10)))
 
         XCTAssertEqual(sql1a.description, #"CREATE TABLE "MyData" ("id" INTEGER NOT NULL, "flags" REAL, "name" TEXT NOT NULL, "option")"#)
         XCTAssertEqual(sql2a.description, #"DROP TABLE "MyData""#)
@@ -438,9 +435,41 @@ class SQLite3Tests: XCTestCase {
         XCTAssertEqual(sql4c.description, #"BEGIN TRANSACTION"#)
         XCTAssertEqual(sql5c.description, #"COMMIT TRANSACTION"#)
         XCTAssertEqual(sql6c.description, #"ROLLBACK TRANSACTION"#)
+
+        
+        let insert1 = translatorA.makeInsertSQL(with: MyData(id: 5, flags: nil, name: "TEST", option: SQLite3.Value(10)))
+        let insert2 = translatorB.makeInsertSQL(with: MyData2(id: 5, flags: nil, name: "TEST", option: SQLite3.Value(10)))
         
         XCTAssertEqual(insert1.text(), #"INSERT INTO "MyData" ("id", "flags", "name", "option") VALUES (5, NULL, 'TEST', 10)"#)
         XCTAssertEqual(insert2.text(), #"INSERT INTO "MyData2" ("flags", "name", "option") VALUES (NULL, 'TEST', 10)"#)
+        
+        
+        let select1 = translatorA.makeSelectSQL()
+        let select2 = translatorA.makeSelectSQL(orderBy: ["id", "name"])
+        let select3 = translatorA.makeSelectSQL(fields: [.init("*", function: "COUNT", alias: "C")])
+        let select4 = translatorA.makeSelectSQL(fields: [.init("id", function: "MAX", alias: "LastID")], orderBy: ["LastID"])
+        let select5 = translatorA.makeSelectSQL(where: \MyData.id == 10)
+        let select6 = translatorA.makeSelectSQL(fields: [.init("id", function: "MIN", alias: "FirstID")], where: \MyData.id == 10 ... 20)
+        let select7 = translatorA.makeSelectSQL(where: \MyData.flags > 100, orderBy: ["id"])
+        let select8 = translatorA.makeSelectSQL(fields: ["id", "name"], where: \MyData.flags != 0, orderBy: ["id"])
+
+        XCTAssertTrue(type(of: select1) == SQLite3.SQL<MyData, SQLite3.NoConditions>.self)
+        XCTAssertTrue(type(of: select2) == SQLite3.SQL<MyData, SQLite3.NoConditions>.self)
+        XCTAssertTrue(type(of: select3) == SQLite3.SQL<MyData, SQLite3.NoConditions>.self)
+        XCTAssertTrue(type(of: select4) == SQLite3.SQL<MyData, SQLite3.NoConditions>.self)
+        XCTAssertTrue(type(of: select5) == SQLite3.SQL<MyData, SQLite3.WithConditions>.self)
+        XCTAssertTrue(type(of: select6) == SQLite3.SQL<MyData, SQLite3.WithConditions>.self)
+        XCTAssertTrue(type(of: select7) == SQLite3.SQL<MyData, SQLite3.WithConditions>.self)
+        XCTAssertTrue(type(of: select8) == SQLite3.SQL<MyData, SQLite3.WithConditions>.self)
+
+        XCTAssertEqual(select1.text(), #"SELECT * FROM "MyData""#)
+        XCTAssertEqual(select2.text(), #"SELECT * FROM "MyData" ORDER BY "id", "name""#)
+        XCTAssertEqual(select3.text(), #"SELECT COUNT(*) AS "C" FROM "MyData""#)
+        XCTAssertEqual(select4.text(), #"SELECT MAX("id") AS "LastID" FROM "MyData" ORDER BY "LastID""#)
+        XCTAssertEqual(select5.text(), #"SELECT * FROM "MyData" WHERE ("id" = 10)"#)
+        XCTAssertEqual(select6.text(), #"SELECT MIN("id") AS "FirstID" FROM "MyData" WHERE ("id" BETWEEN 10 AND 20)"#)
+        XCTAssertEqual(select7.text(), #"SELECT * FROM "MyData" WHERE ("flags" > 100) ORDER BY "id""#)
+        XCTAssertEqual(select8.text(), #"SELECT "id", "name" FROM "MyData" WHERE ("flags" != 0) ORDER BY "id""#)
     }
     
     func testTranslate() throws {
@@ -453,7 +482,7 @@ class SQLite3Tests: XCTestCase {
         let createSQL = SQLite3.SQL.createTable(datatype)
         XCTAssertEqual(createSQL.description, #"CREATE TABLE "MyData" ("id" INTEGER NOT NULL, "flags" REAL, "name" TEXT NOT NULL, "option")"#)
         
-        XCTAssertEqual(datatype.tableName, "MyData")
+        XCTAssertEqual(datatype.sqlite3TableName, "MyData")
         XCTAssertEqual(metadata.map(\.field.name), ["id", "flags", "name", "option"])
         XCTAssertEqual(metadata.map(\.datatype), [.integer, .real, .text, .variant])
         XCTAssertEqual(metadata.map(\.nullable), [false, true, false, true])
@@ -502,7 +531,7 @@ class SQLite3Tests: XCTestCase {
                                                     \MyData.name == "TEST"
                                                     \MyData.option < 10
                                                 })
-        let selectSQL13 = SQLite3.SQL.select(SQLite3.Field("*", function: "COUNT"), from: MyData.self)
+        let selectSQL13 = SQLite3.SQL.select([SQLite3.Field("*", function: "COUNT")], from: MyData.self)
         let selectSQL14 = SQLite3.SQL.select(from: datatype, where: .isNull(\MyData.option))
         let selectSQL15 = SQLite3.SQL.select(from: datatype, where: .isNotNull(\MyData.option))
         let selectSQL16 = SQLite3.SQL.select(from: datatype, where: \MyData.name == ["A", "B", "C"])

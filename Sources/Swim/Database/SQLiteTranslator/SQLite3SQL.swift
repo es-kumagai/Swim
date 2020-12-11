@@ -65,19 +65,9 @@ extension SQLite3.SQL where Kind == SQLite3.NoConditions {
         self.init(query: .rollbackTransaction)
     }
     
-    public static func select(from table: Target.Type) -> Self {
+    public static func select(_ fields: [SQLite3.Field] = [], from table: Target.Type, orderBy: [String] = []) -> Self {
         
-        self.init(query: .select())
-    }
-    
-    public static func select(_ field: SQLite3.Field, from table: Target.Type) -> Self {
-        
-        self.init(query: .select([field]))
-    }
-
-    public static func select(_ fields: [SQLite3.Field], from table: Target.Type) -> Self {
-        
-        self.init(query: .select(fields))
+        self.init(query: .select(fields, orderBy: orderBy))
     }
     
     public static func insert(_ value: Target) -> Self {
@@ -109,19 +99,9 @@ extension SQLite3.SQL where Kind == SQLite3.WithConditions {
         self.conditions = conditions
     }
 
-    public static func select(from table: Target.Type, where conditions: SQLite3.Conditions<Target>) -> Self {
+    public static func select(_ fields: [SQLite3.Field] = [], from table: Target.Type, where conditions: SQLite3.Conditions<Target>, orderBy: [String] = []) -> Self {
         
-        self.init(query: .select(), where: conditions)
-    }
-
-    public static func select(_ field: SQLite3.Field, from table: Target.Type, where conditions: SQLite3.Conditions<Target>) -> Self {
-        
-        self.init(query: .select([field]), where: conditions)
-    }
-
-    public static func select(_ fields: [SQLite3.Field], from table: Target.Type, where conditions: SQLite3.Conditions<Target>) -> Self {
-        
-        self.init(query: .select(fields), where: conditions)
+        self.init(query: .select(fields, orderBy: orderBy), where: conditions)
     }
     
     public static func insert(_ value: Target, where conditions: SQLite3.Conditions<Target>) -> Self {
@@ -160,6 +140,11 @@ extension SQLite3.SQL {
         if let sql = conditions?.sql {
             
             "WHERE"
+            sql
+        }
+        
+        if let sql = query.sqlOnlyOrderBy {
+            
             sql
         }
     }

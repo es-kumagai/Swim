@@ -8,6 +8,7 @@
 public struct SQLiteSequence<Element> where Element : SQLite3Translateable {
     
     public typealias Filter = SQLite3.Conditions<Element>
+    public typealias Translator = SQLite3.Translator<Element>
     
     private var sqlite: SQLite3
     private var translator: SQLite3.Translator<Element>
@@ -18,7 +19,7 @@ extension SQLiteSequence {
     public init() throws {
         
         sqlite = try! SQLite3(store: .onMemory, options: .readwrite)
-        translator = SQLite3.Translator<Element>()
+        translator = Translator()
         
         try sqlite.execute(translator.makeCreateTableSQL())
         
@@ -95,20 +96,31 @@ extension SQLiteSequence : Sequence {
 
     public func makeIterator() -> some IteratorProtocol {
     
-        return makeIterator(with: nil)
+        return makeIterator(with: nil, orderBy: [])
+    }
+
+    public func makeIterator(with filter: Filter?) -> SQLiteSequenceIterator<Element> {
+        
+        return makeIterator(with: filter, orderBy: [])
     }
     
-    internal func makeIterator(with filter: Filter?) -> some IteratorProtocol {
+    public func makeIterator(orderBy: [String]) -> SQLiteSequenceIterator<Element> {
+        
+        return makeIterator(with: nil, orderBy: orderBy)
+    }
+    
+    public func makeIterator(with filter: Filter?, orderBy: [String]) -> SQLiteSequenceIterator<Element> {
      
+        let fields = Translator.allFields
         let sql: String
         
         switch filter {
         
         case .none:
-            sql = translator.makeSelectSQL().text()
+            sql = translator.makeSelectSQL(fields: fields, orderBy: orderBy).text()
             
         case .some(let filter):
-            sql = translator.makeSelectSQL(where: filter).text()
+            sql = translator.makeSelectSQL(fields: fields, where: filter, orderBy: orderBy).text()
         }
         
         guard let statement = try! sqlite.execute(sql: sql) else {

@@ -18,7 +18,7 @@ public protocol CSVLineConvertible {
 extension CSV {
 
     @_functionBuilder
-    public struct ColumnList {
+    public struct ColumnDeclaration {
         
         public static func buildBlock<Target : CSVLineConvertible>(_ components: Column<Target> ...) -> [Column<Target>] {
             

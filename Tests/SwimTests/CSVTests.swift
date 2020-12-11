@@ -27,7 +27,7 @@ extension CSVValue : CSVLineConvertible {
         self = value
     }
 
-    @CSV.ColumnList
+    @CSV.ColumnDeclaration
     static var csvColumns: [CSVColumn] {
         
         CSVColumn("name", keyPath: \.name)

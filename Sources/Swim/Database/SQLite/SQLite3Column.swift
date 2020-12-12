@@ -102,12 +102,32 @@ extension SQLite3.Column {
         
         return isNull ? nil : sqlite3_column_double(statement.handle, index)
     }
+
+    public var strictRealValue: Double? {
+    
+        guard case .real = actualType else {
+            
+            return nil
+        }
+        
+        return realValue
+    }
     
     public var integerValue: Int? {
     
         return isNull ? nil : Int(sqlite3_column_int64(statement.handle, index))
     }
+
+    public var strictIntegerValue: Int? {
     
+        guard case .integer = actualType else {
+            
+            return nil
+        }
+        
+        return integerValue
+    }
+
     public var textValue: String? {
     
         guard !isNull else {
@@ -119,6 +139,16 @@ extension SQLite3.Column {
     
             unsafeBitCast(sqlite3_column_text(statement.handle, index), to: UnsafePointer<Int8>.self)
             )
+    }
+
+    public var strictTextValue: String? {
+    
+        guard case .text = actualType else {
+            
+            return nil
+        }
+        
+        return textValue
     }
 }
 

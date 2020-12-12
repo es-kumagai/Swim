@@ -12,11 +12,13 @@ public protocol SQLite3ValueCompatible {
     static var declaredSQLiteType: SQLite3.DefineDataType { get }
     var actualSQLiteType: SQLite3.ActualDataType { get }
     var sqliteValue: SQLite3.Value { get }
-    
+
     var integerValue: Int? { get }
     var realValue: Double? { get }
     var textValue: String? { get }
     var isNull: Bool { get }
+    
+    init?(_ value: SQLite3.Value)
 }
 
 extension Int : SQLite3ValueCompatible {
@@ -30,6 +32,16 @@ extension Int : SQLite3ValueCompatible {
     public var realValue: Double? { nil }
     public var textValue: String? { nil }
     public var isNull: Bool { false }
+
+    public init?(_ value: SQLite3.Value) {
+        
+        guard let value = value.integerValue else {
+            
+            return nil
+        }
+        
+        self = value
+    }
 }
 
 extension Double : SQLite3ValueCompatible {
@@ -43,6 +55,16 @@ extension Double : SQLite3ValueCompatible {
     public var realValue: Double? { self }
     public var textValue: String? { nil }
     public var isNull: Bool { false }
+
+    public init?(_ value: SQLite3.Value) {
+        
+        guard let value = value.realValue else {
+            
+            return nil
+        }
+        
+        self = value
+    }
 }
 
 extension String : SQLite3ValueCompatible {
@@ -56,6 +78,16 @@ extension String : SQLite3ValueCompatible {
     public var realValue: Double? { nil }
     public var textValue: String? { self }
     public var isNull: Bool { false }
+
+    public init?(_ value: SQLite3.Value) {
+        
+        guard let value = value.textValue else {
+            
+            return nil
+        }
+        
+        self = value
+    }
 }
 
 extension Optional : SQLite3ValueCompatible where Wrapped : SQLite3ValueCompatible {
@@ -91,6 +123,30 @@ extension Optional : SQLite3ValueCompatible where Wrapped : SQLite3ValueCompatib
             case .text:
                 return .text(nil)
             }
+        }
+    }
+
+    public init?(_ value: SQLite3.Value) {
+        
+        switch value {
+        
+        case .integer where Wrapped.declaredSQLiteType == .integer:
+            self = Wrapped(value)
+            
+        case .real where Wrapped.declaredSQLiteType == .real:
+            self = Wrapped(value)
+            
+        case .text where Wrapped.declaredSQLiteType == .text:
+            self = Wrapped(value)
+            
+        case .unspecified(.none):
+            self = .none
+            
+        case .unspecified(.some(let value)):
+            self = Wrapped(value.sqliteValue)
+            
+        default:
+            return nil
         }
     }
 }

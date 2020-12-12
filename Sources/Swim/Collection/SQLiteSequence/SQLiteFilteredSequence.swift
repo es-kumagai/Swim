@@ -26,19 +26,19 @@ extension SQLiteFilteredSequence {
         return Self.init(sequence: sequence, filter: `operator`(self.filter, filter))
     }
     
-    public func ordered(by fields: String ...) -> SQLiteSequenceIterator<Element> {
+    public func ordered(by fields: SQLite3.Order ...) -> SQLiteSequenceIterator<Element> {
         
         return ordered(by: fields)
     }
 
-    public func ordered(by fields: [String]) -> SQLiteSequenceIterator<Element> {
+    public func ordered(by fields: [SQLite3.Order]) -> SQLiteSequenceIterator<Element> {
         
         return sequence.makeIterator(with: filter, orderBy: fields)
     }
     
     public func ordered(by fields: [SQLite3.Field]) -> SQLiteSequenceIterator<Element> {
         
-        return ordered(by: fields.map(\.fieldName))
+        return ordered(by: fields.map(\.fieldName).map(SQLite3.Order.init(_:)))
     }
 }
 

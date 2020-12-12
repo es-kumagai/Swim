@@ -65,7 +65,7 @@ extension SQLite3.SQL where Kind == SQLite3.NoConditions {
         self.init(query: .rollbackTransaction)
     }
     
-    public static func select(_ fields: [SQLite3.Field] = [], from table: Target.Type, orderBy: [String] = []) -> Self {
+    public static func select(_ fields: [SQLite3.Field] = [], from table: Target.Type, orderBy: [SQLite3.Order] = []) -> Self {
         
         self.init(query: .select(fields, orderBy: orderBy))
     }
@@ -99,7 +99,7 @@ extension SQLite3.SQL where Kind == SQLite3.WithConditions {
         self.conditions = conditions
     }
 
-    public static func select(_ fields: [SQLite3.Field] = [], from table: Target.Type, where conditions: SQLite3.Conditions<Target>, orderBy: [String] = []) -> Self {
+    public static func select(_ fields: [SQLite3.Field] = [], from table: Target.Type, where conditions: SQLite3.Conditions<Target>, orderBy: [SQLite3.Order] = []) -> Self {
         
         self.init(query: .select(fields, orderBy: orderBy), where: conditions)
     }

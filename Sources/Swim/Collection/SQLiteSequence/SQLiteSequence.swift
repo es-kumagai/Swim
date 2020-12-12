@@ -104,12 +104,12 @@ extension SQLiteSequence : Sequence {
         return makeIterator(with: filter, orderBy: [])
     }
     
-    public func makeIterator(orderBy: [String]) -> SQLiteSequenceIterator<Element> {
+    public func makeIterator(orderBy: [SQLite3.Order]) -> SQLiteSequenceIterator<Element> {
         
         return makeIterator(with: nil, orderBy: orderBy)
     }
     
-    public func makeIterator(with filter: Filter?, orderBy: [String]) -> SQLiteSequenceIterator<Element> {
+    public func makeIterator(with filter: Filter?, orderBy: [SQLite3.Order]) -> SQLiteSequenceIterator<Element> {
      
         let fields = Translator.allFields
         let sql: String

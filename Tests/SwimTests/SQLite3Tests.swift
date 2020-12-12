@@ -451,8 +451,8 @@ class SQLite3Tests: XCTestCase {
         let select4 = translatorA.makeSelectSQL(fields: [.init("id", function: "MAX", alias: "LastID")], orderBy: ["LastID"])
         let select5 = translatorA.makeSelectSQL(where: \MyData.id == 10)
         let select6 = translatorA.makeSelectSQL(fields: [.init("id", function: "MIN", alias: "FirstID")], where: \MyData.id == 10 ... 20)
-        let select7 = translatorA.makeSelectSQL(where: \MyData.flags > 100, orderBy: ["id"])
-        let select8 = translatorA.makeSelectSQL(fields: ["id", "name"], where: \MyData.flags != 0, orderBy: ["id"])
+        let select7 = translatorA.makeSelectSQL(where: \MyData.flags > 100, orderBy: [.init("id", .ascending)])
+        let select8 = translatorA.makeSelectSQL(fields: ["id", "name"], where: \MyData.flags != 0, orderBy: [.init("id", .descending)])
 
         XCTAssertTrue(type(of: select1) == SQLite3.SQL<MyData, SQLite3.NoConditions>.self)
         XCTAssertTrue(type(of: select2) == SQLite3.SQL<MyData, SQLite3.NoConditions>.self)
@@ -464,13 +464,13 @@ class SQLite3Tests: XCTestCase {
         XCTAssertTrue(type(of: select8) == SQLite3.SQL<MyData, SQLite3.WithConditions>.self)
 
         XCTAssertEqual(select1.text(), #"SELECT "id", "flags", "name", "option" FROM "MyData""#)
-        XCTAssertEqual(select2.text(), #"SELECT "id", "flags", "name", "option" FROM "MyData" ORDER BY "id", "name""#)
+        XCTAssertEqual(select2.text(), #"SELECT "id", "flags", "name", "option" FROM "MyData" ORDER BY "id" ASC, "name" ASC"#)
         XCTAssertEqual(select3.text(), #"SELECT COUNT(*) AS "C" FROM "MyData""#)
-        XCTAssertEqual(select4.text(), #"SELECT MAX("id") AS "LastID" FROM "MyData" ORDER BY "LastID""#)
+        XCTAssertEqual(select4.text(), #"SELECT MAX("id") AS "LastID" FROM "MyData" ORDER BY "LastID" ASC"#)
         XCTAssertEqual(select5.text(), #"SELECT "id", "flags", "name", "option" FROM "MyData" WHERE ("id" = 10)"#)
         XCTAssertEqual(select6.text(), #"SELECT MIN("id") AS "FirstID" FROM "MyData" WHERE ("id" BETWEEN 10 AND 20)"#)
-        XCTAssertEqual(select7.text(), #"SELECT "id", "flags", "name", "option" FROM "MyData" WHERE ("flags" > 100) ORDER BY "id""#)
-        XCTAssertEqual(select8.text(), #"SELECT "id", "name" FROM "MyData" WHERE ("flags" != 0) ORDER BY "id""#)
+        XCTAssertEqual(select7.text(), #"SELECT "id", "flags", "name", "option" FROM "MyData" WHERE ("flags" > 100) ORDER BY "id" ASC"#)
+        XCTAssertEqual(select8.text(), #"SELECT "id", "name" FROM "MyData" WHERE ("flags" != 0) ORDER BY "id" DESC"#)
     }
     
     func testTranslate() throws {

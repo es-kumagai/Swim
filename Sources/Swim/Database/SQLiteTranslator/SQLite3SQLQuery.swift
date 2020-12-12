@@ -15,7 +15,7 @@ extension SQLite3.SQL {
         case beginTransaction
         case commitTransaction
         case rollbackTransaction
-        case select(Array<SQLite3.Field> = [], orderBy: [String] = [])
+        case select(Array<SQLite3.Field> = [], orderBy: [SQLite3.Order] = [])
         case insert(Target)
         case replace(Target)
         case delete
@@ -88,7 +88,7 @@ extension SQLite3.SQL.Query {
         switch self {
         
         case .select(_, let orderBy) where !orderBy.isEmpty:
-            return "ORDER BY " + SQLite3.listedText(orderBy.map(SQLite3.quotedFieldName))
+            return "ORDER BY " + SQLite3.listedText(orderBy.map(\.sql))
             
         default:
             return nil

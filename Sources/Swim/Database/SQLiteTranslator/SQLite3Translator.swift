@@ -193,12 +193,12 @@ extension SQLite3.Translator {
         return makeSelectSQL(fields: fields, orderBy: [])
     }
     
-    public func makeSelectSQL(orderBy: [String]) -> SQLWithNoConditions {
+    public func makeSelectSQL(orderBy: [SQLite3.Order]) -> SQLWithNoConditions {
         
         return makeSelectSQL(fields: [], orderBy: orderBy)
     }
         
-    public func makeSelectSQL(fields: [SQLite3.Field], orderBy: [String]) -> SQLWithNoConditions {
+    public func makeSelectSQL(fields: [SQLite3.Field], orderBy: [SQLite3.Order]) -> SQLWithNoConditions {
         
         return .select(fields, from: Target.self, orderBy: orderBy)
     }
@@ -233,12 +233,12 @@ extension SQLite3.Translator {
         return makeSelectSQL(fields: fields, where: conditions, orderBy: [])
     }
     
-    public func makeSelectSQL(where conditions: Conditions, orderBy: [String]) -> SQLWithConditions {
+    public func makeSelectSQL(where conditions: Conditions, orderBy: [SQLite3.Order]) -> SQLWithConditions {
         
         return makeSelectSQL(fields: [], where: conditions, orderBy: orderBy)
     }
     
-    public func makeSelectSQL(fields: [SQLite3.Field], where conditions: Conditions, orderBy: [String]) -> SQLWithConditions {
+    public func makeSelectSQL(fields: [SQLite3.Field], where conditions: Conditions, orderBy: [SQLite3.Order]) -> SQLWithConditions {
 
         return .select(fields, from: Target.self, where: conditions, orderBy: orderBy)
     }

@@ -40,8 +40,18 @@ extension SQLite3Translateable {
         return []
     }
 
+    public static var sqlite3ColumnsForSelection: [Column] {
+        
+        return sqlite3Columns
+    }
+
+    public static var sqlite3ColumnsForDecleration: [Column] {
+        
+        return sqlite3Columns.filter { $0.bindingTo?.keyPath != nil }
+    }
+
     public static var sqlite3ColumnsForInsertion: [Column] {
         
-        return sqlite3Columns.filter { !$0.ignoreInsertion }
+        return sqlite3ColumnsForDecleration.filter { !$0.ignoreInsertion }
     }
 }

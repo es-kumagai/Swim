@@ -54,9 +54,9 @@ extension SQLite3.SQL.Query {
         case .rollbackTransaction:
             "ROLLBACK TRANSACTION"
             
-        case .select(let fields, let orderBy):
+        case .select(let fields, _):
             "SELECT"
-            fields.isEmpty ? "*" : SQLite3.listedText(fields.map(\.sql))
+            SQLite3.listedText((fields.isEmpty ? Target.sqlite3ColumnsForSelection.map(\.field) : fields).map(\.sql))
             "FROM"
             Translator.quotedTableName
 
@@ -70,7 +70,7 @@ extension SQLite3.SQL.Query {
         case .replace(let value):
             "REPLACE INTO"
             Translator.quotedTableName
-            SQLite3.enclosedText(Translator.fieldsSQL)
+            SQLite3.enclosedText(Translator.fieldsSQLForInsertion)
             "VALUES"
             SQLite3.enclosedText(Translator.valuesSQL(of: value))
             

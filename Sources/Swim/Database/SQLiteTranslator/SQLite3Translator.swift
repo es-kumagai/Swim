@@ -57,7 +57,7 @@ extension SQLite3.Translator {
     
     public static func sqliteField(of keyPath: PartialKeyPath<Target>) -> SQLite3.Field {
         
-        guard let column = Target.sqlite3Columns.first(where: { $0.keyPath == keyPath }) else {
+        guard let column = Target.sqlite3Columns.first(where: { $0.bindingTo?.keyPath == keyPath }) else {
 
             fatalError("Specified key path is not defined in 'sqlite3Columns'.")
         }
@@ -67,7 +67,7 @@ extension SQLite3.Translator {
     
     public static var primaryKeys: Array<Column> {
         
-        return Target.sqlite3Columns.filter(\.primaryKey)
+        return Target.sqlite3ColumnsForDecleration.filter(\.primaryKey)
     }
     
     @CommaSeparatedList
@@ -77,7 +77,7 @@ extension SQLite3.Translator {
 
         if primaryKeys.count > 1 {
 
-            Target.sqlite3Columns.map { $0.declareSQL(markAsPrimaryKey: false) }
+            Target.sqlite3ColumnsForDecleration.map { $0.declareSQL(markAsPrimaryKey: false) }
 
             if !primaryKeys.isEmpty {
 
@@ -86,14 +86,14 @@ extension SQLite3.Translator {
         }
         else {
 
-            Target.sqlite3Columns.map { $0.declareSQL(markAsPrimaryKey: primaryKeys.contains($0)) }
+            Target.sqlite3ColumnsForDecleration.map { $0.declareSQL(markAsPrimaryKey: primaryKeys.contains($0)) }
         }
     }
     
     @CommaSeparatedList
-    public static var fieldsSQL: String {
+    public static var fieldsSQLForSelection: String {
         
-        Target.sqlite3Columns.map(\.field.sql)
+        Target.sqlite3ColumnsForSelection.map(\.field.sql)
     }
     
     @CommaSeparatedList
@@ -104,9 +104,14 @@ extension SQLite3.Translator {
     
     public static func valueSQL(for column: Column, value: Target) -> String {
         
-        let value = value[keyPath: column.keyPath]
+        guard let bindingTo = column.bindingTo else {
         
-        switch (column.datatype, column.nullable) {
+            fatalError("The column named '\(column.field.fieldName)' is not binding to any properties.")
+        }
+        
+        let value = value[keyPath: bindingTo.keyPath]
+        
+        switch (bindingTo.datatype, bindingTo.nullable) {
         
         case (.variant, true):
             return (value as? SQLite3.Value)?.description ?? "NULL"
@@ -260,7 +265,7 @@ extension SQLite3.Translator {
     
     public func instantiate(from row: SQLite3.Row) -> Target {
         
-        let metadata = Target.sqlite3Columns
+        let metadata = Target.sqlite3ColumnsForDecleration
         
         guard row.count == metadata.count else {
         
@@ -271,36 +276,36 @@ extension SQLite3.Translator {
         
         for (column, metadata) in zip(row, metadata) {
 
-            guard column.declaredType == metadata.datatype else {
+            guard let bindingTo = metadata.bindingTo, column.declaredType == bindingTo.datatype else {
 
-                fatalError("Type mismatch. Type of column '\(column.name)' is \(column.declaredType), but type of property '\(metadata.field)' is \(metadata.datatype).")
+                fatalError("Type mismatch. Type of column '\(column.name)' is \(column.declaredType), but type of property '\(metadata.field)' is \(metadata.bindingTo?.datatype.description ?? "unspecified").")
             }
             
-            switch (metadata.datatype, metadata.nullable) {
+            switch (bindingTo.datatype, bindingTo.nullable) {
             
             case (.variant, false):
-                try! propertyWriter.write(column.value, to: metadata.keyPath)
+                try! propertyWriter.write(column.value, to: bindingTo.keyPath)
 
             case (.variant, true):
-                try! propertyWriter.write(column.value, to: metadata.keyPath)
+                try! propertyWriter.write(column.value, to: bindingTo.keyPath)
 
             case (.integer, false):
-                try! propertyWriter.write(column.integerValue!, to: metadata.keyPath)
+                try! propertyWriter.write(column.integerValue!, to: bindingTo.keyPath)
 
             case (.integer, true):
-                try! propertyWriter.write(column.integerValue, to: metadata.keyPath)
+                try! propertyWriter.write(column.integerValue, to: bindingTo.keyPath)
 
             case (.real, false):
-                try! propertyWriter.write(column.realValue!, to: metadata.keyPath)
+                try! propertyWriter.write(column.realValue!, to: bindingTo.keyPath)
 
             case (.real, true):
-                try! propertyWriter.write(column.realValue, to: metadata.keyPath)
+                try! propertyWriter.write(column.realValue, to: bindingTo.keyPath)
 
             case (.text, false):
-                try! propertyWriter.write(column.textValue!, to: metadata.keyPath)
+                try! propertyWriter.write(column.textValue!, to: bindingTo.keyPath)
                 
             case (.text, true):
-                try! propertyWriter.write(column.textValue, to: metadata.keyPath)
+                try! propertyWriter.write(column.textValue, to: bindingTo.keyPath)
             }
         }
         

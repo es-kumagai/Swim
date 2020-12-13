@@ -23,6 +23,7 @@ public final class UnsafeDynamicPropertyWriter<Target> {
     
     deinit {
         
+        pointer.deinitialize(count: 1)
         pointer.deallocate()
     }
     

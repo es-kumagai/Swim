@@ -5,6 +5,19 @@
 //  Created by Tomohiro Kumagai on 2020/11/27.
 //
 
+extension String {
+    
+    /// [Swim] Build a string that join strings given as arguments with `separator`.
+    /// - Parameters:
+    ///   - separator: A separator that uses to join each strings.
+    ///   - predicate: A function to build a string from strings.
+    /// - Returns: A string that was joined given strings.
+    public static func concat(separator: String = "", @BundleInArray<String> _ predicate: () throws -> Array<String>) rethrows -> String {
+        
+        return try predicate().joined(separator: separator)
+    }
+}
+
 /// [Swim] This is a function builder that concat each strings with separator "".
 @_functionBuilder
 public class StringConcat {

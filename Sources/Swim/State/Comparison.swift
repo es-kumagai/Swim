@@ -5,6 +5,24 @@
 //  Created by Tomohiro Kumagai on 2020/01/13.
 //
 
+/// [Swim] Compare the size of `lhs` and `rhs`.
+///
+/// - Parameters:
+///   - lhs: A first value to be compared.
+///   - rhs: A second value to be compared.
+/// - Returns: The result of comparing `lhs` and `rhs`.
+public func compare<T : Comparable>(_ lhs: T, _ rhs: T) -> Comparison {
+
+    if lhs == rhs {
+        
+        return .same
+    }
+    else {
+        
+        return lhs < rhs ? .ascending : .descending
+    }
+}
+
 /**
 [Swim] A Type that means comparison state of two values.
 The type can convert from SignedIntegerType.
@@ -72,45 +90,26 @@ public enum Comparison {
     /// [Swim] Returns a boolean value that indicates whether the instance means ascending ordered or same ordered.
     public var isAscendingOrSame: Bool {
         
-        [.same, .ascending].contains(self)
+        switch self {
+        
+        case .same, .ascending:
+            return true
+            
+        case .descending:
+            return false
+        }
     }
     
     /// [Swim] Returns a boolean value that indicates whether the instance means descending ordered or same ordered.
     public var isDescendingOrSame: Bool {
         
-        [.same, .descending].contains(self)
-    }
-}
-
-extension SignedInteger {
-    
-    /// [Swim] Returns a boolean value that indicates whether the instance means same ordered.
-    public var meansOrderedSame: Bool {
+        switch self {
         
-        self == 0
-    }
-    
-    /// [Swim] Returns a boolean value that indicates whether the instance means ascending ordered.
-    public var meansOrderedAscending: Bool {
-        
-        self > 0
-    }
-    
-    /// [Swim] Returns a boolean value that indicates whether the instance means descending ordered.
-    public var meansOrderedDescending: Bool {
-        
-        self < 0
-    }
-    
-     /// [Swim] Returns a boolean value that indicates whether the instance means ascending ordered or same ordered.
-    public var meansOrderedAscendingOrSame: Bool {
-        
-        self >= 0
-    }
-    
-     /// [Swim] Returns a boolean value that indicates whether the instance means descending ordered or same ordered.
-    public var meansOrderedDescendingOrSame: Bool {
-        
-        self <= 0
+        case .same, .descending:
+            return true
+            
+        case .ascending:
+            return false
+        }
     }
 }

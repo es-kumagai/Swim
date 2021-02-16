@@ -53,6 +53,9 @@ class StateTests: XCTestCase {
         let state3 = Comparison(representedBy: -1)
         let state4 = Comparison(representedBy: 1353)
         let state5 = Comparison(representedBy: -231)
+        let state6 = compare(100, 100)
+        let state7 = compare(100, -35)
+        let state8 = compare(100, 138)
         
         XCTAssertTrue(state1.isSame)
         XCTAssertFalse(state1.isAscending)
@@ -83,24 +86,24 @@ class StateTests: XCTestCase {
         XCTAssertTrue(state5.isDescending)
         XCTAssertFalse(state5.isAscendingOrSame)
         XCTAssertTrue(state5.isDescendingOrSame)
-        
-        XCTAssertTrue(0.meansOrderedSame)
-        XCTAssertFalse(0.meansOrderedAscending)
-        XCTAssertFalse(0.meansOrderedDescending)
-        XCTAssertTrue(0.meansOrderedAscendingOrSame)
-        XCTAssertTrue(0.meansOrderedDescendingOrSame)
-        
-        XCTAssertFalse(100.meansOrderedSame)
-        XCTAssertTrue(100.meansOrderedAscending)
-        XCTAssertFalse(100.meansOrderedDescending)
-        XCTAssertTrue(100.meansOrderedAscendingOrSame)
-        XCTAssertFalse(100.meansOrderedDescendingOrSame)
-        
-        XCTAssertFalse((-100).meansOrderedSame)
-        XCTAssertFalse((-100).meansOrderedAscending)
-        XCTAssertTrue((-100).meansOrderedDescending)
-        XCTAssertFalse((-100).meansOrderedAscendingOrSame)
-        XCTAssertTrue((-100).meansOrderedDescendingOrSame)
+
+        XCTAssertTrue(state6.isSame)
+        XCTAssertFalse(state6.isAscending)
+        XCTAssertFalse(state6.isDescending)
+        XCTAssertTrue(state6.isAscendingOrSame)
+        XCTAssertTrue(state6.isDescendingOrSame)
+
+        XCTAssertFalse(state7.isSame)
+        XCTAssertFalse(state7.isAscending)
+        XCTAssertTrue(state7.isDescending)
+        XCTAssertFalse(state7.isAscendingOrSame)
+        XCTAssertTrue(state7.isDescendingOrSame)
+
+        XCTAssertFalse(state8.isSame)
+        XCTAssertTrue(state8.isAscending)
+        XCTAssertFalse(state8.isDescending)
+        XCTAssertTrue(state8.isAscendingOrSame)
+        XCTAssertFalse(state8.isDescendingOrSame)
     }
 
     func testContinuousState() {

@@ -21,3 +21,11 @@ public struct SubscriptMapper<T, Index> {
         return getter(index)
     }
 }
+
+extension SubscriptMapper where T : ExpressibleByNilLiteral {
+    
+    public init() {
+        
+        self.init { _ in nil }
+    }
+}

@@ -11,12 +11,12 @@ public struct SubscriptMapper<T, Index> {
 
     private var getter: (Index) -> T
 
-    internal init(_ getter: @escaping (Index) -> T) {
+    public init(_ getter: @escaping (Index) -> T) {
         
         self.getter = getter
     }
  
-    subscript (index: Index) -> T {
+    public subscript (index: Index) -> T {
         
         return getter(index)
     }

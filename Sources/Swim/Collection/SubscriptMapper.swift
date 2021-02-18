@@ -7,7 +7,7 @@
 
 /// [Swim] A type that provide a feature of accessing something using subscript.
 /// The given closures are kept by closure which is held by this instance.
-public struct SubscriptMapper<T, Index : Comparable> {
+public struct SubscriptMapper<T, Index : Strideable> where Index.Stride : SignedInteger {
 
     private var elementPicker: (Index) -> T
     private var indicesPicker: () -> Range<Index>
@@ -16,6 +16,14 @@ public struct SubscriptMapper<T, Index : Comparable> {
         
         self.elementPicker = elementPicker
         self.indicesPicker = indicesPicker
+    }
+}
+
+extension SubscriptMapper {
+
+    public var count: Int {
+        
+        return indices.count
     }
 
     public var indices: Range<Index> {
@@ -29,7 +37,7 @@ public struct SubscriptMapper<T, Index : Comparable> {
     }
 }
 
-extension SubscriptMapper where T : ExpressibleByNilLiteral, Index == Int {
+extension SubscriptMapper where T : ExpressibleByNilLiteral, Index : ExpressibleByIntegerLiteral {
     
     public init() {
         

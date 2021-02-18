@@ -6,26 +6,37 @@
 //
 
 /// [Swim] A type that provide a feature of accessing something using subscript.
-/// The target values of collection are kept by closure which is held by this instance.
-public struct SubscriptMapper<T, Index> {
+/// The given closures are kept by closure which is held by this instance.
+public struct SubscriptMapper<T, Index : Comparable> {
 
-    private var getter: (Index) -> T
+    private var elementPicker: (Index) -> T
+    private var indicesPicker: () -> Range<Index>
 
-    public init(_ getter: @escaping (Index) -> T) {
+    public init(elementPicker: @escaping (Index) -> T, indicesPicker: @escaping () -> Range<Index>) {
         
-        self.getter = getter
+        self.elementPicker = elementPicker
+        self.indicesPicker = indicesPicker
     }
- 
+
+    public var indices: Range<Index> {
+        
+        return indicesPicker()
+    }
+    
     public subscript (index: Index) -> T {
         
-        return getter(index)
+        return elementPicker(index)
     }
 }
 
-extension SubscriptMapper where T : ExpressibleByNilLiteral {
+extension SubscriptMapper where T : ExpressibleByNilLiteral, Index == Int {
     
     public init() {
         
-        self.init { _ in nil }
+        self.init(
+            
+            elementPicker: { _ in nil },
+            indicesPicker: { Range(0 ... 0) }
+        )
     }
 }

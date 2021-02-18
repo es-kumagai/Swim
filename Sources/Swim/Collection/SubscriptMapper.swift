@@ -6,13 +6,16 @@
 //
 
 /// [Swim] A type that provide a feature of accessing something using subscript.
-/// The given closures are kept by closure which is held by this instance.
-public struct SubscriptMapper<T, Index : Strideable> where Index.Stride : SignedInteger {
+/// The given target are kept by closure which is held by this instance.
+public struct SubscriptMapper<Target : Collection> {
 
-    private var elementPicker: (Index) -> T
-    private var indicesPicker: () -> Range<Index>
+    public typealias ElementPicker = (Target.Index) -> Target.Element
+    public typealias IndicesPicker = () -> Target.Indices
+    
+    private var elementPicker: ElementPicker
+    private var indicesPicker: IndicesPicker
 
-    public init(elementPicker: @escaping (Index) -> T, indicesPicker: @escaping () -> Range<Index>) {
+    public init(elementPicker: @escaping ElementPicker, indicesPicker: @escaping IndicesPicker) {
         
         self.elementPicker = elementPicker
         self.indicesPicker = indicesPicker
@@ -26,25 +29,13 @@ extension SubscriptMapper {
         return indices.count
     }
 
-    public var indices: Range<Index> {
+    public var indices: Target.Indices {
         
         return indicesPicker()
     }
     
-    public subscript (index: Index) -> T {
+    public subscript (index: Target.Index) -> Target.Element? {
         
         return elementPicker(index)
-    }
-}
-
-extension SubscriptMapper where T : ExpressibleByNilLiteral, Index : ExpressibleByIntegerLiteral {
-    
-    public init() {
-        
-        self.init(
-            
-            elementPicker: { _ in nil },
-            indicesPicker: { Range(0 ... 0) }
-        )
     }
 }

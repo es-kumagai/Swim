@@ -19,7 +19,7 @@ extension String {
 }
 
 /// [Swim] This is a function builder that concat each strings with separator "".
-@_functionBuilder
+@resultBuilder
 public class StringConcat {
     
     public typealias Component = [String?]
@@ -81,7 +81,7 @@ public class StringConcat {
 }
 
 /// [Swim] This is a function builder that concat each strings with separator " ".
-@_functionBuilder
+@resultBuilder
 public final class SpaceSeparatedList : StringConcat {
     
     public override class var separator: String {
@@ -133,7 +133,7 @@ public final class SpaceSeparatedList : StringConcat {
 }
 
 
-@_functionBuilder
+@resultBuilder
 public final class CommaSeparatedList : StringConcat {
     
     public override class var separator: String {

@@ -75,7 +75,7 @@ public func =~ <Target : SQLite3Translateable>(path: PartialKeyPath<Target>, pat
 
 extension SQLite3 {
     
-    @_functionBuilder
+    @resultBuilder
     public struct ConditionsSatisfyAll<Target> where Target : SQLite3Translateable {
         
         public static func buildBlock(_ condition: SQLite3.Conditions<Target>, _ conditions: SQLite3.Conditions<Target> ...) -> SQLite3.Conditions<Target> {
@@ -84,7 +84,7 @@ extension SQLite3 {
         }
     }
     
-    @_functionBuilder
+    @resultBuilder
     public struct ConditionsSatisfyEither<Target> where Target : SQLite3Translateable {
         
         public static func buildBlock(_ condition: SQLite3.Conditions<Target>, _ conditions: SQLite3.Conditions<Target> ...) -> SQLite3.Conditions<Target> {

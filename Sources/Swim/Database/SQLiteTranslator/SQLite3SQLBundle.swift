@@ -5,7 +5,7 @@
 //  Created by Tomohiro Kumagai on 2020/12/03.
 //
 
-@_functionBuilder
+@resultBuilder
 public struct SQLBundle {
     
     public static func buildExpression<Target : SQLite3Translateable, Kind : SQLite3SQLKind>(_ component: SQLite3.SQL<Target, Kind>) -> String {

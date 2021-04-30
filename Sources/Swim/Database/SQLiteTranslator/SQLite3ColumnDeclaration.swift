@@ -7,7 +7,7 @@
 
 extension SQLite3 {
 
-    @_functionBuilder
+    @resultBuilder
     public struct ColumnsDeclaration {
         
         public static func buildBlock<Target : SQLite3Translateable>(_ columns: SQLite3.ColumnMetadata<Target> ...) -> Array<SQLite3.ColumnMetadata<Target>> {

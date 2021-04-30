@@ -7,7 +7,7 @@
 
 extension SQLite3 {
 
-    @_functionBuilder
+    @resultBuilder
     public struct IndexDeclaration {
         
         public static func buildBlock<Target : SQLite3Translateable>(_ indexes: SQLite3.Index<Target> ...) -> Array<SQLite3.Index<Target>> {

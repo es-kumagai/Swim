@@ -6,7 +6,7 @@
 //
 
 /// A result builder to concatenate some arrays and some elements into an array.
-@_functionBuilder
+@resultBuilder
 public struct BundleInArray<T> {
 
     public static func buildExpression(_ expression: T) -> Array<T> {

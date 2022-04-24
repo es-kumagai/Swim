@@ -9,6 +9,47 @@ import XCTest
 @testable import Swim
 import SQLite3
 
+private struct MyValue {
+    
+    var rawValue: String
+}
+
+private struct MyRecord : SQLite3Translateable {
+
+    static var sqlite3Columns: [Column] = [
+        
+    ]
+    
+    static let sqlite3DefaultValue = MyRecord()
+    
+    var value1: MyValue = MyValue(rawValue: "")
+    var value2: MyValue? = MyValue(rawValue: "")
+}
+
+extension MyValue : SQLite3ValueCompatible {
+
+    static let acceptsSQLiteNull = false
+    static let declaredSQLiteType = SQLite3.DefineDataType.text
+    var actualSQLiteType: SQLite3.ActualDataType { .text }
+    var sqliteValue: SQLite3.Value { .text(rawValue) }
+    
+    var integerValue: Int? { nil }
+    var realValue: Double? { nil }
+    var textValue: String? { rawValue }
+    var isNull: Bool { false }
+    
+    init?(_ value: SQLite3.Value) {
+
+        guard let text = value.textValue else {
+            
+            return nil
+        }
+
+        self.init(rawValue: text)
+    }
+}
+
+
 /**
  FIXME: WORKAROUND
  Now SwiftPM seems to copy resources for unit test to bundle.
@@ -624,6 +665,20 @@ class SQLite3Tests: XCTestCase {
         XCTAssertEqual(statement.row[3].actualType, .text)
     }
     
+    func testColumnMetadata() throws {
+        
+        let column1 = SQLite3.ColumnMetadata("value1", keyPath: \MyRecord.value1)
+        let column2 = SQLite3.ColumnMetadata("value2", keyPath: \MyRecord.value2)
+
+        XCTAssertEqual(column1.field.name, "value1")
+        XCTAssertEqual(column1.field.sql, #""value1""#)
+        XCTAssertEqual(column1.declareSQL(markAsPrimaryKey: column1.primaryKey), #""value1" TEXT NOT NULL"#)
+        
+        XCTAssertEqual(column2.field.name, "value2")
+        XCTAssertEqual(column2.field.sql, #""value2""#)
+        XCTAssertEqual(column2.declareSQL(markAsPrimaryKey: column2.primaryKey), #""value2" TEXT"#)
+    }
+
     func testArrayMetadata() throws {
         
         var array = try SQLiteSequence<MyData>()

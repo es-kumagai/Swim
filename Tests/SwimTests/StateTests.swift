@@ -8,45 +8,6 @@
 import XCTest
 @testable import Swim
 
-struct MyValue {
-    
-    var rawValue: String
-}
-
-struct MyRecord : SQLite3Translateable {
-
-    static var sqlite3Columns: [Column] = [
-        
-    ]
-    
-    static let sqlite3DefaultValue = MyRecord()
-    
-    var value: MyValue = MyValue(rawValue: "")
-}
-
-extension MyValue : SQLite3ValueCompatible {
-
-    static let acceptsSQLiteNull = false
-    static let declaredSQLiteType = SQLite3.DefineDataType.text
-    var actualSQLiteType: SQLite3.ActualDataType { .text }
-    var sqliteValue: SQLite3.Value { .text(rawValue) }
-    
-    var integerValue: Int? { nil }
-    var realValue: Double? { nil }
-    var textValue: String? { rawValue }
-    var isNull: Bool { false }
-    
-    init?(_ value: SQLite3.Value) {
-
-        guard let text = value.textValue else {
-            
-            return nil
-        }
-
-        self.init(rawValue: text)
-    }
-}
-
 class StateTests: XCTestCase {
 
     override func setUp() {
@@ -145,13 +106,6 @@ class StateTests: XCTestCase {
         XCTAssertFalse(state8.isDescendingOrSame)
     }
     
-    func testColumn() throws {
-        
-        let column1 = SQLite3.ColumnMetadata("value", keyPath: \MyRecord.value)
-        
-        XCTAssertEqual(column1.field.name, "value")
-    }
-
     func testContinuousState() {
         
         XCTAssertTrue(ProcessExitStatus(representedBy: Continuous.continue).passed)

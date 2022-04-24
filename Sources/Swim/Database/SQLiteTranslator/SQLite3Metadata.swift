@@ -69,6 +69,10 @@ extension SQLite3 {
                 datatype = .real
                 nullable = true
                 
+            case let metatype as SQLite3ValueCompatible.Type:
+                datatype = metatype.declaredSQLiteType
+                nullable = metatype.acceptsSQLiteNull
+                
             default:
                 fatalError("Uncompatible Swift type: \(Value.self)")
             }

@@ -35,7 +35,7 @@ extension SQLite3Translateable {
         return "\(Self.self)"
     }
     
-    static var sqlite3Indexes: [Index] {
+    public static var sqlite3Indexes: [Index] {
         
         return []
     }

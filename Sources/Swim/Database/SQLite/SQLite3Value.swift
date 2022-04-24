@@ -97,6 +97,11 @@ extension SQLite3.Value {
             return nil
         }
     }
+    
+    public var booleanValue: Boolean? {
+        
+        Boolean(self)
+    }
 }
 
 extension SQLite3.Value : ExpressibleByIntegerLiteral {

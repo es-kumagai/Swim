@@ -36,6 +36,7 @@ extension MyValue : SQLite3ValueCompatible {
     var integerValue: Int? { nil }
     var realValue: Double? { nil }
     var textValue: String? { rawValue }
+    var booleanValue: Boolean? { nil }
     var isNull: Bool { false }
     
     init?(_ value: SQLite3.Value) {

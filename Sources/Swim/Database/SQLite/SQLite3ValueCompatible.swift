@@ -16,6 +16,7 @@ public protocol SQLite3ValueCompatible {
     var integerValue: Int? { get }
     var realValue: Double? { get }
     var textValue: String? { get }
+    var booleanValue: Boolean? { get }
     var isNull: Bool { get }
     
     init?(_ value: SQLite3.Value)
@@ -31,6 +32,7 @@ extension Int : SQLite3ValueCompatible {
     public var integerValue: Int? { self }
     public var realValue: Double? { nil }
     public var textValue: String? { nil }
+    public var booleanValue: Boolean? { Boolean(.integer(integerValue)) }
     public var isNull: Bool { false }
 
     public init?(_ value: SQLite3.Value) {
@@ -54,6 +56,7 @@ extension Double : SQLite3ValueCompatible {
     public var integerValue: Int? { nil }
     public var realValue: Double? { self }
     public var textValue: String? { nil }
+    public var booleanValue: Boolean? { Boolean(.real(realValue)) }
     public var isNull: Bool { false }
 
     public init?(_ value: SQLite3.Value) {
@@ -77,6 +80,7 @@ extension String : SQLite3ValueCompatible {
     public var integerValue: Int? { nil }
     public var realValue: Double? { nil }
     public var textValue: String? { self }
+    public var booleanValue: Boolean? { Boolean(.text(textValue)) }
     public var isNull: Bool { false }
 
     public init?(_ value: SQLite3.Value) {
@@ -99,6 +103,7 @@ extension Optional : SQLite3ValueCompatible where Wrapped : SQLite3ValueCompatib
     public var integerValue: Int? { self?.integerValue }
     public var realValue: Double? { self?.realValue }
     public var textValue: String? { self?.textValue }
+    public var booleanValue: Boolean? { self?.booleanValue }
     public var isNull: Bool { self == nil }
 
     public var sqliteValue: SQLite3.Value {

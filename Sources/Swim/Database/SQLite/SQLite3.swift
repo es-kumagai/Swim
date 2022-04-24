@@ -134,5 +134,25 @@ extension SQLite3 {
             return nil
         }
     }
+    
+    /// [Swim] Return a boolean value whether the table named `name` is exists on current database.
+    ///
+    /// - Parameters:
+    ///   - name: The table name to look for.
+    /// - Returns: True iff specified table is exist, otherwise false.
+    public func isTableExists(_ name: String) -> Bool {
+        
+        let statement = try! execute(sql: #"SELECT COUNT(*) FROM "sqlite_master" WHERE "TYPE"='table' AND "name"=:name"#) { statement in
+            
+            try! statement.parameter(":name").bind(name)
+        }
+        
+        guard let tableCount = statement?.row.first?.integerValue else {
+            
+            fatalError("Unexpected database structure.")
+        }
+        
+        return tableCount != 0
+    }
 }
 

@@ -9,7 +9,6 @@ extension CSV {
     
     public struct Column<Target> where Target : CSVLineConvertible {
         
-        public typealias DataType = CSV.DataType
         public typealias KeyPath = PartialKeyPath<Target>
         
         public var name: String

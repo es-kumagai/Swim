@@ -38,57 +38,32 @@ extension CSVLineConvertible {
             
             throw CSV.ConversionError.columnsMismatch(line: csvLine, columns: csvColumns.map(CSV.AnyColumn.init))
         }
+        
+        
+        let resultBuffer = UnsafeMutablePointer<Self>.allocate(capacity: 1)
+        let resultPointer = UnsafeMutableRawPointer(resultBuffer)
 
-        let propertyWriter = UnsafeDynamicPropertyWriter(initialValue: Self.csvDefaultValue)
+        resultBuffer.initialize(to: Self.csvDefaultValue)
+
+        defer {
+            resultBuffer.deinitialize(count: 1)
+            resultBuffer.deallocate()
+        }
         
         for (data, meta) in zip(dataColumns, csvColumns) {
-        
-            guard let value = meta.datatype.init(csvDescription: data) else {
+
+            guard let offset = MemoryLayout.offset(of: meta.keyPath) else {
+            
+                throw CSV.ConversionError.unknownKeyPath(CSV.AnyColumn(meta))
+            }
+            
+            guard meta.datatype.unsafeWrite(csvDescription: data, to: resultPointer + offset) else {
                 
                 throw CSV.ConversionError.invalidValue(data, to: meta.datatype)
             }
-            
-            do {
-                
-                switch (meta.datatype.csvDataType, meta.datatype.csvNullable) {
-                
-                case (.integer, false):
-                    try propertyWriter.write(value as! Int, to: meta.keyPath)
-
-                case (.integer, true):
-                    try propertyWriter.write(value as? Int, to: meta.keyPath)
-
-                case (.floatingPoint, false):
-                    try propertyWriter.write(value as! Double, to: meta.keyPath)
-
-                case (.floatingPoint, true):
-                    try propertyWriter.write(value as? Double, to: meta.keyPath)
-
-                case (.string, false):
-                    try propertyWriter.write(value as! String, to: meta.keyPath)
-
-                case (.string, true):
-                    try propertyWriter.write(value as? String, to: meta.keyPath)
-                }
-            }
-            catch let error as UnsafeDynamicPropertyWriter<Self>.WriteError {
-                
-                switch error {
-                
-                case .invalidKeyPath:
-                    throw CSV.ConversionError.unknownKeyPath(CSV.AnyColumn(meta))
-                    
-                case .typeMismatch(value: let value, property: let property):
-                    throw CSV.ConversionError.typeMismatch(value: value, property: property)
-                }
-            }
-            catch {
-                
-                throw CSV.ConversionError.unexpected(error)
-            }
         }
         
-        self.init(propertyWriter.value)
+        self = resultBuffer.pointee
     }
     
     public func toCSVLine() -> String {

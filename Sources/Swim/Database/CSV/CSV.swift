@@ -13,7 +13,7 @@ extension CSV {
     
     public enum ConversionError : Error {
         
-        case invalidValue(String?, to: CSVColumnConvertible.Type)
+        case invalidValue(String, to: CSVColumnConvertible.Type)
         case columnsMismatch(line: String, columns: [AnyColumn])
         case unknownKeyPath(AnyColumn)
         case typeMismatch(value: Any.Type, property: Any.Type)
@@ -25,17 +25,17 @@ extension CSV {
     
     public static func isQuoted(_ text: String) -> Bool {
         
-        return text.first == quoteWord && text.last == quoteWord
+        return text.count >= 2 && text.first == quoteWord && text.last == quoteWord
     }
 
     /// [Swim] The string that removed quotation from this value.
     /// If this value is an illegal format (e.g. non-pair of quote word appears), the behavior of this method is undefined.
     /// - Returns: The string removed quotation.
-    public static func extracted(_ text: String) -> String {
+    public static func extracted(_ text: String) -> String? {
         
-        guard !text.isEmpty, isQuoted(text) else {
-            
-            return text
+        guard isQuoted(text) else {
+
+            return nil
         }
 
         var result = String()
@@ -105,7 +105,7 @@ extension CSV {
         return "\(quoteWord)\(result)\(quoteWord)"
     }
 
-    public static func split(_ text: String) -> [String?] {
+    public static func split(_ text: String) -> [String] {
         
         enum State {
 
@@ -116,8 +116,8 @@ extension CSV {
             case quoteAppearedInsideOfQuote
         }
         
-        var result = Array<String?>()
-        var letter = nil as String?
+        var result = Array<String>()
+        var letter = ""
 
         var state = State.beginOfValue {
             
@@ -126,7 +126,7 @@ extension CSV {
                 if state == .beginOfValue {
                     
                     result.append(letter)
-                    letter = nil
+                    letter = ""
                 }
             }
         }
@@ -138,17 +138,10 @@ extension CSV {
         
         func keepToLetter<T>(_ word: T) {
 
-            switch letter {
-            
-            case .none:
-                letter = String(describing: word)
-                
-            case .some:
-                letter!.append(String(describing: word))
-            }
+            letter.append(String(describing: word))
         }
         
-        func keepToLetter<T>(_ word: T, stateChangeTo nextState: State) {
+        func keepLetter<T>(_ word: T, stateChangeTo nextState: State) {
             
             keepToLetter(word)
             stateChangeTo(nextState)
@@ -163,13 +156,13 @@ extension CSV {
                 switch word {
                 
                 case CSV.quoteWord:
-                    keepToLetter("", stateChangeTo: .insideOfQuote)
+                    keepLetter(CSV.quoteWord, stateChangeTo: .insideOfQuote)
                     
                 case CSV.separator:
                     stateChangeTo(.beginOfValue)
                     
                 case let word:
-                    keepToLetter(word, stateChangeTo: .valuePart)
+                    keepLetter(word, stateChangeTo: .valuePart)
                 }
 
             case .valuePart:
@@ -191,7 +184,7 @@ extension CSV {
                 switch word {
                 
                 case CSV.quoteWord:
-                    stateChangeTo(.quoteAppearedInsideOfQuote)
+                    keepLetter(CSV.quoteWord, stateChangeTo: .quoteAppearedInsideOfQuote)
                     
                 case CSV.separator:
                     keepToLetter(CSV.separator)
@@ -205,13 +198,13 @@ extension CSV {
                 switch word {
                 
                 case CSV.quoteWord:
-                    keepToLetter(CSV.quoteWord, stateChangeTo: .insideOfQuote)
+                    stateChangeTo(.insideOfQuote)
                     
                 case CSV.separator:
                     stateChangeTo(.beginOfValue)
                     
                 case let word:
-                    keepToLetter(word, stateChangeTo: .insideOfQuote)
+                    keepLetter(word, stateChangeTo: .insideOfQuote)
                 }
                 
             case .quoteAppearedInValuePart:
@@ -219,13 +212,13 @@ extension CSV {
                 switch word {
                 
                 case CSV.quoteWord:
-                    keepToLetter(CSV.quoteWord, stateChangeTo: .valuePart)
+                    keepLetter(CSV.quoteWord, stateChangeTo: .valuePart)
                     
                 case CSV.separator:
                     stateChangeTo(.beginOfValue)
                     
                 case let word:
-                    keepToLetter(word, stateChangeTo: .valuePart)
+                    keepLetter(word, stateChangeTo: .valuePart)
                 }
             }
         }

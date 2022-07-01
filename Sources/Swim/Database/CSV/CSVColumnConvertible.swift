@@ -9,23 +9,29 @@
 /// This protocol is able to adopted to only `Int`, `Double`, `String` and the `Optional`s.
 public protocol CSVColumnConvertible {
     
-    static var csvDataType: CSV.DataType { get }
-    static var csvNullable: Bool { get }
-    
-    init?(csvDescription: String?)
-    
+    init?(csvDescription: String)
     var csvDescription: String { get }
 }
 
-extension CSVColumnConvertible where Self : LosslessStringConvertible {
-    
-    public init?(csvDescription: String?) {
+extension CSVColumnConvertible {
         
-        guard let csvDescription = csvDescription else {
+    public static func unsafeWrite(csvDescription: String, to pointer: UnsafeMutableRawPointer) -> Bool {
+
+        guard let value = self.init(csvDescription: csvDescription) else {
             
-            return nil
+            return false
         }
 
+        pointer.storeBytes(of: value, as: self)
+        
+        return true
+    }
+}
+
+extension Int : CSVColumnConvertible {
+    
+    public init?(csvDescription: String) {
+        
         self.init(csvDescription)
     }
     
@@ -35,39 +41,11 @@ extension CSVColumnConvertible where Self : LosslessStringConvertible {
     }
 }
 
-extension Int : CSVColumnConvertible {
-    
-    public static var csvDataType: CSV.DataType {
-        
-        return .integer
-    }
-    
-    public static var csvNullable: Bool {
-        
-        return false
-    }
-}
-
 extension String : CSVColumnConvertible {
     
-    public static var csvDataType: CSV.DataType {
+    public init?(csvDescription: String) {
         
-        return .string
-    }
-    
-    public static var csvNullable: Bool {
-        
-        return false
-    }
-    
-    public init?(csvDescription: String?) {
-        
-        guard let csvDescription = csvDescription else {
-            
-            return nil
-        }
-        
-        self = CSV.extracted(csvDescription)
+        self = CSV.extracted(csvDescription) ?? csvDescription
     }
     
     public var csvDescription: String {
@@ -78,38 +56,28 @@ extension String : CSVColumnConvertible {
 
 extension Double : CSVColumnConvertible {
     
-    public static var csvDataType: CSV.DataType {
+    public init?(csvDescription: String) {
         
-        return .floatingPoint
+        self.init(csvDescription)
     }
     
-    public static var csvNullable: Bool {
+    public var csvDescription: String {
         
-        return false
+        return description
     }
 }
 
 extension Optional : CSVColumnConvertible where Wrapped : CSVColumnConvertible {
     
-    public static var csvDataType: CSV.DataType {
+    public init?(csvDescription: String) {
         
-        return Wrapped.csvDataType
-    }
-    
-    public static var csvNullable: Bool {
-        
-        return true
-    }
-    
-    public init?(csvDescription: String?) {
-        
-        switch csvDescription {
+        if csvDescription.isEmpty {
             
-        case .none:
             self = .none
-        
-        case .some(let value):
-            self = Wrapped.init(csvDescription: value)
+        }
+        else {
+            
+            self = Wrapped.init(csvDescription: csvDescription)
         }
     }
     

@@ -11,6 +11,8 @@ public protocol CSVColumnConvertible {
     
     init?(csvDescription: String)
     var csvDescription: String { get }
+    
+    static func unsafeWrite(csvDescription: String, to pointer: UnsafeMutableRawPointer) -> Bool
 }
 
 extension CSVColumnConvertible {
@@ -51,6 +53,21 @@ extension String : CSVColumnConvertible {
     public var csvDescription: String {
         
         return CSV.quoted(self)
+    }
+    
+    public static func unsafeWrite(csvDescription: String, to pointer: UnsafeMutableRawPointer) -> Bool {
+        
+        guard let value = String(csvDescription: csvDescription) else {
+            
+            return false
+        }
+
+        let store = UnsafeMutablePointer<String>.allocate(capacity: 1)
+        store.initialize(to: value)
+        
+        pointer.storeBytes(of: store.pointee, as: String.self)
+        
+        return true
     }
 }
 

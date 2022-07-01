@@ -63,7 +63,7 @@ extension CSVLineConvertible {
             }
         }
         
-        self = resultBuffer.pointee
+        self.init(resultBuffer.pointee)
     }
     
     public func toCSVLine() -> String {

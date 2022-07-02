@@ -25,7 +25,7 @@ extension SQLite3 {
             
             let code = sqlite3_errcode(database.pDB)
             
-            guard code == SQLITE_OK else {
+            guard code != SQLITE_OK else {
                 
                 return nil
             }

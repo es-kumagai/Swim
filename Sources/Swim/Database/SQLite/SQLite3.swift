@@ -154,5 +154,26 @@ extension SQLite3 {
         
         return tableCount != 0
     }
+    
+    public func export(to path: String) throws -> SQLite3 {
+        
+        let source = self
+        let destination = try SQLite3(path: path, options: .readwrite)
+        
+        guard let backup = sqlite3_backup_init(destination.pDB, "main", source.pDB, "main") else {
+            
+            throw ErrorCode(on: destination)!
+        }
+        
+        sqlite3_backup_step(backup, -1)
+        sqlite3_backup_finish(backup)
+        
+        if let errorCode = ErrorCode(on: destination) {
+            
+            throw errorCode
+        }
+        
+        return destination
+    }
 }
 

@@ -163,8 +163,4 @@ extension SQLite3.ResultCode : CustomDebugStringConvertible {
 
 extension SQLite3.ResultCode : Equatable {
     
-    public static func == (lhs: SQLite3.ResultCode, rhs: SQLite3.ResultCode) -> Bool {
-        
-        return lhs.rawValue == rhs.rawValue
-    }
 }

@@ -68,7 +68,7 @@ extension CSVValue : CSVLineConvertible {
     static private(set) var csvDefaultValue = CSVValue(name: "", price: 0, taxRate: 0, column: Column(value: 0))
 }
 
-private struct DoubleString {
+private struct DoubleString : Equatable {
     
     var a: String
     var b: String
@@ -148,6 +148,16 @@ class CSVTests: XCTestCase {
         XCTAssertEqual(Double(csvDescription: ""), nil)
         XCTAssertEqual(String?(csvDescription: ""), .some(nil))
         XCTAssertEqual(String?(csvDescription: ""), nil as String?)
+    }
+    
+    func testLinesIncludesComma() throws {
+    
+        let value1 = DoubleString(a: "aaa,bbb", b: "ccc, ddd")
+        let csv1 = value1.toCSVLine()
+        let reValue1 = try DoubleString(csvLine: csv1)
+        
+        XCTAssertEqual(csv1, #""aaa,bbb","ccc, ddd"\#n"#)
+        XCTAssertEqual(value1, reValue1)
     }
     
     func testLines() throws {

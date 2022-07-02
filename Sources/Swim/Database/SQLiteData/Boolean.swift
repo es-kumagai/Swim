@@ -10,12 +10,17 @@
 public struct Boolean {
     
     public var boolValue: Bool
+    
+    public init(_ value: Bool) {
+        
+        boolValue = value
+    }
 }
 
 extension Boolean {
 
-    public static let `true` = Boolean(boolValue: true)
-    public static let `false` = Boolean(boolValue: false)
+    public static let `true` = Boolean(true)
+    public static let `false` = Boolean(false)
 }
 
 extension Boolean : SQLite3ValueCompatible {
@@ -28,7 +33,7 @@ extension Boolean : SQLite3ValueCompatible {
     public var integerValue: Int? { boolValue ? 1 : 0 }
     public var realValue: Double? { boolValue ? 1 : 0 }
     public var textValue: String? { boolValue ? "1" : "0" }
-    public var booleanValue: Boolean? { Boolean(boolValue: boolValue) }
+    public var booleanValue: Boolean? { Boolean(boolValue) }
     public var isNull: Bool { false }
     
     public init?(_ value: SQLite3.Value) {

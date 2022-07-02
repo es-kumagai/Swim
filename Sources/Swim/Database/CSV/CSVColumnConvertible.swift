@@ -22,8 +22,10 @@ extension CSVColumnConvertible {
             return false
         }
 
+        let location = pointer + offset
+        let targetPointer = location.bindMemory(to: Self.self, capacity: 1)
         
-        pointer.storeBytes(of: value, toByteOffset: offset, as: self)
+        targetPointer.pointee = value
         
         return true
     }

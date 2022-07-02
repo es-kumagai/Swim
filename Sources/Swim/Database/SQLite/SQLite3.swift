@@ -156,10 +156,12 @@ extension SQLite3 {
     }
     
     @discardableResult
-    public func export(to path: String) throws -> SQLite3 {
+    public func export(to path: String, options: OpenOption = []) throws -> SQLite3 {
+        
+        let options: OpenOption = OpenOption([.readwrite]).union(options)
         
         let source = self
-        let destination = try SQLite3(path: path, options: .readwrite)
+        let destination = try SQLite3(path: path, options: options)
         
         guard let backup = sqlite3_backup_init(destination.pDB, "main", source.pDB, "main") else {
             

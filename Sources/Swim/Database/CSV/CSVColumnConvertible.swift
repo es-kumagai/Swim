@@ -15,14 +15,15 @@ public protocol CSVColumnConvertible {
 
 extension CSVColumnConvertible {
         
-    public static func unsafeWrite(csvDescription: String, to pointer: UnsafeMutableRawPointer) -> Bool {
+    public static func unsafeWrite(csvDescription: String, to pointer: UnsafeMutableRawPointer, offset: Int = 0) -> Bool {
 
         guard let value = self.init(csvDescription: csvDescription) else {
             
             return false
         }
 
-        pointer.storeBytes(of: value, as: self)
+        
+        pointer.storeBytes(of: value, toByteOffset: offset, as: self)
         
         return true
     }

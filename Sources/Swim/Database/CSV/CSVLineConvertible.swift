@@ -29,16 +29,15 @@ extension CSV {
 
 extension CSVLineConvertible {
     
-    public init(csvLine: String) throws {
+    public init(csvLine: String, columnCountValidation: Bool = true) throws {
         
         let csvColumns = Self.csvColumns
         let dataColumns = CSV.split(CSV.removedTrailingNewline(of: csvLine))
         
-        guard dataColumns.count == csvColumns.count else {
+        guard !columnCountValidation || dataColumns.count == csvColumns.count else {
             
             throw CSV.ConversionError.columnsMismatch(line: csvLine, columns: csvColumns.map(CSV.AnyColumn.init))
         }
-        
         
         let resultBuffer = UnsafeMutablePointer<Self>.allocate(capacity: 1)
         let resultPointer = UnsafeMutableRawPointer(resultBuffer)
@@ -57,7 +56,7 @@ extension CSVLineConvertible {
                 throw CSV.ConversionError.unknownKeyPath(CSV.AnyColumn(meta))
             }
             
-            guard meta.datatype.unsafeWrite(csvDescription: data, to: resultPointer + offset) else {
+            guard meta.datatype.unsafeWrite(csvDescription: data, to: resultPointer, offset: offset) else {
                 
                 throw CSV.ConversionError.invalidValue(data, to: meta.datatype)
             }

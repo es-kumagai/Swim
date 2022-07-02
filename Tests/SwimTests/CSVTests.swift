@@ -68,6 +68,29 @@ extension CSVValue : CSVLineConvertible {
     static private(set) var csvDefaultValue = CSVValue(name: "", price: 0, taxRate: 0, column: Column(value: 0))
 }
 
+private struct DoubleString {
+    
+    var a: String
+    var b: String
+}
+
+extension DoubleString : CSVLineConvertible {
+    
+    @CSV.ColumnDeclaration
+    static var csvColumns: [CSVColumn] {
+        
+        CSVColumn("a", keyPath: \.a)
+        CSVColumn("b", keyPath: \.b)
+    }
+    
+    static let csvDefaultValue = DoubleString(a: "A", b: "B")
+    
+    init(_ value: DoubleString) {
+        
+        self = value
+    }
+}
+
 class CSVTests: XCTestCase {
 
     override func setUpWithError() throws {
@@ -155,5 +178,13 @@ class CSVTests: XCTestCase {
         XCTAssertEqual(value1b, value1d)
         XCTAssertEqual(value2a, value2c)
         XCTAssertEqual(value2b, value2d)
+        
+        let value = DoubleString(a: "H", b: "L")
+        let csv = value.toCSVLine()
+        let reValue = try DoubleString(csvLine: csv)
+
+        XCTAssertEqual(csv, #""H","L"\#n"#)
+        XCTAssertEqual(reValue.a, value.a)
+        XCTAssertEqual(reValue.b, value.b)
     }
 }

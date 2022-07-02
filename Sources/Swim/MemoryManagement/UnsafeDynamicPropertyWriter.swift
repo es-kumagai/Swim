@@ -59,8 +59,9 @@ public final class UnsafeDynamicPropertyWriter<Target> {
             throw WriteError.invalidKeyPath(keyPath)
         }
         
-        let pointer = UnsafeMutableRawPointer(self.pointer)
+        let pointer = UnsafeMutableRawPointer(self.pointer) + offset
+        let targetPointer = pointer.bindMemory(to: Value.self, capacity: 1)
         
-        pointer.storeBytes(of: value, toByteOffset: offset, as: Value.self)
+        targetPointer.pointee = value
     }
 }

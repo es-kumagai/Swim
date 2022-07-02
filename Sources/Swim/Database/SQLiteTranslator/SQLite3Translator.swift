@@ -109,34 +109,12 @@ extension SQLite3.Translator {
             fatalError("The column named '\(column.field.fieldName)' is not binding to any properties.")
         }
         
-        let value = value[keyPath: bindingTo.keyPath]
-        
-        switch (bindingTo.datatype, bindingTo.nullable) {
-        
-        case (.variant, true):
-            return (value as? SQLite3.Value)?.description ?? "NULL"
+        guard let value = value[keyPath: bindingTo.keyPath] as? SQLite3ValueCompatible else {
             
-        case (.variant, false):
-            return (value as! SQLite3.Value).description
-            
-        case (.integer, true):
-            return (value as? Int)?.description ?? "NULL"
-            
-        case (.integer, false):
-            return (value as! Int).description
-            
-        case (.real, true):
-            return (value as? Double)?.description ?? "NULL"
-            
-        case (.real, false):
-            return (value as! Double).description
-            
-        case (.text, true):
-            return (value as? String).map(SQLite3.quotedText) ?? "NULL"
-            
-        case (.text, false):
-            return SQLite3.quotedText(value as! String)
+            fatalError("Type '\(type(of: value))' is not compatible with `SQLite3ValueCompatible`.")
         }
+        
+        return value.sqliteValue.description
     }
     
     public static func valuesSQL(of value: Target) -> String {

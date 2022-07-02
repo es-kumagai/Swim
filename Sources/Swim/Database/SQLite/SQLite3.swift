@@ -155,6 +155,7 @@ extension SQLite3 {
         return tableCount != 0
     }
     
+    @discardableResult
     public func export(to path: String) throws -> SQLite3 {
         
         let source = self

@@ -110,6 +110,40 @@ class ConcatTests: XCTestCase {
         XCTAssertEqual(string1, "A\nBC\n\nDE\n\nF\n")
     }
     
+    func testStringSpaceSeparatedList() throws {
+    
+        @SpaceSeparatedList
+        func make1() -> String {
+            "A"
+            "BC"
+            ""
+            "DE"
+            nil
+            "F"
+        }
+        
+        let string1 = make1()
+        
+        XCTAssertEqual(string1, "A BC  DE  F")
+    }
+
+    func testStringCommaSeparatedList() throws {
+    
+        @CommaSeparatedList
+        func make1() -> String {
+            "A"
+            "BC"
+            ""
+            "DE"
+            nil
+            "F"
+        }
+        
+        let string1 = make1()
+        
+        XCTAssertEqual(string1, "A,BC,,DE,,F")
+    }
+
     func testConcatenateArray() throws {
 
         let array1 = [1, 2]

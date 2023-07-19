@@ -25,14 +25,28 @@ open class StringConcat {
     public typealias Component = [String?]
     
     open class var separator: String {
-        
-        return ""
+        ""
+    }
+    
+    open class var lineBreak: String {
+        ""
+    }
+    
+    open class var omitNil: Bool {
+        true
     }
     
     open class func buildFinalResult(_ component: Component) -> String {
         
         return component
-            .compactMap { $0 }
+            .compactMap {
+                guard !omitNil else {
+                    return $0
+                }
+
+                return $0 ?? ""
+            }
+            .map { "\($0)\(lineBreak)" }
             .joined(separator: separator)
     }
     
@@ -84,16 +98,12 @@ open class StringConcat {
 @resultBuilder
 public final class StringConcatWithNewline: StringConcat {
     
-    public class var lineBreak: String {
+    public override class var lineBreak: String {
         "\n"
     }
     
-    public override class func buildFinalResult(_ component: StringConcat.Component) -> String {
-        
-        component
-            .map { $0 ?? "" }
-            .map { "\($0)\(lineBreak)" }
-            .joined(separator: separator)
+    public override class var omitNil: Bool {
+        false
     }
 }
 
@@ -102,50 +112,11 @@ public final class StringConcatWithNewline: StringConcat {
 public final class SpaceSeparatedList : StringConcat {
     
     public override class var separator: String {
-        
-        return " "
+        " "
     }
     
-    // FIXME: WORKAROUND: Swift compiler cannot find this method in inherited class.
-    public override class func buildFinalResult(_ component: Component) -> String {
-        
-        super.buildFinalResult(component)
-    }
-    
-    // FIXME: WORKAROUND: Swift compiler cannot find this method in inherited class.
-    public override class func buildExpression(_ statement: String?) -> Component {
-        
-        return super.buildExpression(statement)
-    }
-    
-    // FIXME: WORKAROUND: Swift compiler cannot find this method in inherited class.
-    public override class func buildExpression<T>(_ statements: [T]) -> Component {
-        
-        return super.buildExpression(statements)
-    }
-    
-    // FIXME: WORKAROUND: Swift compiler cannot find this method in inherited class.
-    public override class func buildExpression<T>(_ statement: T?) -> Component {
-        
-        return super.buildExpression(statement)
-    }
-    
-    // FIXME: WORKAROUND: Swift compiler cannot find this method in inherited class.
-    public override class func buildIf(_ component: Component?) -> Component {
-
-        return super.buildIf(component)
-    }
-    
-    // FIXME: WORKAROUND: Swift compiler cannot find this method in inherited class.
-    public override class func buildEither(first: Component) -> Component {
-
-        return super.buildEither(first: first)
-    }
-
-    // FIXME: WORKAROUND: Swift compiler cannot find this method in inherited class.
-    public override class func buildEither(second: Component) -> Component {
-
-        return super.buildEither(second: second)
+    public override class var omitNil: Bool {
+        false
     }
 }
 
@@ -154,49 +125,10 @@ public final class SpaceSeparatedList : StringConcat {
 public final class CommaSeparatedList : StringConcat {
     
     public override class var separator: String {
-        
-        return ", "
+        ","
     }
     
-    // FIXME: WORKAROUND: Swift compiler cannot find this method in inherited class.
-    public override class func buildFinalResult(_ component: Component) -> String {
-        
-        super.buildFinalResult(component)
-    }
-    
-    // FIXME: WORKAROUND: Swift compiler cannot find this method in inherited class.
-    public override class func buildExpression(_ statement: String?) -> Component {
-        
-        return super.buildExpression(statement)
-    }
-    
-    // FIXME: WORKAROUND: Swift compiler cannot find this method in inherited class.
-    public override class func buildExpression<T>(_ statements: [T]) -> Component {
-        
-        return super.buildExpression(statements)
-    }
-    
-    // FIXME: WORKAROUND: Swift compiler cannot find this method in inherited class.
-    public override class func buildExpression<T>(_ statement: T?) -> Component {
-        
-        return super.buildExpression(statement)
-    }
-    
-    // FIXME: WORKAROUND: Swift compiler cannot find this method in inherited class.
-    public override class func buildIf(_ component: Component?) -> Component {
-
-        return super.buildIf(component)
-    }
-    
-    // FIXME: WORKAROUND: Swift compiler cannot find this method in inherited class.
-    public override class func buildEither(first: Component) -> Component {
-
-        return super.buildEither(first: first)
-    }
-
-    // FIXME: WORKAROUND: Swift compiler cannot find this method in inherited class.
-    public override class func buildEither(second: Component) -> Component {
-
-        return super.buildEither(second: second)
+    public override class var omitNil: Bool {
+        false
     }
 }

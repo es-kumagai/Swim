@@ -96,7 +96,7 @@ open class StringConcat {
 
 /// [Swim] This is a function builder that concat each strings with separator "\n".
 @resultBuilder
-public final class StringConcatWithNewline: StringConcat {
+public final class LineConcat: StringConcat {
     
     public override class var lineBreak: String {
         "\n"

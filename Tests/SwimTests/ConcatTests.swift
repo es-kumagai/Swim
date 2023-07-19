@@ -95,7 +95,7 @@ class ConcatTests: XCTestCase {
     
     func testStringConcatWithNewline() throws {
     
-        @StringConcatWithNewline
+        @LineConcat
         func make1() -> String {
             "A"
             "BC"

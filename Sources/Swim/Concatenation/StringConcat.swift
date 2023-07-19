@@ -20,44 +20,44 @@ extension String {
 
 /// [Swim] This is a function builder that concat each strings with separator "".
 @resultBuilder
-public class StringConcat {
+open class StringConcat {
     
     public typealias Component = [String?]
     
-    public class var separator: String {
+    open class var separator: String {
         
         return ""
     }
     
-    public class func buildFinalResult(_ component: Component) -> String {
+    open class func buildFinalResult(_ component: Component) -> String {
         
         return component
             .compactMap { $0 }
             .joined(separator: separator)
     }
     
-    public class func buildExpression(_ statement: String?) -> Component {
+    open class func buildExpression(_ statement: String?) -> Component {
         
         return [statement]
     }
     
-    public class func buildExpression<T>(_ statements: [T]) -> Component {
+    open class func buildExpression<T>(_ statements: [T]) -> Component {
         
         return statements.map(String.init(describing:))
     }
     
-    public class func buildExpression<T>(_ statement: T?) -> Component {
+    open class func buildExpression<T>(_ statement: T?) -> Component {
         
         return [statement.map(String.init(describing:))]
     }
     
     // This method work without inherit in sub class.
-    public static func buildBlock(_ statements: Component ...) -> Component {
+    open class func buildBlock(_ statements: Component ...) -> Component {
         
         return statements.flatMap { $0 }
     }
     
-    public class func buildIf(_ component: Component?) -> Component {
+    open class func buildIf(_ component: Component?) -> Component {
 
         if let component = component {
 
@@ -69,14 +69,31 @@ public class StringConcat {
         }
     }
     
-    public class func buildEither(first: Component) -> Component {
+    open class func buildEither(first: Component) -> Component {
         
         return first
     }
     
-    public class func buildEither(second: Component) -> Component {
+    open class func buildEither(second: Component) -> Component {
         
         return second
+    }
+}
+
+/// [Swim] This is a function builder that concat each strings with separator "\n".
+@resultBuilder
+public final class StringConcatWithNewline: StringConcat {
+    
+    public class var lineBreak: String {
+        "\n"
+    }
+    
+    public override class func buildFinalResult(_ component: StringConcat.Component) -> String {
+        
+        component
+            .map { $0 ?? "" }
+            .map { "\($0)\(lineBreak)" }
+            .joined(separator: separator)
     }
 }
 

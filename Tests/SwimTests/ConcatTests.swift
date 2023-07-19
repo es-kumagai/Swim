@@ -93,6 +93,23 @@ class ConcatTests: XCTestCase {
         XCTAssertEqual(test5, "ABBCdeeffgCD")
     }
     
+    func testStringConcatWithNewline() throws {
+    
+        @StringConcatWithNewline
+        func make1() -> String {
+            "A"
+            "BC"
+            ""
+            "DE"
+            nil
+            "F"
+        }
+        
+        let string1 = make1()
+        
+        XCTAssertEqual(string1, "A\nBC\n\nDE\n\nF\n")
+    }
+    
     func testConcatenateArray() throws {
 
         let array1 = [1, 2]

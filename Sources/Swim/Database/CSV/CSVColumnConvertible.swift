@@ -99,9 +99,6 @@ extension Bool : CSVColumnConvertible {
 extension Double : CSVColumnConvertible {}
 extension Float : CSVColumnConvertible {}
 
-@available(macOS 11.0, *)
-extension Float16 : CSVColumnConvertible {}
-
 extension Optional : CSVColumnConvertible where Wrapped : CSVColumnConvertible {
     
     public init?(csvDescription: some StringProtocol) {

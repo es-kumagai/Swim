@@ -31,44 +31,76 @@ extension CSVColumnConvertible {
     }
 }
 
-extension Int : CSVColumnConvertible {
+extension BinaryInteger where Self : LosslessStringConvertible {
     
     public init?(csvDescription: some StringProtocol) {
-        
-        self.init(csvDescription)
+        self.init(String(csvDescription))
     }
     
     public var csvDescription: String {
-        
-        return description
+        description
     }
 }
+
+extension FloatingPoint where Self : LosslessStringConvertible {
+    
+    public init?(csvDescription: some StringProtocol) {
+        self.init(String(csvDescription))
+    }
+    
+    public var csvDescription: String {
+        description
+    }
+}
+
+extension Int : CSVColumnConvertible {}
+extension Int8 : CSVColumnConvertible {}
+extension Int16 : CSVColumnConvertible {}
+extension Int32 : CSVColumnConvertible {}
+extension Int64 : CSVColumnConvertible {}
+extension UInt : CSVColumnConvertible {}
+extension UInt8 : CSVColumnConvertible {}
+extension UInt16 : CSVColumnConvertible {}
+extension UInt32 : CSVColumnConvertible {}
+extension UInt64 : CSVColumnConvertible {}
 
 extension String : CSVColumnConvertible {
     
     public init?(csvDescription: some StringProtocol) {
-        
         self = CSV.extracted(csvDescription) ?? String(csvDescription)
     }
     
     public var csvDescription: String {
-        
-        return CSV.quoted(self)
+        CSV.quoted(self)
     }
 }
 
-extension Double : CSVColumnConvertible {
+extension Bool : CSVColumnConvertible {
     
     public init?(csvDescription: some StringProtocol) {
         
-        self.init(csvDescription)
+        switch csvDescription.lowercased() {
+        case "true", "1", "yes", "ok":
+            self = true
+            
+        case "false", "0", "no", "ng":
+            self = false
+            
+        default:
+            return nil
+        }
     }
     
     public var csvDescription: String {
-        
-        return description
+        description
     }
 }
+
+extension Double : CSVColumnConvertible {}
+extension Float : CSVColumnConvertible {}
+
+@available(macOS 11.0, *)
+extension Float16 : CSVColumnConvertible {}
 
 extension Optional : CSVColumnConvertible where Wrapped : CSVColumnConvertible {
     

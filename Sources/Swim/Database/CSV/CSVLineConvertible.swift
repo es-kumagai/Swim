@@ -29,14 +29,14 @@ extension CSV {
 
 extension CSVLineConvertible {
     
-    public init(csvLine: String, columnCountValidation: Bool = true) throws {
+    public init(csvLine: some StringProtocol, columnCountValidation: Bool = true) throws {
         
         let csvColumns = Self.csvColumns
         let dataColumns = CSV.split(CSV.removedTrailingNewline(of: csvLine))
         
         guard !columnCountValidation || dataColumns.count == csvColumns.count else {
             
-            throw CSV.ConversionError.columnsMismatch(line: csvLine, columns: csvColumns.map(CSV.AnyColumn.init))
+            throw CSV.ConversionError.columnsMismatch(line: String(csvLine), columns: csvColumns.map(CSV.AnyColumn.init))
         }
         
         let resultBuffer = UnsafeMutablePointer<Self>.allocate(capacity: 1)

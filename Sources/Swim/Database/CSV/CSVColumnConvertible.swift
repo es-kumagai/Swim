@@ -9,13 +9,13 @@
 /// This protocol is able to adopted to only `Int`, `Double`, `String` and the `Optional`s.
 public protocol CSVColumnConvertible {
     
-    init?(csvDescription: String)
+    init?(csvDescription: some StringProtocol)
     var csvDescription: String { get }
 }
 
 extension CSVColumnConvertible {
         
-    public static func unsafeWrite(csvDescription: String, to pointer: UnsafeMutableRawPointer, offset: Int = 0) -> Bool {
+    public static func unsafeWrite(csvDescription: some StringProtocol, to pointer: UnsafeMutableRawPointer, offset: Int = 0) -> Bool {
 
         guard let value = self.init(csvDescription: csvDescription) else {
             
@@ -33,7 +33,7 @@ extension CSVColumnConvertible {
 
 extension Int : CSVColumnConvertible {
     
-    public init?(csvDescription: String) {
+    public init?(csvDescription: some StringProtocol) {
         
         self.init(csvDescription)
     }
@@ -46,9 +46,9 @@ extension Int : CSVColumnConvertible {
 
 extension String : CSVColumnConvertible {
     
-    public init?(csvDescription: String) {
+    public init?(csvDescription: some StringProtocol) {
         
-        self = CSV.extracted(csvDescription) ?? csvDescription
+        self = CSV.extracted(csvDescription) ?? String(csvDescription)
     }
     
     public var csvDescription: String {
@@ -59,7 +59,7 @@ extension String : CSVColumnConvertible {
 
 extension Double : CSVColumnConvertible {
     
-    public init?(csvDescription: String) {
+    public init?(csvDescription: some StringProtocol) {
         
         self.init(csvDescription)
     }
@@ -72,7 +72,7 @@ extension Double : CSVColumnConvertible {
 
 extension Optional : CSVColumnConvertible where Wrapped : CSVColumnConvertible {
     
-    public init?(csvDescription: String) {
+    public init?(csvDescription: some StringProtocol) {
         
         if csvDescription.isEmpty {
             

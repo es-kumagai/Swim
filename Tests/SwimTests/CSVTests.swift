@@ -16,7 +16,7 @@ private struct Column : CSVColumnConvertible, Equatable {
         self.value = value
     }
     
-    init?(csvDescription: String) {
+    init?(csvDescription: some StringProtocol) {
         
         guard csvDescription.hasPrefix("0x") else {
             return nil

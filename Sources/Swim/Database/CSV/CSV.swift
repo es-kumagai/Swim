@@ -23,7 +23,7 @@ extension CSV {
     public static private(set) var quoteWord: Character = "\""
     public static private(set) var separator: Character = ","
     
-    public static func isQuoted(_ text: String) -> Bool {
+    public static func isQuoted(_ text: some StringProtocol) -> Bool {
         
         return text.count >= 2 && text.first == quoteWord && text.last == quoteWord
     }
@@ -31,7 +31,7 @@ extension CSV {
     /// [Swim] The string that removed quotation from this value.
     /// If this value is an illegal format (e.g. non-pair of quote word appears), the behavior of this method is undefined.
     /// - Returns: The string removed quotation.
-    public static func extracted(_ text: String) -> String? {
+    public static func extracted(_ text: some StringProtocol) -> String? {
         
         guard isQuoted(text) else {
 
@@ -69,17 +69,17 @@ extension CSV {
         return result
     }
     
-    public static func removedTrailingNewline(of line: String) -> String {
+    public static func removedTrailingNewline(of line: some StringProtocol) -> String {
     
         guard !line.isEmpty, line.last == "\n" else {
             
-            return line
+            return line.description
         }
         
         return String(line.prefix(line.count - 1))
     }
     
-    public static func quoted(_ text: String) -> String {
+    public static func quoted(_ text: some StringProtocol) -> String {
         
         guard !text.isEmpty else {
             
@@ -105,21 +105,21 @@ extension CSV {
         return "\(quoteWord)\(result)\(quoteWord)"
     }
 
-    public static func split(_ text: String) -> [String] {
+    private enum SplitingState {
         
-        enum State {
+        case beginOfValue
+        case valuePart
+        case insideOfQuote
+        case quoteAppearedInValuePart
+        case quoteAppearedInsideOfQuote
+    }
 
-            case beginOfValue
-            case valuePart
-            case insideOfQuote
-            case quoteAppearedInValuePart
-            case quoteAppearedInsideOfQuote
-        }
-        
+    public static func split(_ text: some StringProtocol) -> [String] {
+                
         var result = Array<String>()
         var letter = ""
 
-        var state = State.beginOfValue {
+        var state = SplitingState.beginOfValue {
             
             didSet {
 
@@ -131,7 +131,7 @@ extension CSV {
             }
         }
         
-        func stateChangeTo(_ newState: State) {
+        func stateChangeTo(_ newState: SplitingState) {
             
             state = newState
         }
@@ -141,7 +141,7 @@ extension CSV {
             letter.append(String(describing: word))
         }
         
-        func keepLetter<T>(_ word: T, stateChangeTo nextState: State) {
+        func keepLetter<T>(_ word: T, stateChangeTo nextState: SplitingState) {
             
             keepToLetter(word)
             stateChangeTo(nextState)

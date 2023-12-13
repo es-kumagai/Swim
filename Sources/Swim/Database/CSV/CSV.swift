@@ -7,23 +7,20 @@
 
 public struct CSV {
     
-}
-
-extension CSV {
+    public let quoteWord: Character
+    public let separator: Character
     
-    public enum ConversionError : Error {
-        
-        case invalidValue(String, to: CSVColumnConvertible.Type)
-        case columnsMismatch(line: String, columns: [AnyColumn])
-        case unknownKeyPath(AnyColumn)
-        case typeMismatch(value: Any.Type, property: Any.Type)
-        case unexpected(Error)
+    public init() {
+        self.init(quoteWord: "\"", separator: ",")
     }
     
-    public static private(set) var quoteWord: Character = "\""
-    public static private(set) var separator: Character = ","
+    public init(quoteWord: Character, separator: Character) {
+
+        self.quoteWord = quoteWord
+        self.separator = separator
+    }
     
-    public static func isQuoted(_ text: some StringProtocol) -> Bool {
+    public func isQuoted(_ text: some StringProtocol) -> Bool {
         
         return text.count >= 2 && text.first == quoteWord && text.last == quoteWord
     }
@@ -31,7 +28,7 @@ extension CSV {
     /// [Swim] The string that removed quotation from this value.
     /// If this value is an illegal format (e.g. non-pair of quote word appears), the behavior of this method is undefined.
     /// - Returns: The string removed quotation.
-    public static func extracted(_ text: some StringProtocol) -> String? {
+    public func extracted(_ text: some StringProtocol) -> String? {
         
         guard isQuoted(text) else {
 
@@ -69,7 +66,7 @@ extension CSV {
         return result
     }
     
-    public static func removedTrailingNewline(of line: some StringProtocol) -> String {
+    public func removedTrailingNewline(of line: some StringProtocol) -> String {
     
         guard !line.isEmpty, line.last == "\n" else {
             
@@ -79,7 +76,7 @@ extension CSV {
         return String(line.prefix(line.count - 1))
     }
     
-    public static func quoted(_ text: some StringProtocol) -> String {
+    public func quoted(_ text: some StringProtocol) -> String {
         
         guard !text.isEmpty else {
             
@@ -105,17 +102,8 @@ extension CSV {
         return "\(quoteWord)\(result)\(quoteWord)"
     }
 
-    private enum SplitingState {
+    public func split(_ text: some StringProtocol) -> [String] {
         
-        case beginOfValue
-        case valuePart
-        case insideOfQuote
-        case quoteAppearedInValuePart
-        case quoteAppearedInsideOfQuote
-    }
-
-    public static func split(_ text: some StringProtocol) -> [String] {
-                
         var result = Array<String>()
         var letter = ""
 
@@ -155,10 +143,10 @@ extension CSV {
                 
                 switch word {
                 
-                case CSV.quoteWord:
-                    keepLetter(CSV.quoteWord, stateChangeTo: .insideOfQuote)
+                case quoteWord:
+                    keepLetter(quoteWord, stateChangeTo: .insideOfQuote)
                     
-                case CSV.separator:
+                case separator:
                     stateChangeTo(.beginOfValue)
                     
                 case let word:
@@ -169,10 +157,10 @@ extension CSV {
 
                 switch word {
                 
-                case CSV.quoteWord:
-                    keepToLetter(CSV.quoteWord)
+                case quoteWord:
+                    keepToLetter(quoteWord)
                     
-                case CSV.separator:
+                case separator:
                     stateChangeTo(.beginOfValue)
             
                 case let word:
@@ -183,11 +171,11 @@ extension CSV {
                 
                 switch word {
                 
-                case CSV.quoteWord:
-                    keepLetter(CSV.quoteWord, stateChangeTo: .quoteAppearedInsideOfQuote)
+                case quoteWord:
+                    keepLetter(quoteWord, stateChangeTo: .quoteAppearedInsideOfQuote)
                     
-                case CSV.separator:
-                    keepToLetter(CSV.separator)
+                case separator:
+                    keepToLetter(separator)
                 
                 case let word:
                     keepToLetter(word)
@@ -197,10 +185,10 @@ extension CSV {
                 
                 switch word {
                 
-                case CSV.quoteWord:
+                case quoteWord:
                     stateChangeTo(.insideOfQuote)
                     
-                case CSV.separator:
+                case separator:
                     stateChangeTo(.beginOfValue)
                     
                 case let word:
@@ -211,10 +199,10 @@ extension CSV {
                 
                 switch word {
                 
-                case CSV.quoteWord:
-                    keepLetter(CSV.quoteWord, stateChangeTo: .valuePart)
+                case quoteWord:
+                    keepLetter(quoteWord, stateChangeTo: .valuePart)
                     
-                case CSV.separator:
+                case separator:
                     stateChangeTo(.beginOfValue)
                     
                 case let word:
@@ -226,5 +214,58 @@ extension CSV {
         state = .beginOfValue
 
         return result
+    }}
+
+extension CSV {
+    
+    public enum ConversionError : Error {
+        
+        case invalidValue(String, to: CSVColumnConvertible.Type)
+        case columnsMismatch(line: String, columns: [AnyColumn])
+        case unknownKeyPath(AnyColumn)
+        case typeMismatch(value: Any.Type, property: Any.Type)
+        case unexpected(Error)
+    }
+}
+
+public extension CSV {
+    
+    static let standard = CSV()
+    
+    private enum SplitingState {
+        
+        case beginOfValue
+        case valuePart
+        case insideOfQuote
+        case quoteAppearedInValuePart
+        case quoteAppearedInsideOfQuote
+    }
+    
+    static var quoteWord: Character {
+        standard.quoteWord
+    }
+    
+    static var separator: Character {
+        standard.separator
+    }
+
+    static func isQuoted(_ text: some StringProtocol) -> Bool {
+        standard.isQuoted(text)
+    }
+    
+    static func extracted(_ text: some StringProtocol) -> String? {
+        standard.extracted(text)
+    }
+    
+    static func removedTrailingNewline(of line: some StringProtocol) -> String {
+        standard.removedTrailingNewline(of: line)
+    }
+    
+    static func quoted(_ text: some StringProtocol) -> String {
+        standard.quoted(text)
+    }
+    
+    static func split(_ text: some StringProtocol) -> [String] {
+        standard.split(text)
     }
 }

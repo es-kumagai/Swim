@@ -29,10 +29,10 @@ extension CSV {
 
 extension CSVLineConvertible {
     
-    public init(csvLine: some StringProtocol, columnCountValidation: Bool = true) throws {
+    public init(csvLine: some StringProtocol, using csv: CSV = .standard, columnCountValidation: Bool = true) throws {
         
         let csvColumns = Self.csvColumns
-        let dataColumns = CSV.split(CSV.removedTrailingNewline(of: csvLine))
+        let dataColumns = csv.split(csv.removedTrailingNewline(of: csvLine))
         
         guard !columnCountValidation || dataColumns.count == csvColumns.count else {
             
@@ -65,18 +65,18 @@ extension CSVLineConvertible {
         self.init(resultBuffer.pointee)
     }
     
-    public func toCSVLine() -> String {
+    public func toCSVLine(using csv: CSV = .standard) -> String {
         
         return Self.csvColumns
             .map { self[keyPath: $0.keyPath] as! CSVColumnConvertible }
-            .map(\.csvDescription)
+            .map { $0.csvDescription(with: csv) }
             .joined(separator: ",") + "\n"
     }
     
-    public static var csvHeaderLine: String {
+    public static func csvHeaderLine(with csv: CSV = .standard) -> String {
         
         return csvColumns
-            .map { CSV.quoted($0.name) }
+            .map { csv.quoted($0.name) }
             .joined(separator: ",") + "\n"
     }
 }

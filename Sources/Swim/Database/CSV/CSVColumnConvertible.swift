@@ -5,19 +5,20 @@
 //  Created by Tomohiro Kumagai on 2020/12/09.
 //
 
+
 /// [Swim] A type that can convert from/to CSV data.
 /// This protocol is able to adopted to only `Int`, `Double`, `String` and the `Optional`s.
 public protocol CSVColumnConvertible {
-    
-    init?(csvDescription: some StringProtocol)
-    var csvDescription: String { get }
+
+    init?(csvDescription: some StringProtocol, using csv: CSV)
+    func csvDescription(with csv: CSV) -> String
 }
 
 extension CSVColumnConvertible {
         
-    public static func unsafeWrite(csvDescription: some StringProtocol, to pointer: UnsafeMutableRawPointer, offset: Int = 0) -> Bool {
+    public static func unsafeWrite(csvDescription: some StringProtocol, to pointer: UnsafeMutableRawPointer, offset: Int = 0, csv: CSV = .standard) -> Bool {
 
-        guard let value = self.init(csvDescription: csvDescription) else {
+        guard let value = self.init(csvDescription: csvDescription, using: csv) else {
             
             return false
         }
@@ -33,22 +34,22 @@ extension CSVColumnConvertible {
 
 extension BinaryInteger where Self : LosslessStringConvertible {
     
-    public init?(csvDescription: some StringProtocol) {
+    public init?(csvDescription: some StringProtocol, using csv: CSV = .standard) {
         self.init(String(csvDescription))
     }
     
-    public var csvDescription: String {
+    public func csvDescription(with csv: CSV = .standard) -> String {
         description
     }
 }
 
 extension FloatingPoint where Self : LosslessStringConvertible {
     
-    public init?(csvDescription: some StringProtocol) {
+    public init?(csvDescription: some StringProtocol, using csv: CSV = .standard) {
         self.init(String(csvDescription))
     }
     
-    public var csvDescription: String {
+    public func csvDescription(with csv: CSV = .standard) -> String {
         description
     }
 }
@@ -66,18 +67,18 @@ extension UInt64 : CSVColumnConvertible {}
 
 extension String : CSVColumnConvertible {
     
-    public init?(csvDescription: some StringProtocol) {
-        self = CSV.extracted(csvDescription) ?? String(csvDescription)
+    public init?(csvDescription: some StringProtocol, using csv: CSV = .standard) {
+        self = csv.extracted(csvDescription) ?? String(csvDescription)
     }
     
-    public var csvDescription: String {
-        CSV.quoted(self)
+    public func csvDescription(with csv: CSV = .standard) -> String {
+        csv.quoted(self)
     }
 }
 
 extension Bool : CSVColumnConvertible {
     
-    public init?(csvDescription: some StringProtocol) {
+    public init?(csvDescription: some StringProtocol, using csv: CSV = .standard) {
         
         switch csvDescription.lowercased() {
         case "true", "1", "yes", "ok":
@@ -91,7 +92,7 @@ extension Bool : CSVColumnConvertible {
         }
     }
     
-    public var csvDescription: String {
+    public func csvDescription(with csv: CSV = .standard) -> String {
         description
     }
 }
@@ -101,7 +102,7 @@ extension Float : CSVColumnConvertible {}
 
 extension Optional : CSVColumnConvertible where Wrapped : CSVColumnConvertible {
     
-    public init?(csvDescription: some StringProtocol) {
+    public init?(csvDescription: some StringProtocol, using csv: CSV = .standard) {
         
         if csvDescription.isEmpty {
             
@@ -109,16 +110,16 @@ extension Optional : CSVColumnConvertible where Wrapped : CSVColumnConvertible {
         }
         else {
             
-            self = Wrapped.init(csvDescription: csvDescription)
+            self = Wrapped.init(csvDescription: csvDescription, using: csv)
         }
     }
     
-    public var csvDescription: String {
+    public func csvDescription(with csv: CSV = .standard) -> String {
         
         switch self {
         
         case .some(let value):
-            return value.csvDescription
+            return value.csvDescription(with: csv)
             
         case .none:
             return ""

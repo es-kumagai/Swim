@@ -16,7 +16,7 @@ private struct Column : CSVColumnConvertible, Equatable {
         self.value = value
     }
     
-    init?(csvDescription: some StringProtocol) {
+    init?(csvDescription: some StringProtocol, using csv: CSV = .standard) {
         
         guard csvDescription.hasPrefix("0x") else {
             return nil
@@ -29,7 +29,7 @@ private struct Column : CSVColumnConvertible, Equatable {
         self.value = value
     }
     
-    var csvDescription: String {
+    func csvDescription(with csv: CSV) -> String {
 
         "0x" + String(value, radix: 16)
     }
@@ -107,20 +107,22 @@ class CSVTests: XCTestCase {
         let string2 = "\"abcdef\""
         let string3 = "\"abc\"\"def\""
         
-        XCTAssertEqual(CSV.quoteWord, "\"")
-        XCTAssertEqual(CSV.separator, ",")
+        let csv = CSV.standard
         
-        XCTAssertFalse(CSV.isQuoted(string1))
-        XCTAssertTrue(CSV.isQuoted(string2))
-        XCTAssertTrue(CSV.isQuoted(string3))
-        XCTAssertEqual(CSV.extracted(string1), nil)
-        XCTAssertEqual(CSV.extracted(string2), "abcdef")
-        XCTAssertEqual(CSV.extracted(string3), "abc\"def")
-        XCTAssertEqual(CSV.quoted(string1), "\"abc\"\"def\"")
-        XCTAssertEqual(CSV.quoted(string2), "\"\"\"abcdef\"\"\"")
-        XCTAssertEqual(CSV.quoted(string3), "\"\"\"abc\"\"\"\"def\"\"\"")
+        XCTAssertEqual(csv.quoteWord, "\"")
+        XCTAssertEqual(csv.separator, ",")
         
-        let parts = CSV.split(#"abc,d"ef , "ghi,"jk\nlm","no""pqr""#)
+        XCTAssertFalse(csv.isQuoted(string1))
+        XCTAssertTrue(csv.isQuoted(string2))
+        XCTAssertTrue(csv.isQuoted(string3))
+        XCTAssertEqual(csv.extracted(string1), nil)
+        XCTAssertEqual(csv.extracted(string2), "abcdef")
+        XCTAssertEqual(csv.extracted(string3), "abc\"def")
+        XCTAssertEqual(csv.quoted(string1), "\"abc\"\"def\"")
+        XCTAssertEqual(csv.quoted(string2), "\"\"\"abcdef\"\"\"")
+        XCTAssertEqual(csv.quoted(string3), "\"\"\"abc\"\"\"\"def\"\"\"")
+        
+        let parts = csv.split(#"abc,d"ef , "ghi,"jk\nlm","no""pqr""#)
         
         XCTAssertEqual(parts, [#"abc"#, #"d"ef "#, #" "ghi"#, #""jk\nlm""#, #""no"pqr""#])
     }
@@ -137,11 +139,11 @@ class CSVTests: XCTestCase {
         XCTAssertTrue(columns.map(\.datatype)[2] == Optional<Double>.self)
         XCTAssertTrue(columns.map(\.datatype)[3] == Optional<String>.self)
         
-        XCTAssertEqual(10.csvDescription, "10")
-        XCTAssertEqual("X".csvDescription, "\"X\"")
-        XCTAssertEqual("".csvDescription, "\"\"")
-        XCTAssertEqual(("X" as String?).csvDescription, "\"X\"")
-        XCTAssertEqual((nil as String?).csvDescription, "")
+        XCTAssertEqual(10.csvDescription(), "10")
+        XCTAssertEqual("X".csvDescription(), "\"X\"")
+        XCTAssertEqual("".csvDescription(), "\"\"")
+        XCTAssertEqual(("X" as String?).csvDescription(), "\"X\"")
+        XCTAssertEqual((nil as String?).csvDescription(), "")
         
         XCTAssertEqual(String(csvDescription: ""), "")
         XCTAssertEqual(Int(csvDescription: ""), nil)
@@ -172,7 +174,7 @@ class CSVTests: XCTestCase {
         let csv2a = value2a.toCSVLine()
         let csv2b = value2b.toCSVLine()
 
-        XCTAssertEqual(CSVValue.csvHeaderLine, #""name","price","tax rate","note","column""# + "\n")
+        XCTAssertEqual(CSVValue.csvHeaderLine(), #""name","price","tax rate","note","column""# + "\n")
         
         XCTAssertEqual(csv1a, #""item",102,1.05,"NOTE",0xf"# + "\n")
         XCTAssertEqual(csv1b, #""item",102,1.05,"",0x10"# + "\n")

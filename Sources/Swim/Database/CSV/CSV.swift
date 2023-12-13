@@ -241,31 +241,24 @@ public extension CSV {
         case quoteAppearedInsideOfQuote
     }
     
-    static var quoteWord: Character {
-        standard.quoteWord
-    }
+    @available(*, unavailable, renamed: "CSV.standard.quoteWord")
+    static var quoteWord: Character { fatalError() }
     
-    static var separator: Character {
-        standard.separator
-    }
+    @available(*, unavailable, renamed: "CSV.standard.separator")
+    static var separator: Character { fatalError() }
 
-    static func isQuoted(_ text: some StringProtocol) -> Bool {
-        standard.isQuoted(text)
-    }
+    @available(*, unavailable, renamed: "CSV.standard.isQuoted(_:)")
+    static func isQuoted(_ text: some StringProtocol) -> Bool { fatalError() }
     
-    static func extracted(_ text: some StringProtocol) -> String? {
-        standard.extracted(text)
-    }
+    @available(*, unavailable, renamed: "CSV.standard.extracted(_:)")
+    static func extracted(_ text: some StringProtocol) -> String? { fatalError() }
     
-    static func removedTrailingNewline(of line: some StringProtocol) -> String {
-        standard.removedTrailingNewline(of: line)
-    }
+    @available(*, unavailable, renamed: "CSV.standard.removedTrailingNewline(of:)")
+    static func removedTrailingNewline(of line: some StringProtocol) -> String { fatalError() }
     
-    static func quoted(_ text: some StringProtocol) -> String {
-        standard.quoted(text)
-    }
+    @available(*, unavailable, renamed: "CSV.standard.quoted(_:)")
+    static func quoted(_ text: some StringProtocol) -> String { fatalError() }
     
-    static func split(_ text: some StringProtocol) -> [String] {
-        standard.split(text)
-    }
+    @available(*, unavailable, renamed: "CSV.standard.split(_:)")
+    static func split(_ text: some StringProtocol) -> [String] { fatalError() }
 }

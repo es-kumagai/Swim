@@ -76,6 +76,11 @@ public struct CSV {
         return String(line.prefix(line.count - 1))
     }
     
+    public func quoted(_ value: some LosslessStringConvertible) -> String {
+        
+        quoted(String(value))
+    }
+    
     public func quoted(_ text: some StringProtocol) -> String {
         
         guard !text.isEmpty else {

@@ -122,9 +122,11 @@ class CSVTests: XCTestCase {
         XCTAssertEqual(csv.quoted(string2), "\"\"\"abcdef\"\"\"")
         XCTAssertEqual(csv.quoted(string3), "\"\"\"abc\"\"\"\"def\"\"\"")
         
-        let parts = csv.split(#"abc,d"ef , "ghi,"jk\nlm","no""pqr""#)
-        
-        XCTAssertEqual(parts, [#"abc"#, #"d"ef "#, #" "ghi"#, #""jk\nlm""#, #""no"pqr""#])
+        let parts1 = csv.split(#"abc,d"ef , "ghi,"jk\nlm","no""pqr""#)
+        let parts2 = csv.split(#"abc,d"ef , "ghi,"jk\nlm","no""pqr",""\#n"#)
+
+        XCTAssertEqual(parts1, [#"abc"#, #"d"ef "#, #" "ghi"#, #""jk\nlm""#, #""no"pqr""#])
+        XCTAssertEqual(parts2, [#"abc"#, #"d"ef "#, #" "ghi"#, #""jk\nlm""#, #""no"pqr""#, #""""#])
     }
     
     func testColumns() throws {

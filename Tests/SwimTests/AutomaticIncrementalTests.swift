@@ -37,5 +37,16 @@ final class AutomaticIncrementalTests: XCTestCase {
         XCTAssertNotEqual(seed, 0)
         XCTAssertEqual(seed, 3)
         XCTAssertEqual(seed, 4)
+        
+        $seed.lock()
+        XCTAssertEqual(seed, 5)
+        $seed.lock()
+        XCTAssertEqual(seed, 5)
+        XCTAssertEqual(seed, 5)
+        $seed.unlock()
+        XCTAssertEqual(seed, 5)
+        $seed.unlock()
+        XCTAssertEqual(seed, 5)
+        XCTAssertEqual(seed, 6)
     }
 }

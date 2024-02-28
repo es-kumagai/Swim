@@ -11,12 +11,15 @@ public final class AutomaticIncremental<Value> where Value : Strideable {
     
     private var value: Value
     private var initialValue: Value
+    private var lockCount: Int
     
     public var wrappedValue: Value {
         
         get {
             defer {
-                value = value.advanced(by: 1)
+                if !locked {
+                    value = value.advanced(by: 1)
+                }                
             }
             return value
         }
@@ -33,9 +36,22 @@ public final class AutomaticIncremental<Value> where Value : Strideable {
     public init(wrappedValue value: Value) {
         self.value = value
         self.initialValue = value
+        self.lockCount = 0
     }
     
     public func rewind() {
         value = initialValue
+    }
+    
+    public var locked: Bool {
+        lockCount > 0
+    }
+    
+    public func lock() {
+        lockCount += 1
+    }
+    
+    public func unlock() {
+        lockCount -= 1
     }
 }

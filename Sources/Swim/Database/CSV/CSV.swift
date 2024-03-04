@@ -5,7 +5,7 @@
 //  Created by Tomohiro Kumagai on 2020/12/09.
 //
 
-public struct CSV {
+public struct CSV : Sendable {
     
     public let quoteWord: Character
     public let separator: Character

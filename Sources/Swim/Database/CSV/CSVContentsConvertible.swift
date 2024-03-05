@@ -6,13 +6,17 @@
 //  
 //
 
-public protocol CSVContentsConvertible : Sequence {
+public protocol CSVContentsConvertible {
     
     associatedtype CSVColumn : CaseIterable & RawRepresentable<String>
-
+    associatedtype CSVContentItem
+    associatedtype CSVContentItems : Sequence<CSVContentItem>
+    
     static var csv: CSV { get }
     
-    func csvColumns(for column: CSVColumn, item: Element) -> String
+    var csvContentItems: CSVContentItems { get }
+    
+    func csvColumnValue(for column: CSVColumn, item: CSVContentItem) -> String
 }
 
 public extension CSVContentsConvertible {
@@ -28,24 +32,28 @@ public extension CSVContentsConvertible {
             .joined(separator: String(csv.separator))
     }
     
-    func csvContentLine(for item: Element) -> String {
+    func csvContentLine(for item: CSVContentItem) -> String {
         
-        flatMap { item in
-            
-            CSVColumn.allCases.map { column in
-                csvColumns(for: column, item: item)
-            }
+        CSVColumn.allCases.map { column in
+            csvColumnValue(for: column, item: item)
         }
-        .map(Self.csv.quoted(_:))
         .joined(separator: String(Self.csv.separator))
     }
     
-    var csvContents: String {
+    var csvContentsDescription: String {
+        csvContentsDescription(includesHeaderLine: true)
+    }
+     
+    func csvContentsDescription(includesHeaderLine: Bool) -> String {
         
         @BundleInArray<String>
         var contents: [String] {
-            Self.csvHeaderLine
-            map(csvContentLine(for:))
+            
+            if (includesHeaderLine) {
+                Self.csvHeaderLine
+            }
+            
+            csvContentItems.map(csvContentLine(for:))
         }
         
         return contents.joined(separator: "\n")

@@ -37,7 +37,7 @@ public extension String {
     }
 }
 
-extension Byte : Sendable, Hashable, Equatable {
+extension Byte : Sendable, Hashable, Equatable, Codable {
     
 }
 
@@ -69,7 +69,7 @@ private extension Byte {
     }
     
     @inline(__always)
-    static func preconditionOverflow(bitPosition n: Int) {
+    static func preconditionOverflow(bitCount n: Int) {
         precondition(bitRange.contains(n), "Bit position must be between 1 to \(bitWidth).")
     }
     
@@ -85,7 +85,7 @@ private extension Byte {
     
     @inline(__always)
     func preconditionOverflow(bitCount n: Int) {
-        Self.preconditionOverflow(bitPosition: n)
+        Self.preconditionOverflow(bitCount: n)
     }
     
     @inline(__always)
@@ -116,7 +116,6 @@ public extension Byte {
     ///
     /// This property provides a convenient way to view the `Byte` value as a binary string.
     var binaryDescription: String {
-        
         binaryDescription(withPrefix: "")
     }
     
@@ -126,13 +125,11 @@ public extension Byte {
     ///   The default value is an empty string.
     /// - Returns: The binary string representation of the `Byte`, prefixed as specified.
     func binaryDescription(withPrefix prefix: some StringProtocol = String("")) -> String {
-        
         prefix + String(value, radix: 2).paddingTop(with: "0", toLength: 8)
     }
     
     /// [Swim] A string representation of the `Byte` in hexadecimal format.
     var hexadecimalDescription: String {
-        
         hexadecimalDescription(withPrefix: "", uppercase: true)
     }
     
@@ -152,7 +149,6 @@ public extension Byte {
     /// - Returns: The hexadecimal string representation of the `Byte`, with any specified prefix
     ///   and in either uppercase or lowercase as specified.
     func hexadecimalDescription(withPrefix prefix: some StringProtocol = String(""), uppercase: Bool = true) -> String {
-        
         prefix + String(value, radix: 16, uppercase: uppercase).paddingTop(with: "0", toLength: 2)
     }
     
@@ -160,7 +156,6 @@ public extension Byte {
     ///
     /// This property calculates and returns the count of zero bits following the last significant bit.
     var trailingZeroBitCount: Int {
-        
         value.trailingZeroBitCount
     }
     
@@ -169,7 +164,6 @@ public extension Byte {
     /// This property calculates the count of zero bits preceding the first '1' bit
     /// from the most significant bit towards the least significant bit.
     var leadingZeroBitCount: Int {
-        
         value.leadingZeroBitCount
     }
     
@@ -177,7 +171,6 @@ public extension Byte {
     ///
     /// This property counts and returns the number of bits that are set to '1' in the `Byte`.
     var nonZeroBitCount: Int {
-        
         value.nonzeroBitCount
     }
     
@@ -197,6 +190,77 @@ public extension Byte {
         Byte(~value &+ 1)
     }
     
+    static func mask(forBits n: Int) -> Byte {
+        
+        preconditionOverflow(maskBits: n)
+        return uncheckedMask(forBits: n)
+    }
+    
+    static func truncatingMask(forBits n: Int) -> Byte {
+        
+        preconditionOverflow(maskBits: n)
+        return uncheckedTruncatingMask(forBits: n)
+    }
+    
+    static func pickupMaskInMSB(_ n: Int) -> Byte {
+        
+        preconditionOverflow(bitCount: n)
+        return uncheckedPickupMaskInMSB(n)
+    }
+    
+    static func pickupMaskInLSB(_ n: Int) -> Byte {
+        
+        preconditionOverflow(bitCount: n)
+        return uncheckedPickupMaskInLSB(n)
+    }
+
+    @inline(__always)
+    static func uncheckedBitsIndexFromMSBToLSB(_ n: Int) -> Int {
+        bitWidth - n - 1
+    }
+    
+    /// [Swim] Returns an unchecked mask value for truncating the most significant bit(s) based on the specified number of bits.
+    /// - Parameter n: The number of bits to consider for the mask.
+    /// - Returns: An unchecked bitmask for truncating the most significant bits.
+    static func uncheckedMask(forBits n: Int) -> Byte {
+        uncheckedTruncatingMask(forBits: bitWidth - n)
+    }
+    
+    static func uncheckedTruncatingMask(forBits n: Int) -> Byte {
+        ~0 >> n
+    }
+    
+    static func uncheckedPickupMaskInMSB(_ n: Int) -> Byte {
+        1 << uncheckedBitsIndexFromMSBToLSB(n)
+    }
+    
+    static func uncheckedPickupMaskInLSB(_ n: Int) -> Byte {
+        1 << n
+    }
+
+    /// [Swim] Gets the nth bit of the `Byte` to '1'.
+    func uncheckedGetBitInLSB(_ n: Int) -> Bit {
+        Bit(self & Self.uncheckedPickupMaskInLSB(n) != 0)
+    }
+
+    /// [Swim] Gets the nth bit of the `Byte` to '1'.
+    func uncheckedGetBitInMSB(_ n: Int) -> Bit {
+        Bit(self & Self.uncheckedPickupMaskInMSB(n) != 0)
+    }
+
+    subscript (lsb n: Int) -> Bit {
+        
+        get {
+            preconditionOverflow(bitCount: n)
+            return uncheckedGetBitInLSB(n)
+        }
+        
+        set {
+            preconditionOverflow(bitCount: n)
+            uncheckedSetInLSB(newValue, to: n)
+        }
+    }
+    
     subscript (msb n: Int) -> Bit {
         
         get {
@@ -210,47 +274,6 @@ public extension Byte {
         }
     }
 
-    static func mask(forBits n: Int) -> UInt8 {
-        
-        preconditionOverflow(maskBits: n)
-        return uncheckedMask(forBits: n)
-    }
-    
-    static func truncatingMask(forBits n: Int) -> UInt8 {
-        
-        preconditionOverflow(maskBits: n)
-        return uncheckedTruncatingMask(forBits: n)
-    }
-    
-    @inline(__always)
-    static func uncheckedBitsIndexFromMSBToLSB(_ n: Int) -> Int {
-        
-        bitWidth - n - 1
-    }
-    
-    /// [Swim] Returns an unchecked mask value for truncating the most significant bit(s) based on the specified number of bits.
-    /// - Parameter n: The number of bits to consider for the mask.
-    /// - Returns: An unchecked bitmask for truncating the most significant bits.
-    static func uncheckedMask(forBits n: Int) -> UInt8 {
-        uncheckedTruncatingMask(forBits: bitWidth - n)
-    }
-    
-    static func uncheckedTruncatingMask(forBits n: Int) -> UInt8 {
-        ~0 >> n
-    }
-    
-    /// [Swim] Gets the nth bit of the `Byte` to '1'.
-    func uncheckedGetBitInLSB(_ n: Int) -> Bit {
-        
-        value & (1 << n) != 0 ? .one : .zero
-    }
-
-    /// [Swim] Gets the nth bit of the `Byte` to '1'.
-    func uncheckedGetBitInMSB(_ n: Int) -> Bit {
-        
-        uncheckedGetBitInLSB(Self.uncheckedBitsIndexFromMSBToLSB(n))
-    }
-    
     mutating func uncheckedSetInLSB(_ bit: Bit, to n: Int) {
         
         switch bit {
@@ -264,26 +287,14 @@ public extension Byte {
     }
 
     mutating func uncheckedSetInMSB(_ bit: Bit, to n: Int) {
-        
-        uncheckedSetInLSB(bit, to: Self.uncheckedBitsIndexFromMSBToLSB(n))
-    }
-    
-    /// [Swim] Sets the nth bit of the `Byte` to '1'.
-    mutating func uncheckedSetBitInMSB(_ n: Int) {
-        
-        uncheckedSetBitInLSB(Self.uncheckedBitsIndexFromMSBToLSB(n))
-    }
-    
-    subscript (lsb n: Int) -> Bit {
-        
-        get {
-            preconditionOverflow(bitCount: n)
-            return uncheckedGetBitInLSB(n)
-        }
-        
-        set {
-            preconditionOverflow(bitCount: n)
-            uncheckedSetInLSB(newValue, to: n)
+
+        switch bit {
+            
+        case .one:
+            uncheckedSetBitInMSB(n)
+            
+        case .zero:
+            uncheckedResetBitInMSB(n)
         }
     }
     
@@ -298,11 +309,15 @@ public extension Byte {
         preconditionOverflow(bitCount: n)
         uncheckedSetBitInLSB(n)
     }
+
+    /// [Swim] Sets the nth bit of the `Byte` to '1'.
+    mutating func uncheckedSetBitInMSB(_ n: Int) {
+        self |= Self.uncheckedPickupMaskInMSB(n)
+    }
     
     /// [Swim] Sets the nth bit of the `Byte` to '1'.
     mutating func uncheckedSetBitInLSB(_ n: Int) {
-        
-        value |= 1 << n
+        self |= Self.uncheckedPickupMaskInLSB(n)
     }
 
     mutating func resetBitInMSB(_ n: Int) {
@@ -313,8 +328,7 @@ public extension Byte {
 
     /// [Swim] Resets only the bit at the specified position `n` to 0 within the binary representation.
     mutating func uncheckedResetBitInMSB(_ n: Int) {
-        
-        uncheckedResetBitInLSB(Self.uncheckedBitsIndexFromMSBToLSB(n))
+        self &= ~Self.uncheckedPickupMaskInMSB(n)
     }
 
     mutating func resetBitInLSB(_ n: Int) {
@@ -325,8 +339,7 @@ public extension Byte {
 
     /// [Swim] Resets only the bit at the specified position `n` to 0 within the binary representation.
     mutating func uncheckedResetBitInLSB(_ n: Int) {
-        
-        value &= ~(1 << n)
+        self &= ~Self.uncheckedPickupMaskInLSB(n)
     }
 
     mutating func fillWithZero(fromMSB n: Int) {
@@ -336,7 +349,7 @@ public extension Byte {
     }
     
     mutating func uncheckedFillWithZero(fromMSB n: Int) {
-        value &= Self.uncheckedTruncatingMask(forBits: n)
+        self &= Self.uncheckedTruncatingMask(forBits: n)
     }
     
     mutating func fillWithZero(fromLSB n: Int) {
@@ -346,7 +359,7 @@ public extension Byte {
     }
     
     mutating func uncheckedFillWithZero(fromLSB n: Int) {
-        value &= ~Self.uncheckedMask(forBits: n)
+        self &= ~Self.uncheckedMask(forBits: n)
     }
 
     mutating func fillWithOne(fromMSB n: Int) {
@@ -356,7 +369,7 @@ public extension Byte {
     }
     
     mutating func uncheckedFillWithOne(fromMSB n: Int) {
-        value |= ~Self.uncheckedTruncatingMask(forBits: n)
+        self |= ~Self.uncheckedTruncatingMask(forBits: n)
     }
     
     mutating func fillWithOne(fromLSB n: Int) {
@@ -366,7 +379,7 @@ public extension Byte {
     }
     
     mutating func uncheckedFillWithOne(fromLSB n: Int) {
-        value |= Self.uncheckedMask(forBits: n)
+        self |= Self.uncheckedMask(forBits: n)
     }
 
     mutating func copyInLSB(_ value: consuming Byte, from n: Int) {
@@ -471,6 +484,7 @@ public extension Byte {
     }
     
     static func & (lhs: consuming Byte, rhs: Byte) -> Byte {
+
         lhs &= rhs
         return lhs
     }
@@ -480,6 +494,7 @@ public extension Byte {
     }
     
     static func | (lhs: consuming Byte, rhs: Byte) -> Byte {
+
         lhs |= rhs
         return lhs
     }
@@ -489,6 +504,7 @@ public extension Byte {
     }
     
     static func ^ (lhs: consuming Byte, rhs: Byte) -> Byte {
+
         lhs ^= rhs
         return lhs
     }
@@ -498,6 +514,7 @@ public extension Byte {
     }
     
     static func << (lhs: consuming Byte, rhs: Int) -> Byte {
+
         lhs <<= rhs
         return lhs
     }
@@ -508,6 +525,7 @@ public extension Byte {
     }
     
     static func >> (lhs: consuming Byte, rhs: Int) -> Byte {
+
         lhs >>= rhs
         return lhs
     }

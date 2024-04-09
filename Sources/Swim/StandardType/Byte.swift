@@ -310,6 +310,78 @@ public extension Byte {
         uncheckedSetBitInLSB(n)
     }
 
+    mutating func resetBitInMSB(_ n: Int) {
+        
+        preconditionOverflow(bitCount: n)
+        uncheckedResetBitInMSB(n)
+    }
+
+    mutating func resetBitInLSB(_ n: Int) {
+        
+        preconditionOverflow(bitCount: n)
+        uncheckedResetBitInLSB(n)
+    }
+
+    mutating func fillWithZero(fromMSB n: Int) {
+        
+        preconditionOverflow(maskBits: n)
+        uncheckedFillWithZero(fromMSB: n)
+    }
+
+    mutating func fillWithZero(fromLSB n: Int) {
+        
+        preconditionOverflow(maskBits: n)
+        uncheckedFillWithZero(fromLSB: n)
+    }
+
+    borrowing func filledWithZero(fromMSB n: Int) -> Byte {
+        
+        preconditionOverflow(maskBits: n)
+        return uncheckFilledWithZero(fromMSB: n)
+    }
+    
+    borrowing func filledWithZero(fromLSB n: Int) -> Byte {
+
+        preconditionOverflow(maskBits: n)
+        return uncheckedFilledWithZero(fromLSB: n)
+    }
+    
+    mutating func fillWithOne(fromMSB n: Int) {
+        
+        preconditionOverflow(maskBits: n)
+        uncheckedFillWithOne(fromMSB: n)
+    }
+    
+    mutating func fillWithOne(fromLSB n: Int) {
+        
+        preconditionOverflow(maskBits: n)
+        uncheckedFillWithOne(fromLSB: n)
+    }
+    
+    mutating func copy(_ value: borrowing Byte, fromMSB n: Int) {
+        
+        preconditionOverflow(maskBits: n)
+        uncheckedCopy(value, fromMSB: n)
+    }
+    
+    mutating func copy(_ value: borrowing Byte, fromLSB n: Int) {
+        
+        preconditionOverflow(maskBits: n)
+        uncheckedCopy(value, fromLSB: n)
+    }
+    
+    consuming func copied(_ value: borrowing Byte, fromMSB n: Int) -> Byte {
+        
+        preconditionOverflow(maskBits: n)
+        return uncheckCopied(value, fromMSB: n)
+    }
+    
+    consuming func copied(_ value: borrowing Byte, fromLSB n: Int) -> Byte {
+
+        preconditionOverflow(maskBits: n)
+        return uncheckedCopied(value, fromLSB: n)
+    }
+    
     /// [Swim] Sets the nth bit of the `Byte` to '1'.
     mutating func uncheckedSetBitInMSB(_ n: Int) {
         self |= Self.uncheckedPickupMaskInMSB(n)
@@ -320,21 +392,9 @@ public extension Byte {
         self |= Self.uncheckedPickupMaskInLSB(n)
     }
 
-    mutating func resetBitInMSB(_ n: Int) {
-        
-        preconditionOverflow(bitCount: n)
-        uncheckedResetBitInMSB(n)
-    }
-
     /// [Swim] Resets only the bit at the specified position `n` to 0 within the binary representation.
     mutating func uncheckedResetBitInMSB(_ n: Int) {
         self &= ~Self.uncheckedPickupMaskInMSB(n)
-    }
-
-    mutating func resetBitInLSB(_ n: Int) {
-        
-        preconditionOverflow(bitCount: n)
-        uncheckedResetBitInLSB(n)
     }
 
     /// [Swim] Resets only the bit at the specified position `n` to 0 within the binary representation.
@@ -342,120 +402,64 @@ public extension Byte {
         self &= ~Self.uncheckedPickupMaskInLSB(n)
     }
 
-    mutating func fillWithZero(fromMSB n: Int) {
-        
-        preconditionOverflow(maskBits: n)
-        uncheckedFillWithZero(fromMSB: n)
-    }
-    
     mutating func uncheckedFillWithZero(fromMSB n: Int) {
         self &= Self.uncheckedTruncatingMask(forBits: n)
     }
-    
-    mutating func fillWithZero(fromLSB n: Int) {
-        
-        preconditionOverflow(maskBits: n)
-        uncheckedFillWithZero(fromLSB: n)
-    }
-    
+
     mutating func uncheckedFillWithZero(fromLSB n: Int) {
         self &= ~Self.uncheckedMask(forBits: n)
     }
 
-    mutating func fillWithOne(fromMSB n: Int) {
-        
-        preconditionOverflow(maskBits: n)
-        uncheckedFillWithOne(fromMSB: n)
-    }
-    
     mutating func uncheckedFillWithOne(fromMSB n: Int) {
         self |= ~Self.uncheckedTruncatingMask(forBits: n)
-    }
-    
-    mutating func fillWithOne(fromLSB n: Int) {
-        
-        preconditionOverflow(maskBits: n)
-        uncheckedFillWithOne(fromLSB: n)
     }
     
     mutating func uncheckedFillWithOne(fromLSB n: Int) {
         self |= Self.uncheckedMask(forBits: n)
     }
 
-    mutating func copyInLSB(_ value: consuming Byte, from n: Int) {
-        
-        preconditionOverflow(maskBits: n)
-        uncheckedCopyInLSB(value, from: n)
+    borrowing func uncheckFilledWithZero(fromMSB n: Int) -> Byte {
+        self & Self.uncheckedTruncatingMask(forBits: n)
     }
     
-    mutating func uncheckedCopyInLSB(_ value: consuming Byte, from n: Int) {
-        
-        uncheckedFillWithZero(fromLSB: n)
-        value.fillWithZero(fromMSB: value.bitWidth - n)
-        
-        self |= value
+    borrowing func uncheckedFilledWithZero(fromLSB n: Int) -> Byte {
+        self & ~Self.uncheckedMask(forBits: n)
+    }
+
+    borrowing func uncheckedFilledWithOne(fromMSB n: Int) -> Byte {
+        self | ~Self.uncheckedTruncatingMask(forBits: n)
     }
     
-    mutating func copyInMSB(_ value: consuming Byte, from n: Int) {
-        
-        preconditionOverflow(maskBits: n)
-        uncheckedCopyInMSB(value, from: n)
+    borrowing func uncheckedFilledWithOne(fromLSB n: Int) -> Byte {
+        self | Self.uncheckedMask(forBits: n)
     }
-    
-    mutating func uncheckedCopyInMSB(_ value: consuming Byte, from n: Int) {
-        
-        fillWithZero(fromMSB: n)
-        value.fillWithZero(fromLSB: value.bitWidth - n)
-        
-        self |= value
-    }
-    
-    consuming func filledWithZero(fromMSB n: Int) -> Byte {
-        
-        fillWithZero(fromMSB: n)
-        return self
-    }
-    
-    consuming func uncheckFilledWithZero(fromMSB n: Int) -> Byte {
+
+    mutating func uncheckedCopy(_ value: borrowing Byte, fromMSB n: Int) {
         
         uncheckedFillWithZero(fromMSB: n)
-        return self
+        self |= value.filledWithZero(fromLSB: value.bitWidth - n)
     }
     
-    consuming func filledWithZero(fromLSB n: Int) -> Byte {
-        
-        fillWithZero(fromLSB: n)
-        return self
-    }
-    
-    consuming func uncheckFilledWithZero(fromLSB n: Int) -> Byte {
+    mutating func uncheckedCopy(_ value: borrowing Byte, fromLSB n: Int) {
         
         uncheckedFillWithZero(fromLSB: n)
-        return self
+        self |= value.filledWithZero(fromMSB: value.bitWidth - n)
     }
     
-    consuming func copiedInLSB(_ value: consuming Byte, from n: Int) -> Byte {
+    borrowing func uncheckCopied(_ value: borrowing Byte, fromMSB n: Int) -> Byte {
         
-        copyInLSB(value, from: n)
-        return self
+        var newValue = copy self
+        newValue.uncheckedCopy(value, fromMSB: n)
+        
+        return newValue
     }
     
-    consuming func uncheckedCopiedInLSB(_ value: consuming Byte, from n: Int) -> Byte {
+    borrowing func uncheckedCopied(_ value: borrowing Byte, fromLSB n: Int) -> Byte {
         
-        uncheckedCopyInLSB(value, from: n)
-        return self
-    }
-    
-    consuming func copiedInMSB(_ value: consuming Byte, from n: Int) -> Byte {
-        
-        copyInMSB(value, from: n)
-        return self
-    }
-    
-    consuming func uncheckCopiedInMSB(_ value: consuming Byte, from n: Int) -> Byte {
-        
-        uncheckedCopyInMSB(value, from: n)
-        return self
+        var newValue = copy self
+        newValue.uncheckedCopy(value, fromLSB: n)
+
+        return newValue
     }
 }
 
@@ -475,48 +479,40 @@ public extension Byte {
     
     static let maskRange = 0 ... bitWidth
     
-    static prefix func ~ (byte: Byte) -> Byte {
+    static prefix func ~ (byte: borrowing Byte) -> Byte {
         Byte(~byte.value)
     }
     
-    static func &= (lhs: inout Byte, rhs: Byte) {
+    static func &= (lhs: inout Byte, rhs: borrowing Byte) {
         lhs.value &= rhs.value
     }
     
-    static func & (lhs: consuming Byte, rhs: Byte) -> Byte {
-
-        lhs &= rhs
-        return lhs
+    static func & (lhs: borrowing Byte, rhs: borrowing Byte) -> Byte {
+        Byte(lhs.value & rhs.value)
     }
     
-    static func |= (lhs: inout Byte, rhs: Byte) {
+    static func |= (lhs: inout Byte, rhs: borrowing Byte) {
         lhs.value |= rhs.value
     }
     
-    static func | (lhs: consuming Byte, rhs: Byte) -> Byte {
-
-        lhs |= rhs
-        return lhs
+    static func | (lhs: borrowing Byte, rhs: borrowing Byte) -> Byte {
+        Byte(lhs.value | rhs.value)
     }
     
-    static func ^= (lhs: inout Byte, rhs: Byte) {
+    static func ^= (lhs: inout Byte, rhs: borrowing Byte) {
         lhs.value ^= rhs.value
     }
     
-    static func ^ (lhs: consuming Byte, rhs: Byte) -> Byte {
-
-        lhs ^= rhs
-        return lhs
+    static func ^ (lhs: borrowing Byte, rhs: borrowing Byte) -> Byte {
+        Byte(lhs.value ^ rhs.value)
     }
     
     static func <<= (lhs: inout Byte, rhs: Int) {
         lhs.value <<= rhs
     }
     
-    static func << (lhs: consuming Byte, rhs: Int) -> Byte {
-
-        lhs <<= rhs
-        return lhs
+    static func << (lhs: borrowing Byte, rhs: Int) -> Byte {
+        Byte(lhs.value << rhs)
     }
     
     
@@ -524,9 +520,7 @@ public extension Byte {
         lhs.value >>= rhs
     }
     
-    static func >> (lhs: consuming Byte, rhs: Int) -> Byte {
-
-        lhs >>= rhs
-        return lhs
+    static func >> (lhs: borrowing Byte, rhs: Int) -> Byte {
+        Byte(lhs.value >> rhs)
     }
 }

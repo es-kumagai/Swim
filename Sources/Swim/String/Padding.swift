@@ -1,5 +1,5 @@
 //
-//  StringProtocol.swift
+//  Padding.swift
 //
 //  
 //  Created by Tomohiro Kumagai on 2024/03/26
@@ -17,5 +17,13 @@ public extension StringProtocol {
         }
         
         return String(repeating: character, count: paddingCount) + self
+    }
+}
+
+public extension String {
+    
+    init(_ value: some StringProtocol, topPaddingWith character: Character, toLength length: Int) {
+        
+        self = value.paddingTop(with: character, toLength: length)
     }
 }

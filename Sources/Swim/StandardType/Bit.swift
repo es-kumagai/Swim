@@ -133,3 +133,10 @@ public extension Bool {
         }
     }
 }
+
+public extension BinaryInteger {
+    
+    init(_ bit: Bit) {
+        self = numericCast(bit.rawValue)
+    }
+}

@@ -89,7 +89,7 @@ extension UInt5 : RawRepresentable {
     
     public init(rawValue: Byte) {
         
-        Self.preconditionNotOverflow(rawValue, "A value '\(rawValue)' overflows when stored into 'UInt5'")
+        Self.preconditionNotOverflow(rawValue, "A value '\(rawValue.decimalDescription)' overflows when stored into 'UInt5'")
         store = Self.storeValue(fromRawValue: rawValue)
     }
     
@@ -101,7 +101,7 @@ extension UInt5 : RawRepresentable {
         }
         
         set (rawValue) {
-            preconditionNotOverflow(rawValue, "A value '\(rawValue)' overflows when stored into 'UInt5'")
+            preconditionNotOverflow(rawValue, "A value '\(rawValue.decimalDescription)' overflows when stored into 'UInt5'")
             store = Self.storeValue(fromRawValue: rawValue)
         }
     }
@@ -114,7 +114,7 @@ extension UInt5 : Sendable, Codable, Hashable {
 extension UInt5 : Comparable {
     
     public static func < (lhs: UInt5, rhs: UInt5) -> Bool {
-        lhs.rawValue == rhs.rawValue
+        UInt8(lhs) < UInt8(rhs)
     }
 }
 
@@ -142,7 +142,7 @@ extension UInt5 : ExpressibleByIntegerLiteral {
         
         let rawValue = Byte(rawValue)
         
-        Self.preconditionNotOverflow(rawValue, "Integer literal '\(rawValue)' overflows when stored into 'UInt5'")
+        Self.preconditionNotOverflow(rawValue, "Integer literal '\(rawValue.decimalDescription)' overflows when stored into 'UInt5'")
         store = Self.storeValue(fromRawValue: rawValue)
     }
 }

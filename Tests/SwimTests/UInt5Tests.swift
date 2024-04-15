@@ -533,6 +533,84 @@ final class UInt5Tests: XCTestCase {
     
     func testStrideable() throws {
         
+        XCTAssertTrue(UInt5.Stride.self == Int.self)
+        
+        let v1: UInt5 = 0b00000
+        let v2: UInt5 = 0b01100
+        let v3: UInt5 = 0b11001
+        let v4: UInt5 = 0b11111
+        
+        XCTAssertEqual(v1.advanced(by: 1), 1)
+        XCTAssertEqual(v1.advanced(by: 5), 5)
+
+        XCTAssertEqual(v2.advanced(by: 1), 13)
+        XCTAssertEqual(v2.advanced(by: 5), 17)
+        XCTAssertEqual(v2.advanced(by: -1), 11)
+        XCTAssertEqual(v2.advanced(by: -5), 7)
+
+        XCTAssertEqual(v3.advanced(by: 1), 26)
+        XCTAssertEqual(v3.advanced(by: 5), 30)
+        XCTAssertEqual(v3.advanced(by: -1), 24)
+        XCTAssertEqual(v3.advanced(by: -5), 20)
+
+        XCTAssertEqual(v4.advanced(by: -1), 30)
+        XCTAssertEqual(v4.advanced(by: -5), 26)
+        
+        XCTAssertEqual(v1.advanced(by: 1), v1 + 1)
+        XCTAssertEqual(v1.advanced(by: 5), v1 + 5)
+
+        XCTAssertEqual(v2.advanced(by: 1), v2 + 1)
+        XCTAssertEqual(v2.advanced(by: 5), v2 + 5)
+        XCTAssertEqual(v2.advanced(by: -1), v2 - 1)
+        XCTAssertEqual(v2.advanced(by: -5), v2 - 5)
+
+        XCTAssertEqual(v3.advanced(by: 1), v3 + 1)
+        XCTAssertEqual(v3.advanced(by: 5), v3 + 5)
+        XCTAssertEqual(v3.advanced(by: -1), v3 - 1)
+        XCTAssertEqual(v3.advanced(by: -5), v3 - 5)
+
+        XCTAssertEqual(v4.advanced(by: -1), v4 - 1)
+        XCTAssertEqual(v4.advanced(by: -5), v4 - 5)
+
+        XCTAssertEqual(v1.distance(to: v1), 0)
+        XCTAssertEqual(v1.distance(to: v2), 12)
+        XCTAssertEqual(v1.distance(to: v3), 25)
+        XCTAssertEqual(v1.distance(to: v4), 31)
+
+        XCTAssertEqual(v2.distance(to: v1), -12)
+        XCTAssertEqual(v2.distance(to: v2), 0)
+        XCTAssertEqual(v2.distance(to: v3), 13)
+        XCTAssertEqual(v2.distance(to: v4), 19)
+
+        XCTAssertEqual(v3.distance(to: v1), -25)
+        XCTAssertEqual(v3.distance(to: v2), -13)
+        XCTAssertEqual(v3.distance(to: v3), 0)
+        XCTAssertEqual(v3.distance(to: v4), 6)
+
+        XCTAssertEqual(v4.distance(to: v1), -31)
+        XCTAssertEqual(v4.distance(to: v2), -19)
+        XCTAssertEqual(v4.distance(to: v3), -6)
+        XCTAssertEqual(v4.distance(to: v4), 0)
+        
+        XCTAssertEqual(v1.distance(to: v1), Int(v1) - Int(v1))
+        XCTAssertEqual(v1.distance(to: v2), Int(v2) - Int(v1))
+        XCTAssertEqual(v1.distance(to: v3), Int(v3) - Int(v1))
+        XCTAssertEqual(v1.distance(to: v4), Int(v4) - Int(v1))
+
+        XCTAssertEqual(v2.distance(to: v1), Int(v1) - Int(v2))
+        XCTAssertEqual(v2.distance(to: v2), Int(v2) - Int(v2))
+        XCTAssertEqual(v2.distance(to: v3), Int(v3) - Int(v2))
+        XCTAssertEqual(v2.distance(to: v4), Int(v4) - Int(v2))
+
+        XCTAssertEqual(v3.distance(to: v1), Int(v1) - Int(v3))
+        XCTAssertEqual(v3.distance(to: v2), Int(v2) - Int(v3))
+        XCTAssertEqual(v3.distance(to: v3), Int(v3) - Int(v3))
+        XCTAssertEqual(v3.distance(to: v4), Int(v4) - Int(v3))
+        
+        XCTAssertEqual(v4.distance(to: v1), Int(v1) - Int(v4))
+        XCTAssertEqual(v4.distance(to: v2), Int(v2) - Int(v4))
+        XCTAssertEqual(v4.distance(to: v3), Int(v3) - Int(v4))
+        XCTAssertEqual(v4.distance(to: v4), Int(v4) - Int(v4))
     }
     
     func testLiteralExpression() throws {

@@ -515,6 +515,20 @@ final class UInt5Tests: XCTestCase {
     
     func testTextExpression() throws {
         
+        let v1: UInt5 = 0b00000
+        let v2: UInt5 = 0b01100
+        let v3: UInt5 = 0b11001
+        let v4: UInt5 = 0b11111
+        
+        XCTAssertEqual(v1.description, "0")
+        XCTAssertEqual(v2.description, "12")
+        XCTAssertEqual(v3.description, "25")
+        XCTAssertEqual(v4.description, "31")
+        
+        XCTAssertEqual(v1.debugDescription, "0 (0b00000 000)")
+        XCTAssertEqual(v2.debugDescription, "12 (0b01100 000)")
+        XCTAssertEqual(v3.debugDescription, "25 (0b11001 000)")
+        XCTAssertEqual(v4.debugDescription, "31 (0b11111 000)")
     }
     
     func testStrideable() throws {

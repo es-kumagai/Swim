@@ -43,12 +43,14 @@ private extension UInt5 {
         Self.preconditionNotOverflow(value, message())
     }
 
+    @inline(__always)
     var storeValueFilledUnusedLSBBitsByOne: Byte {
         
         assertionValidStore(store)
         return store | .mask(forBits: Self.paddingBits)
     }
     
+    @inline(__always)
     var rawValueFilledUnusedMSBBitsByOne: Byte {
         
         assertionValidStore(store)
@@ -62,24 +64,34 @@ extension UInt5 {
     static let maskForStore: Byte = 0b11111000
     static let paddingBits: Int = 3
     
+    @inline(__always)
+    var paddingBits: Int {
+        Self.paddingBits
+    }
+    
+    @inline(__always)
     static func isOverflow(_ value: Byte) -> Bool {
         value & ~maskForRawValue != 0
     }
         
+    @inline(__always)
     static func isOverflow(_ value: some BinaryInteger) -> Bool {
         value & ~numericCast(UInt8(maskForRawValue)) != 0
     }
         
+    @inline(__always)
     var isOverflow: Bool {
         Self.isOverflow(rawValue)
     }
     
+    @inline(__always)
     static func rawValue(fromStoreValue storeValue: Byte) -> Byte {
 
         assertionValidStore(storeValue)
         return storeValue >> paddingBits
     }
     
+    @inline(__always)
     static func storeValue(fromRawValue rawValue: Byte) -> Byte {
         rawValue << paddingBits
     }
@@ -128,7 +140,12 @@ extension UInt5 : CustomStringConvertible {
 extension UInt5 : CustomDebugStringConvertible {
     
     public var debugDescription: String {
-        "\(self) (0b\(String(UInt8(store), radix: 2).paddingTop(with: "0", toLength: 8))"
+        
+        assert(bitWidth + paddingBits == store.bitWidth, "Unexpected bit width.")
+        
+        let bitPattern = String(UInt8(store), radix: 2).paddingTop(with: "0", toLength: 8)
+        
+        return "\(self) (0b\(bitPattern.prefix(bitWidth)) \(bitPattern.suffix(paddingBits)))"
     }
 }
 

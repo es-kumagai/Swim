@@ -615,6 +615,15 @@ final class UInt5Tests: XCTestCase {
     
     func testLiteralExpression() throws {
         
+        let v1: UInt5 = 0b00000
+        let v2: UInt5 = 0b01100
+        let v3: UInt5 = 0b11001
+        let v4: UInt5 = 0b11111
+        
+        XCTAssertEqual(v1, UInt5(rawValue: 0b00000))
+        XCTAssertEqual(v2, UInt5(rawValue: 0b01100))
+        XCTAssertEqual(v3, UInt5(rawValue: 0b11001))
+        XCTAssertEqual(v4, UInt5(rawValue: 0b11111))
     }
     
     func testAdditiveArithmetic() throws {

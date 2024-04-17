@@ -1,9 +1,9 @@
 //
 //  UInt5Tests.swift
-//  
-//  
+//
+//
 //  Created by Tomohiro Kumagai on 2024/04/11
-//  
+//
 //
 
 import XCTest
@@ -628,6 +628,56 @@ final class UInt5Tests: XCTestCase {
     
     func testAdditiveArithmetic() throws {
         
+        func equal(uInt5: UInt5, int: Int, file: StaticString = #file, line: UInt = #line) {
+            XCTAssertEqual(Int(uInt5), int, file: file, line: line)
+        }
+        
+        XCTAssertEqual(UInt5.zero, UInt5(rawValue: 0))
+        
+        equal(uInt5: 0 + 0, int: 0 + 0)
+        equal(uInt5: 1 + 1, int: 1 + 1)
+        equal(uInt5: 10 + 21, int: 10 + 21)
+
+        equal(uInt5: 0 &+ 0, int: 0 &+ 0)
+        equal(uInt5: 1 &+ 1, int: 1 &+ 1)
+        equal(uInt5: 10 &+ 21, int: 10 &+ 21)
+        equal(uInt5: 10 &+ 22, int: 0)
+        equal(uInt5: 11 &+ 22, int: 1)
+
+        equal(uInt5: 0 - 0, int: 0 - 0)
+        equal(uInt5: 10 - 3, int: 10 - 3)
+        equal(uInt5: 20 - 13, int: 20 - 13)
+
+        equal(uInt5: 0 &- 0, int: 0 - 0)
+        equal(uInt5: 10 &- 3, int: 10 - 3)
+        equal(uInt5: 20 &- 13, int: 20 - 13)
+        equal(uInt5: 20 &- 21, int: 31)
+        
+        var value: UInt5 = 0
+        
+        value += 0
+        equal(uInt5: value, int: 0)
+        
+        value += 10
+        equal(uInt5: value, int: 10)
+        
+        value += 21
+        equal(uInt5: value, int: 31)
+        
+        value &+= 3
+        equal(uInt5: value, int: 2)
+
+        value -= 2
+        equal(uInt5: value, int: 0)
+        
+        value &-= 10
+        equal(uInt5: value, int: 22)
+        
+        value -= 12
+        equal(uInt5: value, int: 10)
+        
+        XCTAssertEqual(+value, 10)
+        XCTAssertEqual(+value, value)
     }
     
     func testNumeric() throws {

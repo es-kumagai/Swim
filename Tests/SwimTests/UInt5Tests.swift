@@ -11,6 +11,10 @@ import XCTest
 
 final class UInt5Tests: XCTestCase {
 
+    func equal(uInt5: UInt5, int: Int, file: StaticString = #file, line: UInt = #line) {
+        XCTAssertEqual(Int(uInt5), int, file: file, line: line)
+    }
+    
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.
     }
@@ -628,10 +632,6 @@ final class UInt5Tests: XCTestCase {
     
     func testAdditiveArithmetic() throws {
         
-        func equal(uInt5: UInt5, int: Int, file: StaticString = #file, line: UInt = #line) {
-            XCTAssertEqual(Int(uInt5), int, file: file, line: line)
-        }
-        
         XCTAssertEqual(UInt5.zero, UInt5(rawValue: 0))
         
         equal(uInt5: 0 + 0, int: 0 + 0)
@@ -682,6 +682,99 @@ final class UInt5Tests: XCTestCase {
     
     func testNumeric() throws {
         
+        XCTAssertTrue(UInt5.Magnitude.self == UInt5.self)
+        
+        let i1: Int = 21
+        let i2: Int = -5
+        let i3: UInt = 10
+        let i4: UInt = 32
+        let i5: Int64 = 10
+        let i6: Int64 = -8
+        let i7: UInt64 = 20
+        let i8: UInt64 = 55
+        let i9: Int32 = 8
+        let i10: Int32 = -120
+        let i11: UInt32 = 16
+        let i12: UInt32 = 12000
+        let i13: Int16 = 1
+        let i14: Int16 = -5
+        let i15: UInt16 = 0
+        let i16: UInt16 = 5000
+        let i17: Int8 = 31
+        let i18: Int8 = -50
+        let i19: UInt8 = 31
+        let i20: UInt8 = 255
+        
+        XCTAssertEqual(UInt5(exactly: i1), 21)
+        XCTAssertNil(UInt5(exactly: i2))
+        XCTAssertEqual(UInt5(exactly: i3), 10)
+        XCTAssertNil(UInt5(exactly: i4))
+        XCTAssertEqual(UInt5(exactly: i5), 10)
+        XCTAssertNil(UInt5(exactly: i6))
+        XCTAssertEqual(UInt5(exactly: i7), 20)
+        XCTAssertNil(UInt5(exactly: i8))
+        XCTAssertEqual(UInt5(exactly: i9), 8)
+        XCTAssertNil(UInt5(exactly: i10))
+        XCTAssertEqual(UInt5(exactly: i11), 16)
+        XCTAssertNil(UInt5(exactly: i12))
+        XCTAssertEqual(UInt5(exactly: i13), 1)
+        XCTAssertNil(UInt5(exactly: i14))
+        XCTAssertEqual(UInt5(exactly: i15), 0)
+        XCTAssertNil(UInt5(exactly: i16))
+        XCTAssertEqual(UInt5(exactly: i17), 31)
+        XCTAssertNil(UInt5(exactly: i18))
+        XCTAssertEqual(UInt5(exactly: i19), 31)
+        XCTAssertNil(UInt5(exactly: i20))
+        
+        var u1: UInt5 = 0
+        var u2: UInt5 = 1
+        var u3: UInt5 = 8
+        var u4: UInt5 = 16
+        var u5: UInt5 = 20
+        var u6: UInt5 = 21
+        var u7: UInt5 = 30
+        var u8: UInt5 = 31
+        
+        XCTAssertEqual(u1.magnitude, u1)
+        XCTAssertEqual(u2.magnitude, u2)
+        XCTAssertEqual(u3.magnitude, u3)
+        XCTAssertEqual(u4.magnitude, u4)
+        XCTAssertEqual(u5.magnitude, u5)
+        XCTAssertEqual(u6.magnitude, u6)
+        XCTAssertEqual(u7.magnitude, u7)
+        XCTAssertEqual(u8.magnitude, u8)
+        
+        equal(uInt5: 0 * 0, int: 0 * 0)
+        equal(uInt5: 5 * 0, int: 5 * 0)
+        equal(uInt5: 0 * 4, int: 0 * 4)
+        equal(uInt5: 4 * 4, int: 4 * 4)
+        equal(uInt5: 3 * 8, int: 3 * 8)
+
+        equal(uInt5: 3 &* 5, int: 15)
+        equal(uInt5: 4 &* 8, int: 0)
+        equal(uInt5: 0 &* 0, int: 0)
+        equal(uInt5: 5 &* 0, int: 0)
+        equal(uInt5: 3 &* 2, int: 6)
+        equal(uInt5: 8 &* 8, int: 0)
+        equal(uInt5: 4 &* 9, int: 4)
+        
+        u1 *= 30
+        u2 *= 31
+        u3 *= 3
+        u4 *= 1
+        u5 &*= 2
+        u6 &*= 0
+        u7 &*= 1
+        u8 &*= 3
+        
+        XCTAssertEqual(u1, 0)
+        XCTAssertEqual(u2, 31)
+        XCTAssertEqual(u3, 24)
+        XCTAssertEqual(u4, 16)
+        XCTAssertEqual(u5, 8)
+        XCTAssertEqual(u6, 0)
+        XCTAssertEqual(u7, 30)
+        XCTAssertEqual(u8, 29)
     }
     
     func testBinaryInteger() throws {

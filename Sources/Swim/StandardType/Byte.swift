@@ -523,20 +523,20 @@ public extension Byte {
         Byte(lhs.value ^ rhs.value)
     }
     
-    static func <<= (lhs: inout Byte, rhs: Int) {
+    static func <<= (lhs: inout Byte, rhs: some BinaryInteger) {
         lhs.value <<= rhs
     }
     
-    static func << (lhs: borrowing Byte, rhs: Int) -> Byte {
+    static func << (lhs: borrowing Byte, rhs: some BinaryInteger) -> Byte {
         Byte(lhs.value << rhs)
     }
     
     
-    static func >>= (lhs: inout Byte, rhs: Int) {
+    static func >>= (lhs: inout Byte, rhs: some BinaryInteger) {
         lhs.value >>= rhs
     }
     
-    static func >> (lhs: borrowing Byte, rhs: Int) -> Byte {
+    static func >> (lhs: borrowing Byte, rhs: some BinaryInteger) -> Byte {
         Byte(lhs.value >> rhs)
     }
 }
@@ -556,5 +556,13 @@ public extension UInt5 {
     
     init(byteAsValue byte: Byte) {
         self.init(rawValue: byte)
+    }
+    
+    static func / (lhs: UInt5, rhs: UInt5) -> UInt5 {
+        UInt5(rawValue: Byte(lhs.rawValue.value / rhs.rawValue.value))
+    }
+
+    static func /= (lhs: inout UInt5, rhs: UInt5) {
+        lhs.rawValue.value /= rhs.rawValue.value
     }
 }

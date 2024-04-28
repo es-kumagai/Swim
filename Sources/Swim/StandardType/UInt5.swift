@@ -64,6 +64,8 @@ extension UInt5 {
     static let maskForStore: Byte = 0b11111000
     static let paddingBits: Int = 3
     
+    static let one = UInt5(store: 0b00001_000)
+    
     @inline(__always)
     var paddingBits: Int {
         Self.paddingBits
@@ -166,7 +168,7 @@ extension UInt5 : ExpressibleByIntegerLiteral {
 
 extension UInt5 : AdditiveArithmetic {
 
-    static public var zero = UInt5(store: 0)
+    static public let zero = UInt5(store: 0)
     
     public static func + (lhs: UInt5, rhs: UInt5) -> UInt5 {
         
@@ -225,6 +227,8 @@ extension UInt5 : Numeric {
 
 extension UInt5 : BinaryInteger {
 
+    public static let isSigned = false
+    
     public init(_ source: some BinaryInteger) {
         
         guard let source = UInt5(exactly: source) else {
@@ -264,8 +268,12 @@ extension UInt5 : BinaryInteger {
         self.init(rawValue: value)
     }
 
-    public var words: [UInt] {
-        [UInt(rawValue)]
+    public var words: CollectionOfOne<UInt> {
+        CollectionOfOne(UInt(rawValue))
+    }
+
+    public var trailingZeroBitCount: Int {
+        rawValueFilledUnusedMSBBitsByOne.trailingZeroBitCount
     }
     
     public static func % (lhs: consuming UInt5, rhs: UInt5) -> UInt5 {
@@ -277,22 +285,7 @@ extension UInt5 : BinaryInteger {
     public static func %= (lhs: inout UInt5, rhs: UInt5) {
         lhs.rawValue = Byte(UInt8(lhs.rawValue) % UInt8(rhs.rawValue))
     }
-    
-
-    public static let isSigned = false
-    
-    public var trailingZeroBitCount: Int {
-        rawValueFilledUnusedMSBBitsByOne.trailingZeroBitCount
-    }
-    
-    public static func / (lhs: UInt5, rhs: UInt5) -> UInt5 {
-        UInt5(UInt8(lhs) / UInt8(rhs))
-    }
-
-    public static func /= (lhs: inout UInt5, rhs: UInt5) {
-        lhs = UInt5(UInt8(lhs) / UInt8(rhs))
-    }
-
+        
     public static func &= (lhs: inout UInt5, rhs: UInt5) {
         
         assertionValidStore(lhs)
@@ -315,6 +308,37 @@ extension UInt5 : BinaryInteger {
         assertionValidStore(rhs)
         
         lhs.store ^= rhs.store
+    }
+    
+    public prefix static func ~ (x: UInt5) -> UInt5 {
+        UInt5(store: ~x.store & maskForStore)
+    }
+
+    public static func >> <RHS>(lhs: consuming UInt5, rhs: RHS) -> UInt5 where RHS : BinaryInteger {
+        
+        lhs >>= rhs
+        return lhs
+    }
+
+    public static func >>= <RHS>(lhs: inout UInt5, rhs: RHS) where RHS : BinaryInteger {
+        
+        lhs.store >>= rhs
+        lhs.store &= maskForStore
+    }
+    
+    public static func << <RHS>(lhs: consuming UInt5, rhs: RHS) -> UInt5 where RHS : BinaryInteger {
+        
+        lhs <<= rhs
+        return lhs
+    }
+
+    public static func <<= <RHS>(lhs: inout UInt5, rhs: RHS) where RHS : BinaryInteger {
+        
+        lhs.store <<= rhs
+    }
+    
+    public func signum() -> UInt5 {
+        store == 0 ? .zero : .one
     }
 }
 

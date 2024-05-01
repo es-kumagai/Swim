@@ -128,7 +128,7 @@ extension UInt5 : Sendable, Codable, Hashable {
 extension UInt5 : Comparable {
     
     public static func < (lhs: UInt5, rhs: UInt5) -> Bool {
-        UInt8(lhs) < UInt8(rhs)
+        unsafeBitCast(lhs, to: UInt8.self) < unsafeBitCast(rhs, to: UInt8.self)
     }
 }
 
@@ -358,7 +358,7 @@ extension UInt5 : FixedWidthInteger {
     }
     
     public var nonzeroBitCount: Int {
-        storeValueFilledUnusedLSBBitsByOne.nonZeroBitCount
+        store.nonZeroBitCount
     }
     
     public var leadingZeroBitCount: Int {        
@@ -377,6 +377,13 @@ extension UInt5 : FixedWidthInteger {
         UInt5(truncatingIfNeeded: UInt8(lhs) &- UInt8(rhs))
     }
 
+    public func multipliedFullWidth(by other: UInt5) -> (high: UInt5, low: UInt5) {
+        
+        let value = UInt16(self) &* UInt16(other)
+        
+        return (UInt5(truncatingIfNeeded: value >> UInt5.bitWidth), UInt5(truncatingIfNeeded: value))
+    }
+    
     public func dividingFullWidth(_ dividend: (high: UInt5, low: UInt5)) -> (quotient: UInt5, remainder: UInt5) {
         
         guard self != 0 else {
@@ -447,5 +454,31 @@ extension UInt5 : FixedWidthInteger {
         let rhs = UInt8(rhs)
 
         return (UInt5(lhs % rhs), false)
+    }
+    
+    public static func &>>= (lhs: inout UInt5, rhs: UInt5) {
+        lhs >>= (rhs % UInt5(bitWidth))
+    }
+    
+    public static func &<<= (lhs: inout UInt5, rhs: UInt5) {
+        lhs <<= (rhs % UInt5(bitWidth))
+    }
+    
+    @inlinable public static func random(in range: Range<Self>, using generator: inout some RandomNumberGenerator) -> Self {
+        
+        let lowerBound = UInt8(range.lowerBound)
+        let upperBound = UInt8(range.upperBound)
+        let range = lowerBound ..< upperBound
+        
+        return UInt5(UInt8.random(in: range, using: &generator))
+    }
+    
+    @inlinable public static func random(in range: ClosedRange<Self>, using generator: inout some RandomNumberGenerator) -> Self {
+        
+        let lowerBound = UInt8(range.lowerBound)
+        let upperBound = UInt8(range.upperBound)
+        let range = lowerBound ... upperBound
+        
+        return UInt5(UInt8.random(in: range, using: &generator))
     }
 }

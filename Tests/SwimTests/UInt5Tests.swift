@@ -9,12 +9,45 @@
 import XCTest
 @testable import Swim
 
-final class UInt5Tests: XCTestCase {
-
-    func equal(uInt5: UInt5, int: Int, file: StaticString = #file, line: UInt = #line) {
-        XCTAssertEqual(Int(uInt5), int, file: file, line: line)
+struct FixedNumberGenerator : RandomNumberGenerator {
+    
+    let number: UInt64
+    
+    init(_ number: UInt64) {
+        self.number = number
     }
     
+    func next() -> UInt64 {
+        number
+    }
+}
+
+func XCTAssertEqual(_ lhs: (UInt5, Bool), _ rhs: (UInt5, Bool), file: StaticString = #file, line: UInt = #line) {
+
+    XCTAssertEqual(lhs.0, rhs.0, file: file, line: line)
+    XCTAssertEqual(lhs.1, rhs.1, file: file, line: line)
+}
+
+func XCTAssertEqual(_ lhs: (UInt5, UInt5), _ rhs: (UInt5, UInt5), file: StaticString = #file, line: UInt = #line) {
+
+    XCTAssertEqual(lhs.0, rhs.0, file: file, line: line)
+    XCTAssertEqual(lhs.1, rhs.1, file: file, line: line)
+}
+
+func XCTAssertArithmetic(uInt5: UInt5, int: Int, file: StaticString = #file, line: UInt = #line) {
+    XCTAssertEqual(Int(uInt5), int, file: file, line: line)
+}
+
+func XCTAssertShift<Shift : BinaryInteger>(operands immutableOperation: (UInt5, Shift) -> UInt5, _ mutableOperation: (inout UInt5, Shift) -> Void, value: consuming UInt5, shift: Shift, expected: UInt5, file: StaticString = #filePath, line: UInt = #line) {
+    
+    XCTAssertEqual(immutableOperation(value, shift), expected, file: file, line: line)
+    
+    mutableOperation(&value, shift)
+    XCTAssertEqual(value, expected, file: file, line: line)
+}
+
+final class UInt5Tests: XCTestCase {
+
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.
     }
@@ -25,13 +58,8 @@ final class UInt5Tests: XCTestCase {
 
     func testBasics() throws {
 
-        XCTFail("Now implementing.")
-        
         XCTAssertEqual(UInt5.one, UInt5(1))
         XCTAssertEqual(UInt5.one.store, 0b00001_000)
-        
-        
-        
     }
     
     func testUtilities() throws {
@@ -640,47 +668,47 @@ final class UInt5Tests: XCTestCase {
         
         XCTAssertEqual(UInt5.zero, UInt5(rawValue: 0))
         
-        equal(uInt5: 0 + 0, int: 0 + 0)
-        equal(uInt5: 1 + 1, int: 1 + 1)
-        equal(uInt5: 10 + 21, int: 10 + 21)
+        XCTAssertArithmetic(uInt5: 0 + 0, int: 0 + 0)
+        XCTAssertArithmetic(uInt5: 1 + 1, int: 1 + 1)
+        XCTAssertArithmetic(uInt5: 10 + 21, int: 10 + 21)
 
-        equal(uInt5: 0 &+ 0, int: 0 &+ 0)
-        equal(uInt5: 1 &+ 1, int: 1 &+ 1)
-        equal(uInt5: 10 &+ 21, int: 10 &+ 21)
-        equal(uInt5: 10 &+ 22, int: 0)
-        equal(uInt5: 11 &+ 22, int: 1)
+        XCTAssertArithmetic(uInt5: 0 &+ 0, int: 0 &+ 0)
+        XCTAssertArithmetic(uInt5: 1 &+ 1, int: 1 &+ 1)
+        XCTAssertArithmetic(uInt5: 10 &+ 21, int: 10 &+ 21)
+        XCTAssertArithmetic(uInt5: 10 &+ 22, int: 0)
+        XCTAssertArithmetic(uInt5: 11 &+ 22, int: 1)
 
-        equal(uInt5: 0 - 0, int: 0 - 0)
-        equal(uInt5: 10 - 3, int: 10 - 3)
-        equal(uInt5: 20 - 13, int: 20 - 13)
+        XCTAssertArithmetic(uInt5: 0 - 0, int: 0 - 0)
+        XCTAssertArithmetic(uInt5: 10 - 3, int: 10 - 3)
+        XCTAssertArithmetic(uInt5: 20 - 13, int: 20 - 13)
 
-        equal(uInt5: 0 &- 0, int: 0 - 0)
-        equal(uInt5: 10 &- 3, int: 10 - 3)
-        equal(uInt5: 20 &- 13, int: 20 - 13)
-        equal(uInt5: 20 &- 21, int: 31)
+        XCTAssertArithmetic(uInt5: 0 &- 0, int: 0 - 0)
+        XCTAssertArithmetic(uInt5: 10 &- 3, int: 10 - 3)
+        XCTAssertArithmetic(uInt5: 20 &- 13, int: 20 - 13)
+        XCTAssertArithmetic(uInt5: 20 &- 21, int: 31)
         
         var value: UInt5 = 0
         
         value += 0
-        equal(uInt5: value, int: 0)
+        XCTAssertArithmetic(uInt5: value, int: 0)
         
         value += 10
-        equal(uInt5: value, int: 10)
+        XCTAssertArithmetic(uInt5: value, int: 10)
         
         value += 21
-        equal(uInt5: value, int: 31)
+        XCTAssertArithmetic(uInt5: value, int: 31)
         
         value &+= 3
-        equal(uInt5: value, int: 2)
+        XCTAssertArithmetic(uInt5: value, int: 2)
 
         value -= 2
-        equal(uInt5: value, int: 0)
+        XCTAssertArithmetic(uInt5: value, int: 0)
         
         value &-= 10
-        equal(uInt5: value, int: 22)
+        XCTAssertArithmetic(uInt5: value, int: 22)
         
         value -= 12
-        equal(uInt5: value, int: 10)
+        XCTAssertArithmetic(uInt5: value, int: 10)
         
         XCTAssertEqual(+value, 10)
         XCTAssertEqual(+value, value)
@@ -750,19 +778,19 @@ final class UInt5Tests: XCTestCase {
         XCTAssertEqual(u7.magnitude, u7)
         XCTAssertEqual(u8.magnitude, u8)
         
-        equal(uInt5: 0 * 0, int: 0 * 0)
-        equal(uInt5: 5 * 0, int: 5 * 0)
-        equal(uInt5: 0 * 4, int: 0 * 4)
-        equal(uInt5: 4 * 4, int: 4 * 4)
-        equal(uInt5: 3 * 8, int: 3 * 8)
+        XCTAssertArithmetic(uInt5: 0 * 0, int: 0 * 0)
+        XCTAssertArithmetic(uInt5: 5 * 0, int: 5 * 0)
+        XCTAssertArithmetic(uInt5: 0 * 4, int: 0 * 4)
+        XCTAssertArithmetic(uInt5: 4 * 4, int: 4 * 4)
+        XCTAssertArithmetic(uInt5: 3 * 8, int: 3 * 8)
 
-        equal(uInt5: 3 &* 5, int: 15)
-        equal(uInt5: 4 &* 8, int: 0)
-        equal(uInt5: 0 &* 0, int: 0)
-        equal(uInt5: 5 &* 0, int: 0)
-        equal(uInt5: 3 &* 2, int: 6)
-        equal(uInt5: 8 &* 8, int: 0)
-        equal(uInt5: 4 &* 9, int: 4)
+        XCTAssertArithmetic(uInt5: 3 &* 5, int: 15)
+        XCTAssertArithmetic(uInt5: 4 &* 8, int: 0)
+        XCTAssertArithmetic(uInt5: 0 &* 0, int: 0)
+        XCTAssertArithmetic(uInt5: 5 &* 0, int: 0)
+        XCTAssertArithmetic(uInt5: 3 &* 2, int: 6)
+        XCTAssertArithmetic(uInt5: 8 &* 8, int: 0)
+        XCTAssertArithmetic(uInt5: 4 &* 9, int: 4)
         
         u1 *= 30
         u2 *= 31
@@ -1087,14 +1115,6 @@ final class UInt5Tests: XCTestCase {
             XCTAssertEqual(value, expected, file: file, line: line)
         }
         
-        func test<Shift : BinaryInteger>(operands immutableOperation: (UInt5, Shift) -> UInt5, _ mutableOperation: (inout UInt5, Shift) -> Void, value: consuming UInt5, shift: Shift, expected: UInt5, file: StaticString = #filePath, line: UInt = #line) {
-            
-            XCTAssertEqual(immutableOperation(value, shift), expected, file: file, line: line)
-            
-            mutableOperation(&value, shift)
-            XCTAssertEqual(value, expected, file: file, line: line)
-        }
-        
         test(operands: &, &=, value: y1, mask: 0b01010, expected: 0b01010)
         test(operands: &, &=, value: y1, mask: 0b11000, expected: 0b11000)
         test(operands: &, &=, value: y1, mask: 0b00011, expected: 0b00011)
@@ -1184,61 +1204,61 @@ final class UInt5Tests: XCTestCase {
         XCTAssertEqual(~y3, 0b01101)
         XCTAssertEqual(~y4, 0b11111)
         
-        test(operands: >>, >>=, value: y1, shift: 0 as Int, expected: y1)
-        test(operands: >>, >>=, value: y1, shift: 1 as UInt8, expected: 0b01111)
-        test(operands: >>, >>=, value: y1, shift: 3 as Int16, expected: 0b00011)
-        test(operands: >>, >>=, value: y1, shift: 4 as UInt5, expected: 0b00001)
-        test(operands: >>, >>=, value: y1, shift: 5 as UInt32, expected: 0b00000)
-        test(operands: >>, >>=, value: y1, shift: 7 as Int8, expected: 0b00000)
+        XCTAssertShift(operands: >>, >>=, value: y1, shift: 0 as Int, expected: y1)
+        XCTAssertShift(operands: >>, >>=, value: y1, shift: 1 as UInt8, expected: 0b01111)
+        XCTAssertShift(operands: >>, >>=, value: y1, shift: 3 as Int16, expected: 0b00011)
+        XCTAssertShift(operands: >>, >>=, value: y1, shift: 4 as UInt5, expected: 0b00001)
+        XCTAssertShift(operands: >>, >>=, value: y1, shift: 5 as UInt32, expected: 0b00000)
+        XCTAssertShift(operands: >>, >>=, value: y1, shift: 7 as Int8, expected: 0b00000)
         
-        test(operands: >>, >>=, value: y2, shift: 0 as Int, expected: y2)
-        test(operands: >>, >>=, value: y2, shift: 1 as UInt8, expected: 0b00110)
-        test(operands: >>, >>=, value: y2, shift: 3 as Int16, expected: 0b00001)
-        test(operands: >>, >>=, value: y2, shift: 4 as UInt5, expected: 0b00000)
-        test(operands: >>, >>=, value: y2, shift: 5 as UInt32, expected: 0b00000)
-        test(operands: >>, >>=, value: y2, shift: 7 as Int8, expected: 0b00000)
+        XCTAssertShift(operands: >>, >>=, value: y2, shift: 0 as Int, expected: y2)
+        XCTAssertShift(operands: >>, >>=, value: y2, shift: 1 as UInt8, expected: 0b00110)
+        XCTAssertShift(operands: >>, >>=, value: y2, shift: 3 as Int16, expected: 0b00001)
+        XCTAssertShift(operands: >>, >>=, value: y2, shift: 4 as UInt5, expected: 0b00000)
+        XCTAssertShift(operands: >>, >>=, value: y2, shift: 5 as UInt32, expected: 0b00000)
+        XCTAssertShift(operands: >>, >>=, value: y2, shift: 7 as Int8, expected: 0b00000)
         
-        test(operands: >>, >>=, value: y3, shift: 0 as Int, expected: y3)
-        test(operands: >>, >>=, value: y3, shift: 1 as UInt8, expected: 0b01001)
-        test(operands: >>, >>=, value: y3, shift: 3 as Int16, expected: 0b00010)
-        test(operands: >>, >>=, value: y3, shift: 4 as UInt5, expected: 0b00001)
-        test(operands: >>, >>=, value: y3, shift: 5 as UInt32, expected: 0b00000)
-        test(operands: >>, >>=, value: y3, shift: 7 as Int8, expected: 0b00000)
+        XCTAssertShift(operands: >>, >>=, value: y3, shift: 0 as Int, expected: y3)
+        XCTAssertShift(operands: >>, >>=, value: y3, shift: 1 as UInt8, expected: 0b01001)
+        XCTAssertShift(operands: >>, >>=, value: y3, shift: 3 as Int16, expected: 0b00010)
+        XCTAssertShift(operands: >>, >>=, value: y3, shift: 4 as UInt5, expected: 0b00001)
+        XCTAssertShift(operands: >>, >>=, value: y3, shift: 5 as UInt32, expected: 0b00000)
+        XCTAssertShift(operands: >>, >>=, value: y3, shift: 7 as Int8, expected: 0b00000)
         
-        test(operands: >>, >>=, value: y4, shift: 0 as Int, expected: y4)
-        test(operands: >>, >>=, value: y4, shift: 1 as UInt8, expected: 0b00000)
-        test(operands: >>, >>=, value: y4, shift: 3 as Int16, expected: 0b00000)
-        test(operands: >>, >>=, value: y4, shift: 4 as UInt5, expected: 0b00000)
-        test(operands: >>, >>=, value: y4, shift: 5 as UInt32, expected: 0b00000)
-        test(operands: >>, >>=, value: y4, shift: 7 as Int8, expected: 0b00000)
+        XCTAssertShift(operands: >>, >>=, value: y4, shift: 0 as Int, expected: y4)
+        XCTAssertShift(operands: >>, >>=, value: y4, shift: 1 as UInt8, expected: 0b00000)
+        XCTAssertShift(operands: >>, >>=, value: y4, shift: 3 as Int16, expected: 0b00000)
+        XCTAssertShift(operands: >>, >>=, value: y4, shift: 4 as UInt5, expected: 0b00000)
+        XCTAssertShift(operands: >>, >>=, value: y4, shift: 5 as UInt32, expected: 0b00000)
+        XCTAssertShift(operands: >>, >>=, value: y4, shift: 7 as Int8, expected: 0b00000)
         
-        test(operands: <<, <<=, value: y1, shift: 0 as Int, expected: y1)
-        test(operands: <<, <<=, value: y1, shift: 1 as UInt8, expected: 0b11110)
-        test(operands: <<, <<=, value: y1, shift: 3 as Int16, expected: 0b11000)
-        test(operands: <<, <<=, value: y1, shift: 4 as UInt5, expected: 0b10000)
-        test(operands: <<, <<=, value: y1, shift: 5 as UInt32, expected: 0b00000)
-        test(operands: <<, <<=, value: y1, shift: 7 as Int8, expected: 0b00000)
+        XCTAssertShift(operands: <<, <<=, value: y1, shift: 0 as Int, expected: y1)
+        XCTAssertShift(operands: <<, <<=, value: y1, shift: 1 as UInt8, expected: 0b11110)
+        XCTAssertShift(operands: <<, <<=, value: y1, shift: 3 as Int16, expected: 0b11000)
+        XCTAssertShift(operands: <<, <<=, value: y1, shift: 4 as UInt5, expected: 0b10000)
+        XCTAssertShift(operands: <<, <<=, value: y1, shift: 5 as UInt32, expected: 0b00000)
+        XCTAssertShift(operands: <<, <<=, value: y1, shift: 7 as Int8, expected: 0b00000)
         
-        test(operands: <<, <<=, value: y2, shift: 0 as Int, expected: y2)
-        test(operands: <<, <<=, value: y2, shift: 1 as UInt8, expected: 0b11000)
-        test(operands: <<, <<=, value: y2, shift: 3 as Int16, expected: 0b00000)
-        test(operands: <<, <<=, value: y2, shift: 4 as UInt5, expected: 0b00000)
-        test(operands: <<, <<=, value: y2, shift: 5 as UInt32, expected: 0b00000)
-        test(operands: <<, <<=, value: y2, shift: 7 as Int8, expected: 0b00000)
+        XCTAssertShift(operands: <<, <<=, value: y2, shift: 0 as Int, expected: y2)
+        XCTAssertShift(operands: <<, <<=, value: y2, shift: 1 as UInt8, expected: 0b11000)
+        XCTAssertShift(operands: <<, <<=, value: y2, shift: 3 as Int16, expected: 0b00000)
+        XCTAssertShift(operands: <<, <<=, value: y2, shift: 4 as UInt5, expected: 0b00000)
+        XCTAssertShift(operands: <<, <<=, value: y2, shift: 5 as UInt32, expected: 0b00000)
+        XCTAssertShift(operands: <<, <<=, value: y2, shift: 7 as Int8, expected: 0b00000)
         
-        test(operands: <<, <<=, value: y3, shift: 0 as Int, expected: y3)
-        test(operands: <<, <<=, value: y3, shift: 1 as UInt8, expected: 0b00100)
-        test(operands: <<, <<=, value: y3, shift: 3 as Int16, expected: 0b10000)
-        test(operands: <<, <<=, value: y3, shift: 4 as UInt5, expected: 0b00000)
-        test(operands: <<, <<=, value: y3, shift: 5 as UInt32, expected: 0b00000)
-        test(operands: <<, <<=, value: y3, shift: 7 as Int8, expected: 0b00000)
+        XCTAssertShift(operands: <<, <<=, value: y3, shift: 0 as Int, expected: y3)
+        XCTAssertShift(operands: <<, <<=, value: y3, shift: 1 as UInt8, expected: 0b00100)
+        XCTAssertShift(operands: <<, <<=, value: y3, shift: 3 as Int16, expected: 0b10000)
+        XCTAssertShift(operands: <<, <<=, value: y3, shift: 4 as UInt5, expected: 0b00000)
+        XCTAssertShift(operands: <<, <<=, value: y3, shift: 5 as UInt32, expected: 0b00000)
+        XCTAssertShift(operands: <<, <<=, value: y3, shift: 7 as Int8, expected: 0b00000)
         
-        test(operands: <<, <<=, value: y4, shift: 0 as Int, expected: y4)
-        test(operands: <<, <<=, value: y4, shift: 1 as UInt8, expected: 0b00000)
-        test(operands: <<, <<=, value: y4, shift: 3 as Int16, expected: 0b00000)
-        test(operands: <<, <<=, value: y4, shift: 4 as UInt5, expected: 0b00000)
-        test(operands: <<, <<=, value: y4, shift: 5 as UInt32, expected: 0b00000)
-        test(operands: <<, <<=, value: y4, shift: 7 as Int8, expected: 0b00000)
+        XCTAssertShift(operands: <<, <<=, value: y4, shift: 0 as Int, expected: y4)
+        XCTAssertShift(operands: <<, <<=, value: y4, shift: 1 as UInt8, expected: 0b00000)
+        XCTAssertShift(operands: <<, <<=, value: y4, shift: 3 as Int16, expected: 0b00000)
+        XCTAssertShift(operands: <<, <<=, value: y4, shift: 4 as UInt5, expected: 0b00000)
+        XCTAssertShift(operands: <<, <<=, value: y4, shift: 5 as UInt32, expected: 0b00000)
+        XCTAssertShift(operands: <<, <<=, value: y4, shift: 7 as Int8, expected: 0b00000)
 
         XCTAssertTrue(v1.isMultiple(of: 0))
         XCTAssertTrue(v1.isMultiple(of: 1))
@@ -1318,5 +1338,191 @@ final class UInt5Tests: XCTestCase {
     
     func testFixedWidthInteger() throws {
         
+        XCTAssertEqual(UInt5.bitWidth, 5)
+        XCTAssertEqual(UInt5.max, 0b11111)
+        XCTAssertEqual(UInt5.max.store, 0b11111_000)
+        XCTAssertEqual(UInt5.min, 0b00000)
+        XCTAssertEqual(UInt5.min.store, 0b00000_000)
+
+        let v1: UInt5 = 0
+        let v2: UInt5 = 1
+        let v3: UInt5 = 10
+        let v4: UInt5 = 11
+        let v5: UInt5 = 20
+
+        XCTAssertEqual(v1.addingReportingOverflow(0), (0, false))
+        XCTAssertEqual(v2.addingReportingOverflow(1), (2, false))
+        XCTAssertEqual(v3.addingReportingOverflow(21), (31, false))
+        XCTAssertEqual(v3.addingReportingOverflow(22), (0, true))
+        XCTAssertEqual(v4.addingReportingOverflow(22), (1, true))
+        XCTAssertEqual(v5.addingReportingOverflow(20), (8, true))
+
+        XCTAssertEqual(v1.subtractingReportingOverflow(0), (0, false))
+        XCTAssertEqual(v2.subtractingReportingOverflow(3), (30, true))
+        XCTAssertEqual(v3.subtractingReportingOverflow(13), (29, true))
+        XCTAssertEqual(v3.subtractingReportingOverflow(21), (21, true))
+        XCTAssertEqual(v4.subtractingReportingOverflow(20), (23, true))
+        XCTAssertEqual(v5.subtractingReportingOverflow(4), (16, false))
+        
+        XCTAssertEqual(v1.multipliedReportingOverflow(by: 0), (0, false))
+        XCTAssertEqual(v2.multipliedReportingOverflow(by: 3), (3, false))
+        XCTAssertEqual(v3.multipliedReportingOverflow(by: 13), (UInt5(truncatingIfNeeded: (Int(v3) * 13) % 32), true))
+        XCTAssertEqual(v3.multipliedReportingOverflow(by: 21), (UInt5(truncatingIfNeeded: (Int(v3) * 21) % 32), true))
+        XCTAssertEqual(v4.multipliedReportingOverflow(by: 20), (UInt5(truncatingIfNeeded: (Int(v4) * 20) % 32), true))
+        XCTAssertEqual(v5.multipliedReportingOverflow(by: 4), (UInt5(truncatingIfNeeded: (Int(v5) * 20) % 32), true))
+        
+        XCTAssertEqual(v1.dividedReportingOverflow(by: 1), (0, false))
+        XCTAssertEqual(v2.dividedReportingOverflow(by: 3), (0, false))
+        XCTAssertEqual(v3.dividedReportingOverflow(by: 13), (0, false))
+        XCTAssertEqual(v3.dividedReportingOverflow(by: 21), (0, false))
+        XCTAssertEqual(v4.dividedReportingOverflow(by: 5), (2, false))
+        XCTAssertEqual(v5.dividedReportingOverflow(by: 4), (5, false))
+        
+        XCTAssertEqual(v1.remainderReportingOverflow(dividingBy: 1), (0, false))
+        XCTAssertEqual(v2.remainderReportingOverflow(dividingBy: 3), (1, false))
+        XCTAssertEqual(v3.remainderReportingOverflow(dividingBy: 13), (10, false))
+        XCTAssertEqual(v3.remainderReportingOverflow(dividingBy: 21), (10, false))
+        XCTAssertEqual(v4.remainderReportingOverflow(dividingBy: 5), (1, false))
+        XCTAssertEqual(v5.remainderReportingOverflow(dividingBy: 4), (0, false))
+        
+        XCTAssertEqual(v1.multipliedFullWidth(by: 0), (0, 0))
+        XCTAssertEqual(v2.multipliedFullWidth(by: 3), (0, 3))
+        XCTAssertEqual(v3.multipliedFullWidth(by: 13), (4, 2))
+        XCTAssertEqual(v3.multipliedFullWidth(by: 21), (6, 18))
+        XCTAssertEqual(v4.multipliedFullWidth(by: 20), (6, 28))
+        XCTAssertEqual(v5.multipliedFullWidth(by: 4), (2, 16))
+        
+        XCTAssertEqual(v2.dividingFullWidth((12, 22)), (UInt5(truncatingIfNeeded: 406), 0))
+        XCTAssertEqual(v3.dividingFullWidth((12, 22)), (8, 6))
+        XCTAssertEqual(v4.dividingFullWidth((12, 22)), (4, 10))
+        XCTAssertEqual(v5.dividingFullWidth((12, 22)), (20, 6))
+
+        XCTAssertEqual(v1.nonzeroBitCount, 0)
+        XCTAssertEqual(v2.nonzeroBitCount, 1)
+        XCTAssertEqual(v3.nonzeroBitCount, 2)
+        XCTAssertEqual(v4.nonzeroBitCount, 3)
+        XCTAssertEqual(v5.nonzeroBitCount, 2)
+
+        XCTAssertEqual(v1.leadingZeroBitCount, 5)
+        XCTAssertEqual(v2.leadingZeroBitCount, 4)
+        XCTAssertEqual(v3.leadingZeroBitCount, 1)
+        XCTAssertEqual(v4.leadingZeroBitCount, 1)
+        XCTAssertEqual(v5.leadingZeroBitCount, 0)
+
+        XCTAssertEqual(UInt5(bigEndian: 0), UInt5(0))
+        XCTAssertEqual(UInt5(bigEndian: 1), UInt5(1))
+        XCTAssertEqual(UInt5(bigEndian: 8), UInt5(8))
+        XCTAssertEqual(UInt5(bigEndian: 13), UInt5(13))
+        XCTAssertEqual(UInt5(bigEndian: 31), UInt5(31))
+
+        XCTAssertEqual(UInt5(littleEndian: 0), UInt5(0))
+        XCTAssertEqual(UInt5(littleEndian: 1), UInt5(1))
+        XCTAssertEqual(UInt5(littleEndian: 8), UInt5(8))
+        XCTAssertEqual(UInt5(littleEndian: 13), UInt5(13))
+        XCTAssertEqual(UInt5(littleEndian: 31), UInt5(31))
+
+        XCTAssertEqual(v1.bigEndian, v1)
+        XCTAssertEqual(v2.bigEndian, v2)
+        XCTAssertEqual(v3.bigEndian, v3)
+        XCTAssertEqual(v4.bigEndian, v4)
+        XCTAssertEqual(v5.bigEndian, v5)
+
+        XCTAssertEqual(v1.littleEndian, v1)
+        XCTAssertEqual(v2.littleEndian, v2)
+        XCTAssertEqual(v3.littleEndian, v3)
+        XCTAssertEqual(v4.littleEndian, v4)
+        XCTAssertEqual(v5.littleEndian, v5)
+
+        XCTAssertEqual(v1.byteSwapped, v1)
+        XCTAssertEqual(v2.byteSwapped, v2)
+        XCTAssertEqual(v3.byteSwapped, v3)
+        XCTAssertEqual(v4.byteSwapped, v4)
+        XCTAssertEqual(v5.byteSwapped, v5)
+
+        XCTAssertShift(operands: &>>, &>>=, value: v4, shift: 0 as Int, expected: 0b01011)
+        XCTAssertShift(operands: &>>, &>>=, value: v4, shift: 1 as UInt8, expected: 0b00101)
+        XCTAssertShift(operands: &>>, &>>=, value: v4, shift: 3 as Int16, expected: 0b00001)
+        XCTAssertShift(operands: &>>, &>>=, value: v4, shift: 4 as UInt5, expected: 0b00000)
+        XCTAssertShift(operands: &>>, &>>=, value: v4, shift: 5 as UInt32, expected: 0b01011 >> 0)
+        XCTAssertShift(operands: &>>, &>>=, value: v4, shift: 7 as Int8, expected: v4 >> 2)
+        
+        XCTAssertShift(operands: &<<, &<<=, value: v4, shift: 0 as Int, expected: 0b01011)
+        XCTAssertShift(operands: &<<, &<<=, value: v4, shift: 1 as UInt8, expected: 0b10110)
+        XCTAssertShift(operands: &<<, &<<=, value: v4, shift: 3 as Int16, expected: 0b11000)
+        XCTAssertShift(operands: &<<, &<<=, value: v4, shift: 4 as UInt5, expected: 0b10000)
+        XCTAssertShift(operands: &<<, &<<=, value: v4, shift: 5 as UInt32, expected: 0b01011 << 0)
+        XCTAssertShift(operands: &<<, &<<=, value: v4, shift: 7 as Int8, expected: 0b01011 << 2)
+        
+        XCTAssertEqual(UInt5("0", radix: 10), 0)
+        XCTAssertEqual(UInt5("1", radix: 10), 1)
+        XCTAssertEqual(UInt5("10", radix: 10), 10)
+        XCTAssertEqual(UInt5("11", radix: 10), 11)
+        XCTAssertEqual(UInt5("20", radix: 10), 20)
+        XCTAssertEqual(UInt5("31", radix: 10), 31)
+
+        XCTAssertEqual(UInt5("0", radix: 2), 0)
+        XCTAssertEqual(UInt5("1", radix: 2), 1)
+        XCTAssertEqual(UInt5("10", radix: 2), 2)
+        XCTAssertEqual(UInt5("11", radix: 2), 3)
+        XCTAssertEqual(UInt5("11111", radix: 2), 31)
+        XCTAssertEqual(UInt5("12", radix: 2), nil)
+
+        XCTAssertEqual(UInt5("0", radix: 8), 0)
+        XCTAssertEqual(UInt5("1", radix: 8), 1)
+        XCTAssertEqual(UInt5("10", radix: 8), 8)
+        XCTAssertEqual(UInt5("11", radix: 8), 9)
+        XCTAssertEqual(UInt5("20", radix: 8), 16)
+        XCTAssertEqual(UInt5("37", radix: 8), 31)
+        XCTAssertEqual(UInt5("28", radix: 8), nil)
+
+        XCTAssertEqual(UInt5("0", radix: 16), 0)
+        XCTAssertEqual(UInt5("1", radix: 16), 1)
+        XCTAssertEqual(UInt5("10", radix: 16), 16)
+        XCTAssertEqual(UInt5("11", radix: 16), 17)
+        XCTAssertEqual(UInt5("1F", radix: 16), 31)
+        XCTAssertEqual(UInt5("1G", radix: 16), nil)
+
+        XCTAssertEqual(UInt5("0"), 0)
+        XCTAssertEqual(UInt5("1"), 1)
+        XCTAssertEqual(UInt5("10"), 10)
+        XCTAssertEqual(UInt5("11"), 11)
+        XCTAssertEqual(UInt5("20"), 20)
+        XCTAssertEqual(UInt5("31"), 31)
+        XCTAssertEqual(UInt5("31x"), nil)
+
+        XCTAssertEqual(v1.bitWidth, 5)
+        XCTAssertEqual(v2.bitWidth, 5)
+        XCTAssertEqual(v3.bitWidth, 5)
+        XCTAssertEqual(v4.bitWidth, 5)
+        XCTAssertEqual(v5.bitWidth, 5)
+        
+        var generator1 = FixedNumberGenerator(100)
+        var generator2 = FixedNumberGenerator(30210)
+        var generator3 = FixedNumberGenerator(1002040601)
+
+        XCTAssertEqual(UInt5.random(in: 0..<5, using: &generator1), 1)
+        XCTAssertEqual(UInt5.random(in: 0..<5, using: &generator2), 0)
+        XCTAssertEqual(UInt5.random(in: 0..<5, using: &generator3), 0)
+        
+        XCTAssertEqual(UInt5.random(in: 8..<13, using: &generator1), 9)
+        XCTAssertEqual(UInt5.random(in: 8..<13, using: &generator2), 8)
+        XCTAssertEqual(UInt5.random(in: 8..<13, using: &generator3), 8)
+
+        XCTAssertEqual(UInt5.random(in: 12..<31, using: &generator1), 19)
+        XCTAssertEqual(UInt5.random(in: 12..<31, using: &generator2), 12)
+        XCTAssertEqual(UInt5.random(in: 12..<31, using: &generator3), 13)
+
+        XCTAssertEqual(UInt5.random(in: 0...5, using: &generator1), 2)
+        XCTAssertEqual(UInt5.random(in: 0...5, using: &generator2), 0)
+        XCTAssertEqual(UInt5.random(in: 0...5, using: &generator3), 0)
+        
+        XCTAssertEqual(UInt5.random(in: 8...13, using: &generator1), 10)
+        XCTAssertEqual(UInt5.random(in: 8...13, using: &generator2), 8)
+        XCTAssertEqual(UInt5.random(in: 8...13, using: &generator3), 8)
+
+        XCTAssertEqual(UInt5.random(in: 12...31, using: &generator1), 19)
+        XCTAssertEqual(UInt5.random(in: 12...31, using: &generator2), 12)
+        XCTAssertEqual(UInt5.random(in: 12...31, using: &generator3), 13)
+
     }
 }

@@ -12,7 +12,7 @@ public struct BitArray {
     private(set) var effectiveBitWidth: Int
 }
 
-extension BitArray : MutableCollection, BidirectionalCollection {
+extension BitArray : MutableCollection, RandomAccessCollection {
     
     public var startIndex: Index {
         Index(0)
@@ -129,15 +129,21 @@ extension BitArray {
         storage.bitCount - effectiveBitWidth
     }
     
-    var lastByteIndex: Int {
+    var lastByteIndex: Int? {
 
-        preconditionNotEmpty()
+        guard !isEmpty else {
+            return nil
+        }
+
         return endIndex.byteIndex
     }
     
-    var lastByte: Byte {
-        
-        preconditionNotEmpty()
+    var lastByte: Byte? {
+
+        guard let lastByteIndex else {
+            return nil
+        }
+
         return storage[lastByteIndex] & ~Byte.uncheckedTruncatingMask(forBits: endIndex.msbBitIndex)
     }
     
@@ -148,9 +154,7 @@ extension BitArray {
     }
     
     var endBitIndexOfLastByte: Int {
-        
-        preconditionNotEmpty()
-        return endIndex.msbBitIndex
+        endIndex.msbBitIndex
     }
     
     mutating func extendStorageIfNeeded(necessaryBits n: Int) {
@@ -219,7 +223,7 @@ extension BitArray {
             return
         }
         
-        let storeByteIndex = lastByteIndex
+        let storeByteIndex = lastByteIndex ?? 0
         let storeBitIndex = endBitIndexOfLastByte
         let storeWidth = Byte.bitWidth - storeBitIndex
         let insignificantBits = Byte.bitWidth - significantBits
@@ -317,6 +321,12 @@ public extension BitArray {
         
         self.init(storage: [], effectiveBitWidth: 0)
         appendBits(bits, eachSignificantBitsInMSB: eachSignificantBits)
+    }
+    
+    init(_ bits: Byte, significantBitsInMSB significantBits: Int) {
+        
+        self.init(storage: [], effectiveBitWidth: 0)
+        appendBits(bits, significantBitsInMSB: significantBits)
     }
     
     subscript(bitsFromMSB position: Int) -> Bit {

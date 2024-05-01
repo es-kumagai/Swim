@@ -519,6 +519,10 @@ final class BitArrayTests: XCTestCase {
         XCTAssertEqual(UInt8(byte1), 0)
         XCTAssertEqual(UInt8(byte2), 255)
         XCTAssertEqual(UInt8(byte3), 8)
+        
+        let byte4 = Byte(truncatingIfNeeded: 0b01001110011100110)
+        
+        XCTAssertEqual(byte4, 0b11100110)
     }
     
     func testByteBitCount() throws {
@@ -536,6 +540,14 @@ final class BitArrayTests: XCTestCase {
         XCTAssertEqual(byte3.nonZeroBitCount, 1)
         XCTAssertEqual(byte3.leadingZeroBitCount, 4)
         XCTAssertEqual(byte3.trailingZeroBitCount, 3)
+    }
+    
+    func testByteNumericConversion() throws {
+        
+        let byte: Byte = 0b10110011
+        
+        XCTAssertEqual(UInt8(byte), UInt8(0b10110011))
+        XCTAssertEqual(UInt(byte), UInt(0b10110011))
     }
     
     func testByteTextConversion() throws {

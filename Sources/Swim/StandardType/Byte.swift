@@ -30,6 +30,13 @@ public extension UInt8 {
     }
 }
 
+public extension UInt {
+    
+    init(_ byte: Byte) {
+        self = UInt(byte.value)
+    }
+}
+
 public extension String {
     
     init(_ byte: Byte) {
@@ -96,6 +103,10 @@ private extension Byte {
 
 public extension Byte {
     
+    init(truncatingIfNeeded value: some BinaryInteger) {
+        self.init(UInt8(truncatingIfNeeded: value))
+    }
+    
     /// [Swim] The number of bits used to represent a `Byte`.
     ///
     /// For a `Byte`, this property always returns 8, as a byte consists of 8 bits.
@@ -127,7 +138,12 @@ public extension Byte {
     func binaryDescription(withPrefix prefix: some StringProtocol = String("")) -> String {
         prefix + String(value, radix: 2).paddingTop(with: "0", toLength: 8)
     }
-    
+
+    /// [Swim] A string representation of the `Byte` in decimal format.
+    var decimalDescription: String {
+        value.description
+    }
+
     /// [Swim] A string representation of the `Byte` in hexadecimal format.
     var hexadecimalDescription: String {
         hexadecimalDescription(withPrefix: "", uppercase: true)
@@ -507,20 +523,46 @@ public extension Byte {
         Byte(lhs.value ^ rhs.value)
     }
     
-    static func <<= (lhs: inout Byte, rhs: Int) {
+    static func <<= (lhs: inout Byte, rhs: some BinaryInteger) {
         lhs.value <<= rhs
     }
     
-    static func << (lhs: borrowing Byte, rhs: Int) -> Byte {
+    static func << (lhs: borrowing Byte, rhs: some BinaryInteger) -> Byte {
         Byte(lhs.value << rhs)
     }
     
     
-    static func >>= (lhs: inout Byte, rhs: Int) {
+    static func >>= (lhs: inout Byte, rhs: some BinaryInteger) {
         lhs.value >>= rhs
     }
     
-    static func >> (lhs: borrowing Byte, rhs: Int) -> Byte {
+    static func >> (lhs: borrowing Byte, rhs: some BinaryInteger) -> Byte {
         Byte(lhs.value >> rhs)
+    }
+}
+
+public extension String {
+    
+    init(cString bytes: some Sequence<Byte>) {
+        self.init(cString: bytes.map(UInt8.init))
+    }
+}
+
+public extension UInt5 {
+    
+    init(bitPatternInMSB bitPattern: Byte) {
+        self.init(store: bitPattern)
+    }
+    
+    init(byteAsValue byte: Byte) {
+        self.init(rawValue: byte)
+    }
+    
+    static func / (lhs: UInt5, rhs: UInt5) -> UInt5 {
+        UInt5(rawValue: Byte(lhs.rawValue.value / rhs.rawValue.value))
+    }
+
+    static func /= (lhs: inout UInt5, rhs: UInt5) {
+        lhs.rawValue.value /= rhs.rawValue.value
     }
 }

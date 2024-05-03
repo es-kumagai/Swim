@@ -32,65 +32,155 @@ private extension Base32 {
     struct InvalidFormatError : Error {}
     static let invalidFormat = InvalidFormatError()
     
-    static func value(from word: Character) throws -> Byte {
+    static let encodedWordUnitCount = 8
+    static let bitUnitCount = 5
+
+    static func value(from word: Character) throws -> UInt5 {
+        
+        guard let asciiValue = word.asciiValue else {
+            throw invalidFormat
+        }
+        
+        return try value(from: Byte(asciiValue))
+    }
+    
+    static func value(from word: Byte) throws -> UInt5 {
+        
+        let word = UInt8(word)
         
         switch word {
-        case "A" ... "Z":
-            Byte(word - "A")
             
-        case "2" ... "7":
-            Byte(word - "2")
+        case 0x41 ... 0x5A: /* A-Z */
+            return UInt5(word - 0x41)
+            
+        case 0x32 ... 0x37: /* 2-7 */
+            return UInt5(0b11010 + word - 0x32)
             
         case _:
             throw invalidFormat
         }
     }
-    
-    static func bit5(of value: UInt8) -> [Bool] {
 
-        [
-            value & 0b10000 != 0,
-            value & 0b01000 != 0,
-            value & 0b00100 != 0,
-            value & 0b00010 != 0,
-            value & 0b00001 != 0
-        ]
+    static func word(from value: UInt5) -> Byte {
+        
+        switch value {
+        case 0b00000 ... 0b11001:
+            Byte(0x41 + UInt8(value))
+            
+        case 0b11010 ... 0b11111:
+            Byte(0x32 - 0b11010 + UInt8(value))
+            
+        case _:
+            fatalError("Unexpected value: \(value) in UInt5.")
+        }
     }
     
-    static func trimPadding<Text>(of encodedText: Text) throws -> Text.SubSequence where Text : StringProtocol {
+    static let paddingWord: Byte = 0x3d
+
+    static func trimPadding(of bits: BitArray) throws -> BitArray.SubSequence {
+
+        let bitCountInLastUnit = bits.count % encodedWordUnitCount
+        let effectiveBitCount = bits.count - bitCountInLastUnit
         
-        let components = encodedText.split(separator: "=")
+        let effectiveEndIndex = bits.index(bits.startIndex, offsetBy: effectiveBitCount)
         
-        guard let component = components.first, components.dropFirst().isEmpty else {
+        let effectiveBits = bits[0 ..< effectiveEndIndex]
+        let ineffectiveBits = bits[effectiveEndIndex ..< bits.endIndex]
+        
+        guard !ineffectiveBits.contains(.one) else {
             throw invalidFormat
         }
         
-        return component
+        return effectiveBits
+    }
+    static func trimPadding<Text>(of encodedText: Text) throws -> Text.SubSequence where Text : StringProtocol {
+
+        guard !encodedText.isEmpty else {
+            return encodedText.prefix(0)
+        }
+        
+        let paddingWord = Character(UnicodeScalar(UInt8(paddingWord)))
+        let lastIndex = encodedText.lastIndex(where: { $0 != paddingWord }) ?? encodedText.indices.last!
+        let trimmedText = encodedText[encodedText.startIndex ... lastIndex]
+
+        guard trimmedText.firstIndex(of: paddingWord) == nil else {
+            throw invalidFormat
+        }
+        
+        return trimmedText
     }
 }
 
 public extension Base32 {
-    
+
+    static func encodingAsCString(_ text: borrowing some StringProtocol) -> String? {
+        
+        guard let encodedText = encoding(text) else {
+            return nil
+        }
+
+        return String(cString: encodedText)
+    }
+
+    static func encodingAsCString(_ data: borrowing [Byte]) -> String? {
+
+        guard let encodedData = encoding(data) else {
+            return nil
+        }
+
+        return String(cString: encodedData)
+    }
+
+    static func encoding(_ text: some StringProtocol) -> [Byte]? {
+        
+        let data = text.utf8.map(Byte.init(_:))
+        return encoding(data)
+    }
+
+    static func encoding(_ data: [Byte]) -> [Byte]? {
+        
+        let bits = BitArray(contentsOf: data)
+        let units = [UInt5](bits, paddingBitInLSB: .zero)
+        let words = units.map(word(from:))
+        
+        let wordCountInLastUnit = words.count % encodedWordUnitCount
+        let insufficientWordCount = encodedWordUnitCount - wordCountInLastUnit
+        
+        return switch insufficientWordCount {
+            
+        case 0:
+            words
+            
+        default:
+            words + .init(repeating: paddingWord, count: insufficientWordCount)
+        }
+    }
+
     static func decodingAsCString(_ encodedText: borrowing some StringProtocol) -> String? {
-        decoding(encodedText).map(String.init(cString:))
+        
+        guard let text = decoding(encodedText) else {
+            return nil
+        }
+
+        return String(cString: text)
     }
     
     static func decoding(_ encodedText: borrowing some StringProtocol) -> [Byte]? {
         
-        do {
-            let bit5Values = try trimPadding(of: encodedText)
-                .map(value(from:))
-            let bit8Values = BitArray(bit5Values, eachSignificantBitsInMSB: 5)
-            
-            guard bit8Values.count.isMultiple(of: 8) else {
-                return nil
-            }
-            
-            return bit8Values.withUnsafeBytes { bytes, bitWidth in
-                bytes.map(Byte.init(_:))
-            }
-        } catch {
+        guard let trimmedText = try? trimPadding(of: encodedText) else {
             return nil
         }
+        
+        guard let units = try? trimmedText.map(value(from:)) else {
+            return nil
+        }
+        
+        let bits = BitArray(bitPatternsOf: units)
+        
+        guard let trimmedBits = try? trimPadding(of: bits) else {
+            return nil
+        }
+        
+        return trimmedBits.uncheckedPackingInBytes()
     }
 }

@@ -11,7 +11,53 @@ import XCTest
 
 final class BitArrayTests: XCTestCase {
 
-    func testArrayBasics() throws {
+    func testArrayInitialize() throws {
+        
+        let bits1 = BitArray()
+        let bits2 = BitArray(repeating: .zero, count: 5)
+        let bits3 = BitArray(repeating: .one, count: 3)
+
+        XCTAssertEqual(bits1, [])
+        XCTAssertEqual(bits1.count, 0)
+        XCTAssertEqual(bits1.startIndex, 0)
+        XCTAssertEqual(bits1.endIndex, 0)
+        XCTAssertEqual(bits1.map(String.init(_:)).joined(), "")
+
+        XCTAssertEqual(bits2, [.zero, .zero, .zero, .zero, .zero])
+        XCTAssertEqual(bits2.count, 5)
+        XCTAssertEqual(bits2.startIndex, 0)
+        XCTAssertEqual(bits2.endIndex, 5)
+        XCTAssertEqual(bits2.map(String.init(_:)).joined(), "00000")
+
+        XCTAssertEqual(bits3, [.one, .one, .one])
+        XCTAssertEqual(bits3.count, 3)
+        XCTAssertEqual(bits3.startIndex, 0)
+        XCTAssertEqual(bits3.endIndex, 3)
+        XCTAssertEqual(bits3.map(String.init(_:)).joined(), "111")
+    }
+    
+    func testArrayCapacity() throws {
+        
+        var bits = BitArray()
+        
+        let previousCapacity1 = bits.capacity
+        let newCapacity1 = previousCapacity1 + 50
+        XCTAssertTrue(bits.capacity < newCapacity1)
+        bits.reserveCapacity(newCapacity1)
+        XCTAssertNotEqual(previousCapacity1, bits.capacity)
+        XCTAssertTrue(bits.capacity > previousCapacity1)
+        XCTAssertTrue(bits.capacity >= newCapacity1)
+
+        let previousCapacity2 = bits.capacity
+        let newCapacity2 = previousCapacity2 + 30
+        XCTAssertTrue(bits.capacity < newCapacity2)
+        bits.reserveCapacity(newCapacity2)
+        XCTAssertNotEqual(previousCapacity2, bits.capacity)
+        XCTAssertTrue(bits.capacity > previousCapacity2)
+        XCTAssertTrue(bits.capacity >= newCapacity2)
+    }
+
+    func testArrayAppending() throws {
         
         var bits = BitArray()
         
@@ -21,7 +67,9 @@ final class BitArrayTests: XCTestCase {
         XCTAssertEqual(bits.endIndex, 0)
         XCTAssertEqual(bits.map(String.init(_:)), [])
         
+        let appended1 = bits + CollectionOfOne(.one)
         bits.append(.one)
+        XCTAssertEqual(appended1, bits)
         XCTAssertEqual(bits, [
             .one
         ])
@@ -31,7 +79,9 @@ final class BitArrayTests: XCTestCase {
         XCTAssertEqual(bits.endIndex, 1)
         XCTAssertEqual(bits.map(String.init(_:)), ["1"])
         
+        let appended2 = bits + CollectionOfOne(.zero)
         bits.append(.zero)
+        XCTAssertEqual(appended2, bits)
         XCTAssertEqual(bits, [
             .one,
             .zero
@@ -42,7 +92,9 @@ final class BitArrayTests: XCTestCase {
         XCTAssertEqual(bits.endIndex, 2)
         XCTAssertEqual(bits.map(String.init(_:)), ["1", "0"])
         
+        let appended3 = bits + CollectionOfOne(.one)
         bits.append(.one)
+        XCTAssertEqual(appended3, bits)
         XCTAssertEqual(bits, [
             .one,
             .zero,
@@ -54,7 +106,9 @@ final class BitArrayTests: XCTestCase {
         XCTAssertEqual(bits.endIndex, 3)
         XCTAssertEqual(bits.map(String.init(_:)), ["1", "0", "1"])
         
+        let appended4 = bits + BitArray(contentsOf: 0b11100011)
         bits.appendByte(0b11100011)
+        XCTAssertEqual(appended4, bits)
         XCTAssertEqual(bits, [
             .one,
             .zero,
@@ -67,7 +121,9 @@ final class BitArrayTests: XCTestCase {
         XCTAssertEqual(bits.endIndex, 11)
         XCTAssertEqual(bits.map(String.init(_:)), ["1", "0", "1", "1", "1", "1", "0", "0", "0", "1", "1"])
         
+        let appended5 = bits + BitArray(contentsOf: 0b10101010, significantBitsInMSB: 3)
         bits.appendBits(0b10101010, significantBitsInMSB: 3)
+        XCTAssertEqual(appended5, bits)
         XCTAssertEqual(bits, [
             .one,
             .zero,
@@ -81,7 +137,9 @@ final class BitArrayTests: XCTestCase {
         XCTAssertEqual(bits.endIndex, 14)
         XCTAssertEqual(bits.map(String.init(_:)), ["1", "0", "1", "1", "1", "1", "0", "0", "0", "1", "1", "1", "0", "1"])
         
+        let appended6 = bits + BitArray(contentsOf: 0b10101010, significantBitsInMSB: 2)
         bits.appendBits(0b10101010, significantBitsInMSB: 2)
+        XCTAssertEqual(appended6, bits)
         XCTAssertEqual(bits, [
             .one,
             .zero,
@@ -96,7 +154,9 @@ final class BitArrayTests: XCTestCase {
         XCTAssertEqual(bits.endIndex, 16)
         XCTAssertEqual(bits.map(String.init(_:)), ["1", "0", "1", "1", "1", "1", "0", "0", "0", "1", "1", "1", "0", "1", "1", "0"])
         
+        let appended7 = bits + BitArray(contentsOf: 0b11100011)
         bits.appendByte(0b11100011)
+        XCTAssertEqual(appended7, bits)
         XCTAssertEqual(bits, [
             .one,
             .zero,
@@ -111,7 +171,9 @@ final class BitArrayTests: XCTestCase {
         XCTAssertEqual(bits.startIndex, 0)
         XCTAssertEqual(bits.endIndex, 24)
 
+        let appended8 = bits + BitArray(contentsOf: 0b10101010, significantBitsInMSB: 2)
         bits.appendBits(0b10101010, significantBitsInMSB: 2)
+        XCTAssertEqual(appended8, bits)
         XCTAssertEqual(bits, [
             .one,
             .zero,
@@ -129,7 +191,9 @@ final class BitArrayTests: XCTestCase {
         
         let sequence1: some Sequence<Byte> = [0b11000110, 0b00101110]
 
+        let appended9 = bits + sequence1
         bits.appendBytes(sequence1)
+        XCTAssertEqual(appended9, bits)
         XCTAssertEqual(bits, [
             .one,
             .zero,
@@ -148,7 +212,9 @@ final class BitArrayTests: XCTestCase {
 
         let collection1: some Collection<Byte> = [0b11000110, 0b00101110]
 
+        let appended10 = bits + collection1
         bits.appendBytes(collection1)
+        XCTAssertEqual(appended10, bits)
         XCTAssertEqual(bits, [
             .one,
             .zero,
@@ -404,6 +470,111 @@ final class BitArrayTests: XCTestCase {
         XCTAssertEqual(bits.endIndex, 273)
     }
     
+    func testArrayPacking() throws {
+        
+        let bits1: BitArray = [
+            .one, .one, .one, .zero, .zero, .zero, .one, .one,
+            .one, .one, .zero, .zero, .zero, .one, .one, .zero,
+            .zero, .zero, .one, .zero, .one, .one, .one, .zero,
+            .one, .one, .one, .zero, .zero, .zero, .one, .one,
+        ]
+
+        let bits2: BitArray = [
+            .one, .one, .one, .zero, .zero, .zero, .one, .one,
+            .one, .one, .zero, .zero, .zero, .one, .one, .zero,
+            .zero, .zero, .one, .zero, .one, .one, .one, .zero,
+            .one, .one, .one, .zero, .zero, .zero,
+        ]
+
+        let splitted1_1 = bits1.split(by: 8)
+        let splitted1_2 = bits1.split(by: 16)
+        let splitted1_3 = bits1.split(by: 4)
+        let splitted1_4 = bits1.split(by: 5)
+
+        let splitted2_1 = bits2.split(by: 8)
+        let splitted2_2 = bits2.split(by: 16)
+        let splitted2_3 = bits2.split(by: 4)
+        let splitted2_4 = bits2.split(by: 5)
+
+        XCTAssertEqual(splitted1_1?.map(BitArray.init), [
+            [.one, .one, .one, .zero, .zero, .zero, .one, .one],
+            [.one, .one, .zero, .zero, .zero, .one, .one, .zero],
+            [.zero, .zero, .one, .zero, .one, .one, .one, .zero],
+            [.one, .one, .one, .zero, .zero, .zero, .one, .one],
+        ])
+        XCTAssertEqual(splitted1_2?.map(BitArray.init), [
+            [.one, .one, .one, .zero, .zero, .zero, .one, .one, .one, .one, .zero, .zero, .zero, .one, .one, .zero],
+            [.zero, .zero, .one, .zero, .one, .one, .one, .zero, .one, .one, .one, .zero, .zero, .zero, .one, .one],
+        ])
+        XCTAssertEqual(splitted1_3?.map(BitArray.init), [
+            [.one, .one, .one, .zero],
+            [.zero, .zero, .one, .one],
+            [.one, .one, .zero, .zero],
+            [.zero, .one, .one, .zero],
+            [.zero, .zero, .one, .zero],
+            [.one, .one, .one, .zero],
+            [.one, .one, .one, .zero],
+            [.zero, .zero, .one, .one],
+        ])
+        XCTAssertEqual(splitted1_4?.map(BitArray.init), nil)
+
+        XCTAssertEqual(splitted2_1?.map(BitArray.init), nil)
+        XCTAssertEqual(splitted2_2?.map(BitArray.init), nil)
+        XCTAssertEqual(splitted2_3?.map(BitArray.init), nil)
+        XCTAssertEqual(splitted2_4?.map(BitArray.init), [
+            [.one, .one, .one, .zero, .zero],
+            [.zero, .one, .one, .one, .one],
+            [.zero, .zero, .zero, .one, .one],
+            [.zero, .zero, .zero, .one, .zero],
+            [.one, .one, .one, .zero, .one],
+            [.one, .one, .zero, .zero, .zero],
+        ])
+
+        let packed1_1 = bits1.packingInBytes()
+        let packed1_2 = bits1.packing(in: UInt8.self)
+        let packed1_3 = bits1.packing(in: Int16.self)
+        let packed1_4 = bits1.packing(in: UInt5.self)
+        let packed1_5 = bits1.uncheckedPackingInBytes(paddingBitInLSB: .zero)
+        let packed1_6 = bits1.uncheckedPacking(in: UInt8.self, paddingBitInLSB: .zero)
+        let packed1_7 = bits1.uncheckedPacking(in: Int16.self, paddingBitInLSB: .zero)
+        let packed1_8 = bits1.uncheckedPacking(in: UInt5.self, paddingBitInLSB: .zero)
+        let packed1_11 = bits1.uncheckedPacking(in: UInt5.self, paddingBitInLSB: .one)
+
+        let packed2_1 = bits2.packingInBytes()
+        let packed2_2 = bits2.packing(in: UInt8.self)
+        let packed2_3 = bits2.packing(in: Int16.self)
+        let packed2_4 = bits2.packing(in: UInt5.self)
+        let packed2_5 = bits2.uncheckedPackingInBytes(paddingBitInLSB: .zero)
+        let packed2_6 = bits2.uncheckedPacking(in: UInt8.self, paddingBitInLSB: .zero)
+        let packed2_7 = bits2.uncheckedPacking(in: Int16.self, paddingBitInLSB: .zero)
+        let packed2_8 = bits2.uncheckedPacking(in: UInt5.self, paddingBitInLSB: .zero)
+        let packed2_11 = bits2.uncheckedPacking(in: UInt8.self, paddingBitInLSB: .one)
+
+        XCTAssertEqual(packed1_1, [0b11100011, 0b11000110, 0b00101110, 0b11100011])
+        XCTAssertEqual(packed1_2, [0b11100011, 0b11000110, 0b00101110, 0b11100011])
+        XCTAssertEqual(packed1_3, [Int16(bitPattern: 0b11100011_11000110), Int16(bitPattern: 0b00101110_11100011)])
+        XCTAssertEqual(packed1_4, nil)
+        XCTAssertEqual(packed1_5, packed1_1)
+        XCTAssertEqual(packed1_6, packed1_2)
+        XCTAssertEqual(packed1_7, packed1_3)
+        XCTAssertNotEqual(packed1_8, packed1_4)
+        XCTAssertEqual(packed1_8, [0b11100, 0b01111, 0b00011, 0b00010, 0b11101, 0b11000, 0b11_000])
+        XCTAssertEqual(packed1_11, [0b11100, 0b01111, 0b00011, 0b00010, 0b11101, 0b11000, 0b11_111])
+
+        XCTAssertEqual(packed2_1, nil)
+        XCTAssertEqual(packed2_2, nil)
+        XCTAssertEqual(packed2_3, nil)
+        XCTAssertEqual(packed2_4, [0b11100, 0b01111, 0b00011, 0b00010, 0b11101, 0b11000])
+        XCTAssertNotEqual(packed2_5, packed2_1)
+        XCTAssertNotEqual(packed2_6, packed2_2)
+        XCTAssertNotEqual(packed2_7, packed2_3)
+        XCTAssertEqual(packed2_8, packed2_4)
+        XCTAssertEqual(packed2_6, [0b11100011, 0b11000110, 0b00101110, 0b111000_00])
+        XCTAssertEqual(packed2_7, [Int16(bitPattern: 0b11100011_11000110), 0b00101110_111000_00])
+        XCTAssertEqual(packed2_8, [0b11100, 0b01111, 0b00011, 0b00010, 0b11101, 0b11000])
+        XCTAssertEqual(packed2_11, [0b11100011, 0b11000110, 0b00101110, 0b111000_11])
+    }
+    
     func testBit() throws {
         
         let bit1 = Bit.zero
@@ -523,6 +694,21 @@ final class BitArrayTests: XCTestCase {
         let byte4 = Byte(truncatingIfNeeded: 0b01001110011100110)
         
         XCTAssertEqual(byte4, 0b11100110)
+        
+        let byte5 = Byte()
+        
+        XCTAssertEqual(byte5, 0)
+        XCTAssertEqual(byte5, byte1)
+        
+        let byte6 = Byte([.zero, .one, .zero, .zero, .one, .one, .zero, .one])
+        let byte7 = Byte([.one, .one, .zero, .one, .one, .zero, .zero, .zero])
+        let byte8 = Byte([.one, .zero, .one, .one, .zero, .zero, .zero])
+        let byte9 = Byte([.one, .zero, .one, .one, .zero, .zero, .zero, .one, .one])
+
+        XCTAssertEqual(byte6, 0b01001101)
+        XCTAssertEqual(byte7, 0b11011000)
+        XCTAssertNil(byte8)
+        XCTAssertNil(byte9)
     }
     
     func testByteBitCount() throws {

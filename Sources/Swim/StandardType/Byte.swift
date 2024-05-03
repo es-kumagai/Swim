@@ -103,6 +103,23 @@ private extension Byte {
 
 public extension Byte {
     
+    init() {
+        value = 0
+    }
+    
+    init?(_ bits: some Collection<Bit>) {
+        
+        guard bits.count == Byte.bitWidth else {
+            return nil
+        }
+        
+        self.init()
+        
+        for (position, bit) in bits.enumerated() {
+            uncheckedSetInMSB(bit, to: position)
+        }
+    }
+    
     init(truncatingIfNeeded value: some BinaryInteger) {
         self.init(UInt8(truncatingIfNeeded: value))
     }
@@ -542,9 +559,12 @@ public extension Byte {
 }
 
 public extension String {
-    
+
     init(cString bytes: some Sequence<Byte>) {
-        self.init(cString: bytes.map(UInt8.init))
+
+        self = ContiguousArray(CStringSequence(bytes)).withUnsafeBufferPointer { buffer in
+            String(cString: buffer.baseAddress!)
+        }
     }
 }
 

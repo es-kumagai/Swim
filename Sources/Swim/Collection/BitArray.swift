@@ -305,30 +305,61 @@ public extension BitArray {
         self.init(storage: storage, effectiveBitWidth: bits.count)
     }
     
-    init(_ integer: some FixedWidthInteger) {
+    init(bitPattern integer: some FixedWidthInteger) {
         
         self.init(storage: [], effectiveBitWidth: 0)
         appendValue(integer)
     }
     
-    init(_ integers: some Sequence<some FixedWidthInteger>) {
+    init(bitPatternsOf integers: some Sequence<some FixedWidthInteger>) {
         
         self.init(storage: [], effectiveBitWidth: 0)
         appendValues(integers)
     }
     
-    init(_ bits: some BidirectionalCollection<Byte>, eachSignificantBitsInMSB eachSignificantBits: Int) {
+    init(contentsOf bits: some BidirectionalCollection<Byte>, eachSignificantBitsInMSB eachSignificantBits: Int = Byte.bitWidth) {
         
         self.init(storage: [], effectiveBitWidth: 0)
         appendBits(bits, eachSignificantBitsInMSB: eachSignificantBits)
     }
     
-    init(_ bits: Byte, significantBitsInMSB significantBits: Int) {
+    init(contentsOf bits: Byte) {
+        self.init(contentsOf: bits, significantBitsInMSB: Byte.bitWidth)
+    }
+    
+    init(contentsOf bits: Byte, significantBitsInMSB significantBits: Int) {
         
         self.init(storage: [], effectiveBitWidth: 0)
         appendBits(bits, significantBitsInMSB: significantBits)
     }
     
+    init(repeating bit: Bit, count: Int) {
+        
+        self.init()
+        
+        self.reserveCapacity(count)
+        
+        for _ in 0 ..< count {
+            self.append(bit)
+        }
+    }
+    
+    var capacity: Int {
+        storage.capacity * Byte.bitWidth
+    }
+    
+    mutating func reserveCapacity(_ minimumCapacityInBits: Int) {
+        
+        switch minimumCapacityInBits.quotientAndRemainder(dividingBy: Byte.bitWidth) {
+            
+        case (let satisfiedByteCount, 0):
+            storage.reserveCapacity(satisfiedByteCount)
+
+        case (let satisfiedByteCount, _):
+            storage.reserveCapacity(satisfiedByteCount + 1)
+        }
+    }
+
     subscript(bitsFromMSB position: Int) -> Bit {
         
         get {
@@ -370,6 +401,22 @@ public extension BitArray {
         
         uncheckedReplaceBit(at: endIndex, by: bit)
         effectiveBitWidth += 1
+    }
+    
+    mutating func append(contentsOf bits: some Sequence<Bit>) {
+        
+        for bit in bits {
+            append(bit)
+        }
+    }
+    
+    mutating func append(contentsOf bits: some Collection<Bit>) {
+        
+        reserveCapacity(count + bits.count)
+        
+        for bit in bits {
+            append(bit)
+        }
     }
     
     mutating func appendByte(_ value: Byte) {
@@ -438,8 +485,40 @@ public extension BitArray {
     func withUnsafeBytes<Result>(_ body: (_ bytes: UnsafeRawBufferPointer, _ bitWidth: Int) throws -> Result) rethrows -> Result {
         
         try storage.withUnsafeBytes { bytes in
-            try body(bytes, effectiveBitWidth)
+            try body(bytes, count)
         }
+    }
+    
+    static func + (lhs: Self, rhs: some Sequence<Bit>) -> Self {
+        
+        var result = lhs
+        result.append(contentsOf: rhs)
+        
+        return result
+    }
+    
+    static func + (lhs: Self, rhs: some Collection<Bit>) -> Self {
+        
+        var result = lhs
+        result.append(contentsOf: rhs)
+        
+        return result
+    }
+    
+    static func + (lhs: Self, rhs: some Sequence<Byte>) -> Self {
+        
+        var result = lhs
+        result.appendBytes(rhs)
+        
+        return result
+    }
+    
+    static func + (lhs: Self, rhs: some Collection<Byte>) -> Self {
+        
+        var result = lhs
+        result.appendBytes(rhs)
+        
+        return result
     }
 }
 
@@ -456,5 +535,156 @@ extension BitArray.Storage {
     
     var lastByteIndex: Int! {
         indices.last
+    }
+}
+
+public extension Array where Element : FixedWidthInteger {
+    
+    init?(_ bits: BitArray) {
+        
+        guard let elements = bits.packing(in: Element.self) else {
+            return nil
+        }
+        
+        self = elements
+    }
+    
+    init(_ bits: BitArray, paddingBitInLSB paddingBit: Bit) {
+        self = bits.packing(in: Element.self, paddingBitInLSB: paddingBit)
+    }
+}
+
+public extension Array<Byte> {
+    
+    init?(_ bits: BitArray) {
+        
+        guard let elements = bits.packingInBytes() else {
+            return nil
+        }
+        
+        self = elements
+    }
+    
+    init(_ bits: BitArray, paddingBitInLSB paddingBit: Bit, fillingInMSB: Bool = true) {
+        self = bits.packingInBytes(paddingBitInLSB: paddingBit)
+    }
+}
+
+public extension Collection where Element == Bit, Index : Strideable, Index.Stride == Int, SubSequence == BitArray.SubSequence {
+    
+    func split(by bitWidth: Int, paddingBitInLSB paddingBit: Bit) -> [SubSequence] {
+        uncheckedSplit(by: bitWidth, paddingBitInLSB: paddingBit)
+    }
+        
+    func split(by bitWidth: Int) -> [SubSequence]? {
+        
+        guard count.isMultiple(of: bitWidth) else {
+            return nil
+        }
+        
+        return uncheckedSplit(by: bitWidth)
+    }
+    
+    func uncheckedSplit(by bitWidth: Int, paddingBitInLSB paddingBit: Bit) -> [SubSequence] {
+
+        let lastBitCount = count % bitWidth
+        
+        guard lastBitCount > 0 else {
+            return uncheckedSplit(by: bitWidth)
+        }
+        
+        let paddedBits = BitArray(self) + BitArray(repeating: paddingBit, count: bitWidth - lastBitCount)
+        
+        return paddedBits.uncheckedSplit(by: bitWidth)
+    }
+
+    func uncheckedSplit(by bitWidth: Int) -> [SubSequence] {
+
+        stride(from: startIndex, to: endIndex, by: bitWidth).map { offset in
+            
+            let startIndex = offset
+            let endIndex = index(startIndex, offsetBy: bitWidth)
+            
+            return self[startIndex..<endIndex]
+        }
+    }
+    
+    func packingInBytes(paddingBitInLSB paddingBit: Bit) -> [Byte] {
+        uncheckedPackingInBytes(paddingBitInLSB: paddingBit)
+    }
+
+    func packingInBytes() -> [Byte]? {
+        
+        guard let units = split(by: Byte.bitWidth) else {
+            return nil
+        }
+        
+        return units.unsafePackingInBytes()
+    }
+    
+    func uncheckedPackingInBytes() -> [Byte] {
+        
+        let units = uncheckedSplit(by: Byte.bitWidth)
+        return units.unsafePackingInBytes()
+    }
+
+    func uncheckedPackingInBytes(paddingBitInLSB paddingBit: Bit) -> [Byte] {
+        split(by: Byte.bitWidth, paddingBitInLSB: paddingBit).unsafePackingInBytes()
+    }
+
+    func packing<Integer>(in type: Integer.Type, paddingBitInLSB paddingBit: Bit) -> [Integer] where Integer : FixedWidthInteger {
+        split(by: Integer.bitWidth, paddingBitInLSB: paddingBit).unsafePacking(in: type)
+    }
+    
+    func packing<Integer>(in type: Integer.Type) -> [Integer]? where Integer : FixedWidthInteger {
+        
+        guard let units = split(by: Integer.bitWidth) else {
+            return nil
+        }
+        
+        return units.unsafePacking(in: type)
+    }
+
+    func uncheckedPacking<Integer>(in type: Integer.Type, paddingBitInLSB paddingBit: Bit) -> [Integer] where Integer : FixedWidthInteger {
+        
+        let units = uncheckedSplit(by: Integer.bitWidth, paddingBitInLSB: paddingBit)
+        return units.unsafePacking(in: type)
+    }
+
+    func uncheckedPacking<Integer>(in type: Integer.Type) -> [Integer] where Integer : FixedWidthInteger {
+        
+        let units = uncheckedSplit(by: Integer.bitWidth)
+        return units.unsafePacking(in: type)
+    }
+}
+
+public extension Sequence where Element: Collection, Element.Element == Bit {
+    
+    func unsafePackingInBytes() -> [Byte] {
+        
+        map { bits in
+            Byte(bits)!
+        }
+    }
+}
+
+public extension Collection where Element: Sequence, Element.Element == Bit {
+    
+    func unsafePacking<Integer>(in integer: Integer.Type) -> [Integer] where Integer : FixedWidthInteger {
+        
+        return map { bits in
+            
+            var unit = Integer()
+
+            for bit in bits {
+                
+                unit <<= 1
+                if bit.isSet {
+                    unit |= 1
+                }
+            }
+            
+            return unit
+        }
     }
 }

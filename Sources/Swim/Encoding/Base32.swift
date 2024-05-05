@@ -113,31 +113,25 @@ private extension Base32 {
 
 public extension Base32 {
 
-    static func encodingAsCString(_ text: borrowing some StringProtocol) -> String? {
+    static func encodingAsCString(_ text: borrowing some StringProtocol) -> String {
         
-        guard let encodedText = encoding(text) else {
-            return nil
-        }
-
+        let encodedText = encoding(text)
         return String(cString: encodedText)
     }
 
-    static func encodingAsCString(_ data: borrowing [Byte]) -> String? {
+    static func encodingAsCString(_ data: borrowing [Byte]) -> String {
 
-        guard let encodedData = encoding(data) else {
-            return nil
-        }
-
+        let encodedData = encoding(data)
         return String(cString: encodedData)
     }
 
-    static func encoding(_ text: some StringProtocol) -> [Byte]? {
+    static func encoding(_ text: some StringProtocol) -> [Byte] {
         
         let data = text.utf8.map(Byte.init(_:))
         return encoding(data)
     }
 
-    static func encoding(_ data: [Byte]) -> [Byte]? {
+    static func encoding(_ data: [Byte]) -> [Byte] {
         
         let bits = BitArray(contentsOf: data)
         let units = [UInt5](bits, paddingBitInLSB: .zero)

@@ -6,6 +6,8 @@
 //  
 //
 
+public typealias Bytes = Array<Byte>
+
 /// [Swim] A `Byte` represents a single unit of data, equivalent to 8 bits.
 public struct Byte {
     

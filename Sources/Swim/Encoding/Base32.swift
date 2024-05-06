@@ -142,7 +142,7 @@ public extension Base32 {
         
         return switch insufficientWordCount {
             
-        case 0:
+        case 8:
             words
             
         default:

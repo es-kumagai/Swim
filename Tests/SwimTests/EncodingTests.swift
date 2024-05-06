@@ -48,4 +48,23 @@ final class EncodingTests: XCTestCase {
         XCTAssertEqual(decoded2, "EZ-NET")
         XCTAssertEqual(decoded3, "API Design Guidelines")
     }
+    
+    func testPadding() throws {
+        
+        let encodedString1 = "2A6H5LW5GZ5TKO64UKGPT5QTPQNECHBV"
+        let encodedString2 = "2A6H5LW5GZ5TKO64UKGPT5QTPQNECHBVOLA4M"
+
+        let decodedBytes1 = Base32.decoding(encodedString1)!
+        let reEncodedString1 = Base32.encodingAsCString(decodedBytes1)
+
+        let decodedBytes2 = Base32.decoding(encodedString2)!
+        let reEncodedString2 = Base32.encodingAsCString(decodedBytes2)
+
+        XCTAssertEqual(decodedBytes1, [0xD0, 0x3C, 0x7E, 0xAE, 0xDD, 0x36, 0x7B, 0x35, 0x3B, 0xDC, 0xA2, 0x8C, 0xF9, 0xF6, 0x13, 0x7C, 0x1A, 0x41, 0x1C, 0x35])
+        XCTAssertEqual(decodedBytes2, [0xD0, 0x3C, 0x7E, 0xAE, 0xDD, 0x36, 0x7B, 0x35, 0x3B, 0xDC, 0xA2, 0x8C, 0xF9, 0xF6, 0x13, 0x7C, 0x1A, 0x41, 0x1C, 0x35, 0x72, 0xC1, 0xC6])
+
+        XCTAssertEqual("\(encodedString1)", reEncodedString1)
+        XCTAssertEqual("\(encodedString2)===", reEncodedString2)
+    }
+
 }

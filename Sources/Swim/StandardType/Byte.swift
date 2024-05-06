@@ -405,13 +405,13 @@ public extension Byte {
         uncheckedCopy(value, fromLSB: n)
     }
     
-    consuming func copied(_ value: borrowing Byte, fromMSB n: Int) -> Byte {
+    func copied(_ value: borrowing Byte, fromMSB n: Int) -> Byte {
         
         preconditionOverflow(maskBits: n)
         return uncheckCopied(value, fromMSB: n)
     }
     
-    consuming func copied(_ value: borrowing Byte, fromLSB n: Int) -> Byte {
+    func copied(_ value: borrowing Byte, fromLSB n: Int) -> Byte {
 
         preconditionOverflow(maskBits: n)
         return uncheckedCopied(value, fromLSB: n)

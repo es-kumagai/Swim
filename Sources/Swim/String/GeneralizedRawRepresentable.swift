@@ -8,8 +8,8 @@
 
 public extension RawRepresentable where RawValue == String {
     
-    init(rawValue: some StringProtocol) {
-        self.init(rawValue: String(rawValue))!
+    init?(exactly rawValue: some StringProtocol) {
+        self.init(rawValue: String(rawValue))
     }
 }
 

@@ -99,7 +99,7 @@ extension TextSeeker: RandomAccessCollection {
     }
 }
 
-extension StringProtocol {
+public extension StringProtocol {
     
     /// [Swim] Seeks for matching by `position` and returns a collection of substrings
     /// between each match; the last substring is truncated by `truncator`.

@@ -16,9 +16,9 @@ final class SeekTests: XCTestCase {
         let text1 = "AAA BBB CCC DDD  EEE FFF"
         let text2 = "<1>AAA<2>BBB<3>CCC<E>ZZZ"
         
-        let seek1 = text1.seeking(by: #/\s+/#)
-        let seek2 = text2.seeking(by: #/\<\d\>/#, truncator: #/\<E\>/#)
-        let seek3 = text1.seeking(by: #/\s+/#, removeMatching: true)
+        let seek1 = text1.seek(matchingBy: #/\s+/#)
+        let seek2 = text2.seek(matchingBy: #/\<\d\>/#, truncateAfter: #/\<E\>/#)
+        let seek3 = text1.seek(matchingBy: #/\s+/#, excludeMatchingPart: true)
 
         XCTAssertEqual(Array(seek1), [" BBB", " CCC", " DDD", "  EEE", " FFF"])
         XCTAssertEqual(Array(seek2), ["<1>AAA", "<2>BBB", "<3>CCC"])

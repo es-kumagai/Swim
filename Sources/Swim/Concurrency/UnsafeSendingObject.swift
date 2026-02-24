@@ -15,7 +15,7 @@
 ///
 /// The programmer is responsible for guaranteeing that it is actually
 /// safe to use across the isolation boundary.
-public struct UnsafeSendingObject<Wrapped: AnyObject>: @unchecked Sendable, ~Copyable {
+public struct UnsafeSendingObject<Wrapped: AnyObject>: @unchecked Sendable where Wrapped: SendableMetatype {
     public let value: Wrapped
     
     public init(_ value: consuming Wrapped) {

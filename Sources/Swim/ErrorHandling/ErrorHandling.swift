@@ -52,7 +52,7 @@ public func withErrorHandling<T, E>(_ body: () throws(E) -> sending T) throws(E)
 ///     .network
 /// })
 /// ```
-public func withErrorHandling<T, E, F>(throwing _: F.Type = F.self,  _ body: () async throws(E) -> sending T, mapError: (_ error: E) async -> F) async throws(F) -> sending T where E: Error, F: Error {
+public func withErrorHandling<T, E, F>(rethrows _: F.Type = F.self,  _ body: () async throws(E) -> sending T, mapError: (_ error: E) async -> F) async throws(F) -> sending T where E: Error, F: Error {
     do {
         return try await body()
     } catch {
@@ -69,7 +69,7 @@ public func withErrorHandling<T, E, F>(throwing _: F.Type = F.self,  _ body: () 
 /// - Throws: The transformed error of type `F`.
 ///
 /// - Tip: Use this to normalize errors from existing APIs into your app's domain-specific error type.
-public func withErrorHandling<T, E, F>(throwing _: F.Type = F.self, _ body: () throws(E) -> sending T, mapError: (_ error: E) -> F) throws(F) -> sending T where E: Error, F: Error {
+public func withErrorHandling<T, E, F>(rethrows _: F.Type = F.self, _ body: () throws(E) -> sending T, mapError: (_ error: E) -> F) throws(F) -> sending T where E: Error, F: Error {
     do {
         return try body()
     } catch {

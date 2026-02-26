@@ -8,7 +8,7 @@
 /// [Swim] A wrapper that allows an object to cross an isolation boundary
 /// without being blocked by concurrency safety checks.
 @available(*, unavailable, renamed: "UnsafeSending")
-public struct UnsafeSendingObject: Sendable {}
+public struct UnsafeSendingObject<Wrapped: AnyObject>: Sendable {}
 
 /// [Swim] A wrapper that allows an instance to cross an isolation boundary
 /// without being blocked by concurrency safety checks.

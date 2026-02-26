@@ -49,6 +49,13 @@ public struct CheckedTypedThrowingContinuation<T, E>: Sendable where E: Error {
     }
 }
 
+public extension CheckedTypedThrowingContinuation where T == Void {
+    
+    func resume() {
+        rawContinuation.resume()
+    }
+}
+
 @inlinable
 /// [Swim] This function calls the standard `withCheckedThrowingContinuation` under the hood and
 /// passes a `CheckedTypedThrowingContinuation<T, E>` to `body`. It lets you explicitly
